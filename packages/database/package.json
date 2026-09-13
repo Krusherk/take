@@ -1,0 +1,28 @@
+{
+  "name": "@take/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx src/migrate.ts",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@take/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.8",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

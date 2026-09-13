@@ -1,0 +1,29 @@
+{
+  "name": "@take/mechanism-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run src",
+    "simulate": "tsx src/cli.ts --runs 10000",
+    "report": "tsx src/cli.ts --runs 100000"
+  },
+  "dependencies": {
+    "@take/database": "workspace:*",
+    "@take/mechanism": "workspace:*",
+    "@take/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "viem": "^2.56.3",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

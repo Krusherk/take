@@ -1,0 +1,661 @@
+[
+  {
+    "type": "function",
+    "name": "activateCampaign",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "authorizedWallets",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "wallet",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "authorized",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "campaigns",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "organizer",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "metadataHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "startTime",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "endTime",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "nominationLimit",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "nominatorEligibilityMode",
+        "type": "uint8",
+        "internalType": "enum TakeCampaignManager.EligibilityMode"
+      },
+      {
+        "name": "recipientEligibilityMode",
+        "type": "uint8",
+        "internalType": "enum TakeCampaignManager.EligibilityMode"
+      },
+      {
+        "name": "nominationVisibilityMode",
+        "type": "uint8",
+        "internalType": "enum TakeCampaignManager.NominationVisibilityMode"
+      },
+      {
+        "name": "status",
+        "type": "uint8",
+        "internalType": "enum TakeCampaignManager.CampaignStatus"
+      },
+      {
+        "name": "nominatorEligibilityRoot",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "recipientEligibilityRoot",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "rulesHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "finalResultHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "cancellableAfterStart",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
+        "name": "hasNominations",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "cancelCampaign",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "canonicalIdentityKey",
+    "inputs": [
+      {
+        "name": "identityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "canonicalKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "closeCampaign",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createCampaign",
+    "inputs": [
+      {
+        "name": "input",
+        "type": "tuple",
+        "internalType": "struct TakeCampaignManager.CampaignInput",
+        "components": [
+          {
+            "name": "metadataHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "startTime",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "endTime",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "nominationLimit",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "nominatorEligibilityMode",
+            "type": "uint8",
+            "internalType": "enum TakeCampaignManager.EligibilityMode"
+          },
+          {
+            "name": "recipientEligibilityMode",
+            "type": "uint8",
+            "internalType": "enum TakeCampaignManager.EligibilityMode"
+          },
+          {
+            "name": "nominationVisibilityMode",
+            "type": "uint8",
+            "internalType": "enum TakeCampaignManager.NominationVisibilityMode"
+          },
+          {
+            "name": "nominatorEligibilityRoot",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "recipientEligibilityRoot",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "rulesHash",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "cancellableAfterStart",
+            "type": "bool",
+            "internalType": "bool"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "finalizeAllocation",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "resultHash",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "giveTake",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "giverProtocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "recipientIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "nominatorProof",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "recipientProof",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "nextCampaignId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registerIdentity",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerIdentityAlias",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "aliasIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registeredProtocolIdentities",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "registered",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "takeCounts",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "giverKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "usedCount",
+        "type": "uint32",
+        "internalType": "uint32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "walletPrimaryIdentity",
+    "inputs": [
+      {
+        "name": "wallet",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "AllocationCommitted",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "resultHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CampaignActivated",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CampaignCancelled",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CampaignClosed",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CampaignCreated",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "organizer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "rulesHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CampaignFinalized",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "resultHash",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "IdentityAliasRegistered",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "aliasIdentityKey",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "IdentityRegistered",
+    "inputs": [
+      {
+        "name": "protocolIdentityKey",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "wallet",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "TakeGiven",
+    "inputs": [
+      {
+        "name": "campaignId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "giverIdentityKey",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "recipientIdentityKey",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AliasAlreadyRegistered",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CampaignExpired",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CampaignNotActive",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "CancellationNotAllowed",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FinalResultAlreadySet",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "IdentityAlreadyRegistered",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "IdentityNotRegistered",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "IneligibleNominator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCampaign",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCampaignStatus",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCampaignTime",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidIdentityKey",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidRecipient",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NominationLimitExceeded",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "SelfNomination",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "UnauthorizedOrganizer",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "WalletAlreadyRegistered",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "WalletNotAuthorized",
+    "inputs": []
+  }
+]

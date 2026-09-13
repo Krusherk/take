@@ -1,0 +1,28 @@
+{
+  "name": "take",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "build": "pnpm --filter @take/shared build && pnpm --filter @take/mechanism build && pnpm --filter @take/chain build && pnpm --filter @take/database build && pnpm --filter @take/mechanism-simulator build && pnpm --filter @take/api build && pnpm --filter @take/web build",
+    "check": "pnpm --filter @take/shared build && pnpm --filter @take/mechanism build && pnpm --filter @take/chain build && pnpm --filter @take/database build && pnpm --filter @take/mechanism-simulator check && pnpm --filter @take/api check && pnpm --filter @take/web check",
+    "test": "pnpm -r test",
+    "dev:api": "pnpm --filter @take/api dev",
+    "dev:web": "pnpm --filter @take/web dev",
+    "db:generate": "pnpm --filter @take/database generate",
+    "db:migrate": "pnpm --filter @take/database migrate",
+    "db:seed": "pnpm --filter @take/database seed",
+    "contracts:test": "forge test --root packages/contracts",
+    "contracts:build": "forge build --root packages/contracts",
+    "mechanism:simulate": "pnpm --filter @take/mechanism-simulator exec tsx src/cli.ts",
+    "mechanism:simulate:persist": "pnpm --filter @take/mechanism-simulator exec tsx src/cli.ts --runs 10000 --persist",
+    "mechanism:report": "pnpm --filter @take/mechanism-simulator report"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

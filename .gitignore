@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+out/
+cache/
+broadcast/
+lib/
+indexer/envio/generated/
+indexer/envio/.env
+*.log

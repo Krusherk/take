@@ -1,0 +1,2128 @@
+{
+  "reportVersion": "1",
+  "generatedAt": "2026-09-07T19:39:07.791Z",
+  "runs": 100000,
+  "recommendedStrategy": {
+    "strategyId": "RAW_UNIQUE_SUPPORT",
+    "strategyVersion": "2"
+  },
+  "experimentalStrategies": [
+    {
+      "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+      "strategyVersion": "1",
+      "minimumSupport": 2
+    },
+    {
+      "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+      "strategyVersion": "1"
+    }
+  ],
+  "scenarioReports": [
+    {
+      "scenarioId": "HONEST_UNIFORM",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xd12859599ac342b25054c052f41d700d847d98051cf6da6fc5bf96f2682ea83c": 0.3347,
+        "0x25a4e4d31688ecf42e3274adbe5a910aaa990772ede5ff4ebd70feeadf28e8d0": 0.33322,
+        "0x30a52886a0e96dae92c47569ad1269a32cd40e3042929dbbd089e0d6f9b7bf0d": 0.33218,
+        "0x00527f5148b77f82a64444a160866649e62090e4eb80c1161eed8aa39f09e91c": 0.33408,
+        "0x708ee407fe6ca6f6c5b794da8c1ccb9216a2eb9c1faf7a46334fe72c6bcd7120": 0.3337,
+        "0x249462a938cbe6a52529def81225af251185bb70ccb6f16b9d9b52566421c482": 0.33378,
+        "0xdcac73dd0650b0b2ace44d6c27dc535a8a933f65e202a31c24a7cd7cced38964": 0.33359,
+        "0x8c07456c7f50b2b5987c9c2f985e232dc19d604b98c09d5703ac6ac871b6ae11": 0.33394,
+        "0xf6b3c284c9a1b8285d804eebadf04252bb3a3bfbc9e7470a377e23d7155a1f89": 0.33,
+        "0xa91e10a8e70a107fdd8b22512620271a36a7d402ed6eb9dc6ac470b8c0264cf7": 0.33258,
+        "0x36e1e0d31315c32ddb0d9934d962acf5894a489621d48e4243e1a56cd9d76bb6": 0.33392,
+        "0x1cafb0a1221e2b0806c62e7a4c5fd2a96af66691cd9103586b1e8fa999f2ae1d": 0.33431
+      },
+      "ownerExpectedSeats": {
+        "honest-uniform-0": 0.3347,
+        "honest-uniform-1": 0.33322,
+        "honest-uniform-2": 0.33218,
+        "honest-uniform-3": 0.33408,
+        "honest-uniform-4": 0.3337,
+        "honest-uniform-5": 0.33378,
+        "honest-uniform-6": 0.33359,
+        "honest-uniform-7": 0.33394,
+        "honest-uniform-8": 0.33,
+        "honest-uniform-9": 0.33258,
+        "honest-uniform-10": 0.33392,
+        "honest-uniform-11": 0.33431
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.08333442788749999,
+      "winnerSetStability": 0.21874171122669803,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_UNIFORM",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xd12859599ac342b25054c052f41d700d847d98051cf6da6fc5bf96f2682ea83c": 0.33601,
+        "0x25a4e4d31688ecf42e3274adbe5a910aaa990772ede5ff4ebd70feeadf28e8d0": 0.33382,
+        "0x30a52886a0e96dae92c47569ad1269a32cd40e3042929dbbd089e0d6f9b7bf0d": 0.33265,
+        "0x00527f5148b77f82a64444a160866649e62090e4eb80c1161eed8aa39f09e91c": 0.33459,
+        "0x708ee407fe6ca6f6c5b794da8c1ccb9216a2eb9c1faf7a46334fe72c6bcd7120": 0.33155,
+        "0x249462a938cbe6a52529def81225af251185bb70ccb6f16b9d9b52566421c482": 0.33252,
+        "0xdcac73dd0650b0b2ace44d6c27dc535a8a933f65e202a31c24a7cd7cced38964": 0.33329,
+        "0x8c07456c7f50b2b5987c9c2f985e232dc19d604b98c09d5703ac6ac871b6ae11": 0.33356,
+        "0xf6b3c284c9a1b8285d804eebadf04252bb3a3bfbc9e7470a377e23d7155a1f89": 0.33213,
+        "0xa91e10a8e70a107fdd8b22512620271a36a7d402ed6eb9dc6ac470b8c0264cf7": 0.33058,
+        "0x36e1e0d31315c32ddb0d9934d962acf5894a489621d48e4243e1a56cd9d76bb6": 0.33495,
+        "0x1cafb0a1221e2b0806c62e7a4c5fd2a96af66691cd9103586b1e8fa999f2ae1d": 0.33435
+      },
+      "ownerExpectedSeats": {
+        "honest-uniform-0": 0.33601,
+        "honest-uniform-1": 0.33382,
+        "honest-uniform-2": 0.33265,
+        "honest-uniform-3": 0.33459,
+        "honest-uniform-4": 0.33155,
+        "honest-uniform-5": 0.33252,
+        "honest-uniform-6": 0.33329,
+        "honest-uniform-7": 0.33356,
+        "honest-uniform-8": 0.33213,
+        "honest-uniform-9": 0.33058,
+        "honest-uniform-10": 0.33495,
+        "honest-uniform-11": 0.33435
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.08333495950000003,
+      "winnerSetStability": 0.21940000352390676,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_UNIFORM",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xd12859599ac342b25054c052f41d700d847d98051cf6da6fc5bf96f2682ea83c": 0.33362,
+        "0x25a4e4d31688ecf42e3274adbe5a910aaa990772ede5ff4ebd70feeadf28e8d0": 0.33026,
+        "0x30a52886a0e96dae92c47569ad1269a32cd40e3042929dbbd089e0d6f9b7bf0d": 0.33682,
+        "0x00527f5148b77f82a64444a160866649e62090e4eb80c1161eed8aa39f09e91c": 0.33546,
+        "0x708ee407fe6ca6f6c5b794da8c1ccb9216a2eb9c1faf7a46334fe72c6bcd7120": 0.33326,
+        "0x249462a938cbe6a52529def81225af251185bb70ccb6f16b9d9b52566421c482": 0.33208,
+        "0xdcac73dd0650b0b2ace44d6c27dc535a8a933f65e202a31c24a7cd7cced38964": 0.33229,
+        "0x8c07456c7f50b2b5987c9c2f985e232dc19d604b98c09d5703ac6ac871b6ae11": 0.33292,
+        "0xf6b3c284c9a1b8285d804eebadf04252bb3a3bfbc9e7470a377e23d7155a1f89": 0.33204,
+        "0xa91e10a8e70a107fdd8b22512620271a36a7d402ed6eb9dc6ac470b8c0264cf7": 0.33253,
+        "0x36e1e0d31315c32ddb0d9934d962acf5894a489621d48e4243e1a56cd9d76bb6": 0.33374,
+        "0x1cafb0a1221e2b0806c62e7a4c5fd2a96af66691cd9103586b1e8fa999f2ae1d": 0.33498
+      },
+      "ownerExpectedSeats": {
+        "honest-uniform-0": 0.33362,
+        "honest-uniform-1": 0.33026,
+        "honest-uniform-2": 0.33682,
+        "honest-uniform-3": 0.33546,
+        "honest-uniform-4": 0.33326,
+        "honest-uniform-5": 0.33208,
+        "honest-uniform-6": 0.33229,
+        "honest-uniform-7": 0.33292,
+        "honest-uniform-8": 0.33204,
+        "honest-uniform-9": 0.33253,
+        "honest-uniform-10": 0.33374,
+        "honest-uniform-11": 0.33498
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.08333547318749998,
+      "winnerSetStability": 0.21836427888094762,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_LATENT_QUALITY",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 1,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 1,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 1,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 1
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0,
+        "latent-quality-1": 0,
+        "latent-quality-2": 0,
+        "latent-quality-3": 0,
+        "latent-quality-4": 0,
+        "latent-quality-5": 0,
+        "latent-quality-6": 0,
+        "latent-quality-7": 0,
+        "latent-quality-8": 1,
+        "latent-quality-9": 1,
+        "latent-quality-10": 1,
+        "latent-quality-11": 1
+      },
+      "meanSelectedQuality": 10.5,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.25,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_LATENT_QUALITY",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.33457,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.33459,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.33411,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.33188,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.33351,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.33427,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.33235,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.33381,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.33566,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.33207,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.32953,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.33365
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.33457,
+        "latent-quality-1": 0.33459,
+        "latent-quality-2": 0.33411,
+        "latent-quality-3": 0.33188,
+        "latent-quality-4": 0.33351,
+        "latent-quality-5": 0.33427,
+        "latent-quality-6": 0.33235,
+        "latent-quality-7": 0.33381,
+        "latent-quality-8": 0.33566,
+        "latent-quality-9": 0.33207,
+        "latent-quality-10": 0.32953,
+        "latent-quality-11": 0.33365
+      },
+      "meanSelectedQuality": 6.4934925,
+      "qualityRecovery": 0.6184278571428572,
+      "selectionConcentration": 0.0833351771875,
+      "winnerSetStability": 0.21855723319144607,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_LATENT_QUALITY",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.07957,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.11686,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.18844,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.21924,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.28635,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.32134,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.37599,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.40604,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.45673,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.48075,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.52522,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.54347
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.07957,
+        "latent-quality-1": 0.11686,
+        "latent-quality-2": 0.18844,
+        "latent-quality-3": 0.21924,
+        "latent-quality-4": 0.28635,
+        "latent-quality-5": 0.32134,
+        "latent-quality-6": 0.37599,
+        "latent-quality-7": 0.40604,
+        "latent-quality-8": 0.45673,
+        "latent-quality-9": 0.48075,
+        "latent-quality-10": 0.52522,
+        "latent-quality-11": 0.54347
+      },
+      "meanSelectedQuality": 8.053185,
+      "qualityRecovery": 0.7669699999999999,
+      "selectionConcentration": 0.10037466751250002,
+      "winnerSetStability": 0.27334920968257465,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_DENSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 1,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 1,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 1,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 1
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0,
+        "latent-quality-1": 0,
+        "latent-quality-2": 0,
+        "latent-quality-3": 0,
+        "latent-quality-4": 0,
+        "latent-quality-5": 0,
+        "latent-quality-6": 0,
+        "latent-quality-7": 0,
+        "latent-quality-8": 1,
+        "latent-quality-9": 1,
+        "latent-quality-10": 1,
+        "latent-quality-11": 1
+      },
+      "meanSelectedQuality": 10.5,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.25,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_DENSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.33462,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.33318,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.33278,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.33498,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.33471,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.33267,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.33469,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.33409,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.33187,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.33123,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.33383,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.33135
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.33462,
+        "latent-quality-1": 0.33318,
+        "latent-quality-2": 0.33278,
+        "latent-quality-3": 0.33498,
+        "latent-quality-4": 0.33471,
+        "latent-quality-5": 0.33267,
+        "latent-quality-6": 0.33469,
+        "latent-quality-7": 0.33409,
+        "latent-quality-8": 0.33187,
+        "latent-quality-9": 0.33123,
+        "latent-quality-10": 0.33383,
+        "latent-quality-11": 0.33135
+      },
+      "meanSelectedQuality": 6.492955,
+      "qualityRecovery": 0.6183766666666667,
+      "selectionConcentration": 0.08333459525,
+      "winnerSetStability": 0.218206086822839,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_DENSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.07972,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.11605,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.18812,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.2239,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.2877,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.31664,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.37747,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.40519,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.45763,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.47993,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.52349,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.54416
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.07972,
+        "latent-quality-1": 0.11605,
+        "latent-quality-2": 0.18812,
+        "latent-quality-3": 0.2239,
+        "latent-quality-4": 0.2877,
+        "latent-quality-5": 0.31664,
+        "latent-quality-6": 0.37747,
+        "latent-quality-7": 0.40519,
+        "latent-quality-8": 0.45763,
+        "latent-quality-9": 0.47993,
+        "latent-quality-10": 0.52349,
+        "latent-quality-11": 0.54416
+      },
+      "meanSelectedQuality": 8.0500525,
+      "qualityRecovery": 0.7666716666666666,
+      "selectionConcentration": 0.10030924058749999,
+      "winnerSetStability": 0.2728363474110935,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_SPARSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 1,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 1,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 1,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 1
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0,
+        "latent-quality-1": 0,
+        "latent-quality-2": 0,
+        "latent-quality-3": 0,
+        "latent-quality-4": 0,
+        "latent-quality-5": 0,
+        "latent-quality-6": 0,
+        "latent-quality-7": 0,
+        "latent-quality-8": 1,
+        "latent-quality-9": 1,
+        "latent-quality-10": 1,
+        "latent-quality-11": 1
+      },
+      "meanSelectedQuality": 10.5,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.25,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_SPARSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.33241,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.33432,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.33156,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.33384,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.33313,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.3341,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.33515,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.33471,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.33096,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.33501,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.33235,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.33246
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.33241,
+        "latent-quality-1": 0.33432,
+        "latent-quality-2": 0.33156,
+        "latent-quality-3": 0.33384,
+        "latent-quality-4": 0.33313,
+        "latent-quality-5": 0.3341,
+        "latent-quality-6": 0.33515,
+        "latent-quality-7": 0.33471,
+        "latent-quality-8": 0.33096,
+        "latent-quality-9": 0.33501,
+        "latent-quality-10": 0.33235,
+        "latent-quality-11": 0.33246
+      },
+      "meanSelectedQuality": 6.499795,
+      "qualityRecovery": 0.6190280952380952,
+      "selectionConcentration": 0.0833346599375,
+      "winnerSetStability": 0.21876333049051291,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_SPARSE_COMMUNITY",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2f00a7b74e14b2388a752faa7b6e1e7536084206136bd639a745bf00ca420b9b": 0.07754,
+        "0x57096be668001a2b6837ae02e02db7cd930ed2d217c62df4237acdee7b159f6c": 0.11612,
+        "0x397b7650fc18a55fd002645380824b1777482a6189ad9c6cd810ed84883068a3": 0.19005,
+        "0x835a3b0632a2b4a5d36f7cb1a8fdc4be4051e0d27a9a75a4682ec1e988de7554": 0.22236,
+        "0xc8b00c4bd5f83dbe2563d77f4382621ab4d6970bcb30092a44c1feab2a3e699f": 0.28764,
+        "0x92fa14c8caa7f84ac3726b8980c60e88c45f170da80e84aecbe361a54e37f0dc": 0.32012,
+        "0x9350974b022f031e62ef1377d01197326f1e0edaa4e118af3dffecde079d8336": 0.37443,
+        "0xa8713bd6ea61a50e0fe0da72892ebb6e98f0037922bdae4ac9a314dbe834897b": 0.40535,
+        "0x6472edc6c96b96af85a0d9c7637b3e2f007b80aec4b87e5ec47d0626ac14ca79": 0.45664,
+        "0x3ce6134840f3c1ff284a05269b9e676cf1c7b413a2fec96f0254955ec9fd1319": 0.48004,
+        "0xdc9acb4cd67d2fbc40679049e5aaf8ec2b1b0d772a73ad7d765a1259ff1dd911": 0.52224,
+        "0xfc1a25b5b3662bb688a6d1a6a342e35ab9a18dfad7ec4a737cef4fbb31f8846e": 0.54747
+      },
+      "ownerExpectedSeats": {
+        "latent-quality-0": 0.07754,
+        "latent-quality-1": 0.11612,
+        "latent-quality-2": 0.19005,
+        "latent-quality-3": 0.22236,
+        "latent-quality-4": 0.28764,
+        "latent-quality-5": 0.32012,
+        "latent-quality-6": 0.37443,
+        "latent-quality-7": 0.40535,
+        "latent-quality-8": 0.45664,
+        "latent-quality-9": 0.48004,
+        "latent-quality-10": 0.52224,
+        "latent-quality-11": 0.54747
+      },
+      "meanSelectedQuality": 8.054135,
+      "qualityRecovery": 0.7670604761904762,
+      "selectionConcentration": 0.1003872387,
+      "winnerSetStability": 0.27249243921010635,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_POPULARITY_SKEW",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 1,
+        "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 1,
+        "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 1,
+        "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 1,
+        "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0,
+        "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0,
+        "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0,
+        "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0,
+        "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0,
+        "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0
+      },
+      "ownerExpectedSeats": {
+        "popularity-skew-0": 1,
+        "popularity-skew-1": 1,
+        "popularity-skew-2": 1,
+        "popularity-skew-3": 1,
+        "popularity-skew-4": 0,
+        "popularity-skew-5": 0,
+        "popularity-skew-6": 0,
+        "popularity-skew-7": 0,
+        "popularity-skew-8": 0,
+        "popularity-skew-9": 0
+      },
+      "meanSelectedQuality": 8.5,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.25,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_POPULARITY_SKEW",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 0.39923,
+        "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 0.4007,
+        "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 0.39663,
+        "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 0.40199,
+        "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0.39978,
+        "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0.40165,
+        "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0.40032,
+        "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0.40149,
+        "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0.39988,
+        "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0.39833
+      },
+      "ownerExpectedSeats": {
+        "popularity-skew-0": 0.39923,
+        "popularity-skew-1": 0.4007,
+        "popularity-skew-2": 0.39663,
+        "popularity-skew-3": 0.40199,
+        "popularity-skew-4": 0.39978,
+        "popularity-skew-5": 0.40165,
+        "popularity-skew-6": 0.40032,
+        "popularity-skew-7": 0.40149,
+        "popularity-skew-8": 0.39988,
+        "popularity-skew-9": 0.39833
+      },
+      "meanSelectedQuality": 5.499085,
+      "qualityRecovery": 0.6469511764705882,
+      "selectionConcentration": 0.10000151853750001,
+      "winnerSetStability": 0.2709849955642443,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_POPULARITY_SKEW",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 0.89739,
+        "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 0.75277,
+        "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 0.60667,
+        "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 0.50167,
+        "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0.36407,
+        "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0.28517,
+        "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0.19527,
+        "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0.14901,
+        "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0.14809,
+        "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0.09989
+      },
+      "ownerExpectedSeats": {
+        "popularity-skew-0": 0.89739,
+        "popularity-skew-1": 0.75277,
+        "popularity-skew-2": 0.60667,
+        "popularity-skew-3": 0.50167,
+        "popularity-skew-4": 0.36407,
+        "popularity-skew-5": 0.28517,
+        "popularity-skew-6": 0.19527,
+        "popularity-skew-7": 0.14901,
+        "popularity-skew-8": 0.14809,
+        "popularity-skew-9": 0.09989
+      },
+      "meanSelectedQuality": 7.3370825,
+      "qualityRecovery": 0.8631861764705883,
+      "selectionConcentration": 0.1436127918625001,
+      "winnerSetStability": 0.429032576039856,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_NEWCOMER_SUPPORT",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xf67737a6bde7b11dfa4172e2ddd92cbb03d7d509c623d235715b1a12cfe4fb98": 1,
+        "0x32ead31082a40f399a3dbb943de78f24540b965096105a0a9a7793a1f31d97ce": 0.49972,
+        "0xb101ec9d8308e558bf94d54121b7d12962f582584bdafe32ace6bd7909a44cbe": 0,
+        "0x1cbeb61faa5f90551be961936410a2cd80b5561ef8f2e87315af8bf4b73d3846": 0.49913,
+        "0xb3b4884785df8c474e91568bd98b76d850e5362c59c75ea41826574cd09ba01f": 0,
+        "0x7f082cf087c46e8784b9e054724c83894efa65a611b2b11a088cd1b78556a579": 0.50054,
+        "0xdbd9b535ec0cbdeea694c317a6cdf3ee4a45b895dde7a4f680b5ebbc67925ce5": 0,
+        "0x47005937fb93c40ab757365347460a9a0cca4b56d526907fc21005aa007fa764": 0.50061
+      },
+      "ownerExpectedSeats": {
+        "newcomer": 1,
+        "newcomer-established-0": 0.49972,
+        "newcomer-established-1": 0,
+        "newcomer-established-2": 0.49913,
+        "newcomer-established-3": 0,
+        "newcomer-established-4": 0.50054,
+        "newcomer-established-5": 0,
+        "newcomer-established-6": 0.50061
+      },
+      "meanSelectedQuality": 8.00136,
+      "qualityRecovery": 0.8277268965517242,
+      "selectionConcentration": 0.22222238877777778,
+      "winnerSetStability": 0.5337363373632347,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_NEWCOMER_SUPPORT",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xf67737a6bde7b11dfa4172e2ddd92cbb03d7d509c623d235715b1a12cfe4fb98": 0.6007,
+        "0x32ead31082a40f399a3dbb943de78f24540b965096105a0a9a7793a1f31d97ce": 0.59976,
+        "0xb101ec9d8308e558bf94d54121b7d12962f582584bdafe32ace6bd7909a44cbe": 0,
+        "0x1cbeb61faa5f90551be961936410a2cd80b5561ef8f2e87315af8bf4b73d3846": 0.60238,
+        "0xb3b4884785df8c474e91568bd98b76d850e5362c59c75ea41826574cd09ba01f": 0,
+        "0x7f082cf087c46e8784b9e054724c83894efa65a611b2b11a088cd1b78556a579": 0.60073,
+        "0xdbd9b535ec0cbdeea694c317a6cdf3ee4a45b895dde7a4f680b5ebbc67925ce5": 0,
+        "0x47005937fb93c40ab757365347460a9a0cca4b56d526907fc21005aa007fa764": 0.59643
+      },
+      "ownerExpectedSeats": {
+        "newcomer": 0.6007,
+        "newcomer-established-0": 0.59976,
+        "newcomer-established-1": 0,
+        "newcomer-established-2": 0.60238,
+        "newcomer-established-3": 0,
+        "newcomer-established-4": 0.60073,
+        "newcomer-established-5": 0,
+        "newcomer-established-6": 0.59643
+      },
+      "meanSelectedQuality": 7.59682,
+      "qualityRecovery": 0.7858779310344828,
+      "selectionConcentration": 0.20000216553333336,
+      "winnerSetStability": 0.46079660796594013,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "HONEST_NEWCOMER_SUPPORT",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0xf67737a6bde7b11dfa4172e2ddd92cbb03d7d509c623d235715b1a12cfe4fb98": 0.61774,
+        "0x32ead31082a40f399a3dbb943de78f24540b965096105a0a9a7793a1f31d97ce": 0.59639,
+        "0xb101ec9d8308e558bf94d54121b7d12962f582584bdafe32ace6bd7909a44cbe": 0,
+        "0x1cbeb61faa5f90551be961936410a2cd80b5561ef8f2e87315af8bf4b73d3846": 0.59633,
+        "0xb3b4884785df8c474e91568bd98b76d850e5362c59c75ea41826574cd09ba01f": 0,
+        "0x7f082cf087c46e8784b9e054724c83894efa65a611b2b11a088cd1b78556a579": 0.59476,
+        "0xdbd9b535ec0cbdeea694c317a6cdf3ee4a45b895dde7a4f680b5ebbc67925ce5": 0,
+        "0x47005937fb93c40ab757365347460a9a0cca4b56d526907fc21005aa007fa764": 0.59478
+      },
+      "ownerExpectedSeats": {
+        "newcomer": 0.61774,
+        "newcomer-established-0": 0.59639,
+        "newcomer-established-1": 0,
+        "newcomer-established-2": 0.59633,
+        "newcomer-established-3": 0,
+        "newcomer-established-4": 0.59476,
+        "newcomer-established-5": 0,
+        "newcomer-established-6": 0.59478
+      },
+      "meanSelectedQuality": 7.615606666666666,
+      "qualityRecovery": 0.7878213793103449,
+      "selectionConcentration": 0.20004399051111107,
+      "winnerSetStability": 0.45971659716583607,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SPLIT_BASELINE",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 1,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.50216,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.49949,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.49926,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.49909,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0
+      },
+      "ownerExpectedSeats": {
+        "coalition": 1,
+        "split-honest-0": 0.50216,
+        "split-honest-1": 0.49949,
+        "split-honest-2": 0.49926,
+        "split-honest-3": 0.49909,
+        "split-honest-4": 0,
+        "split-honest-5": 0
+      },
+      "meanSelectedQuality": 4,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.22222292237777785,
+      "winnerSetStability": 0.534233342333288,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SPLIT_BASELINE",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 0.42881,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.42609,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.42965,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.42812,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.42923,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0.42919,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0.42891
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.42881,
+        "split-honest-0": 0.42609,
+        "split-honest-1": 0.42965,
+        "split-honest-2": 0.42812,
+        "split-honest-3": 0.42923,
+        "split-honest-4": 0.42919,
+        "split-honest-5": 0.42891
+      },
+      "meanSelectedQuality": 2.28643,
+      "qualityRecovery": 0.5716075,
+      "selectionConcentration": 0.1428580886888889,
+      "winnerSetStability": 0.30349703497060526,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SPLIT_BASELINE",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 0.7569,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.38932,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.38832,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.39086,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.38985,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0.3416,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0.34315
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.7569,
+        "split-honest-0": 0.38932,
+        "split-honest-1": 0.38832,
+        "split-honest-2": 0.39086,
+        "split-honest-3": 0.38985,
+        "split-honest-4": 0.3416,
+        "split-honest-5": 0.34315
+      },
+      "meanSelectedQuality": 3.2707,
+      "qualityRecovery": 0.817675,
+      "selectionConcentration": 0.15716190437777777,
+      "winnerSetStability": 0.33950639506413655,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CANDIDATE_SPLITTING",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 1,
+        "0x5ad2182266226c422ed09bf671872a0b9d6efb02794116c4fb188c8e56d4cb27": 0,
+        "0x87588750407a25756faf64b98bc7f169da34270c3a6a40a1b08927ce449a892c": 0,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.50355,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.50124,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.49759,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.49762,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0
+      },
+      "ownerExpectedSeats": {
+        "coalition": 1,
+        "split-honest-0": 0.50355,
+        "split-honest-1": 0.50124,
+        "split-honest-2": 0.49759,
+        "split-honest-3": 0.49762,
+        "split-honest-4": 0,
+        "split-honest-5": 0
+      },
+      "meanSelectedQuality": 4,
+      "qualityRecovery": 0.4,
+      "selectionConcentration": 0.22222506806666661,
+      "winnerSetStability": 0.5333483334832038,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CANDIDATE_SPLITTING",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 0.42691,
+        "0x5ad2182266226c422ed09bf671872a0b9d6efb02794116c4fb188c8e56d4cb27": 0,
+        "0x87588750407a25756faf64b98bc7f169da34270c3a6a40a1b08927ce449a892c": 0,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.42951,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.42855,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.43073,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.42843,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0.43083,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0.42504
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.42691,
+        "split-honest-0": 0.42951,
+        "split-honest-1": 0.42855,
+        "split-honest-2": 0.43073,
+        "split-honest-3": 0.42843,
+        "split-honest-4": 0.43083,
+        "split-honest-5": 0.42504
+      },
+      "meanSelectedQuality": 2.28073,
+      "qualityRecovery": 0.22807300000000003,
+      "selectionConcentration": 0.14286001988888888,
+      "winnerSetStability": 0.30240902409049586,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CANDIDATE_SPLITTING",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x61732cca81953d6354f8cf692ab58dcd1c3b8bc53e2eefdef64cfd25c43560e1": 0.76114,
+        "0x5ad2182266226c422ed09bf671872a0b9d6efb02794116c4fb188c8e56d4cb27": 0,
+        "0x87588750407a25756faf64b98bc7f169da34270c3a6a40a1b08927ce449a892c": 0,
+        "0x0e483e7d35366fe294a2f37b6baa0c9904bd410940a27aa87548b2cd3ebe08cc": 0.39195,
+        "0x9b3992514f473a5bdc15ea00ce377ed1e292abe9a18937a77dcf3b8e7f6329e2": 0.38748,
+        "0x5fae16e0206133212ad007d53c7b4f6f6f6de00cadaa0890d6777407cbadeb2b": 0.38836,
+        "0xe718d221c2dc5790d8a7e38adbd6e783504e5681945324436fe51f9e6e331022": 0.39222,
+        "0x6c82d0588db6b659fccca574fd8d14f6fa4f53e29a39b59e9493976d425b48ed": 0.34026,
+        "0xefcd9813f1a5ea6b47d04bceaa5a2430419e387d5a8a38e2ae588e968210271a": 0.33859
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.76114,
+        "split-honest-0": 0.39195,
+        "split-honest-1": 0.38748,
+        "split-honest-2": 0.38836,
+        "split-honest-3": 0.39222,
+        "split-honest-4": 0.34026,
+        "split-honest-5": 0.33859
+      },
+      "meanSelectedQuality": 3.28342,
+      "qualityRecovery": 0.328342,
+      "selectionConcentration": 0.15757552513333334,
+      "winnerSetStability": 0.33943039430413263,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYBIL_BASELINE",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 0,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.33367,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.33349,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.33326,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.33418,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.33308,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.33232
+      },
+      "ownerExpectedSeats": {
+        "attacker": 0,
+        "sybil-honest-0": 0.33367,
+        "sybil-honest-1": 0.33349,
+        "sybil-honest-2": 0.33326,
+        "sybil-honest-3": 0.33418,
+        "sybil-honest-4": 0.33308,
+        "sybil-honest-5": 0.33232
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.16666715445,
+      "winnerSetStability": 0.24509911765771517,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYBIL_BASELINE",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 0,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.33352,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.33504,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.3331,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.33327,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.3319,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.33317
+      },
+      "ownerExpectedSeats": {
+        "attacker": 0,
+        "sybil-honest-0": 0.33352,
+        "sybil-honest-1": 0.33504,
+        "sybil-honest-2": 0.3331,
+        "sybil-honest-3": 0.33327,
+        "sybil-honest-4": 0.3319,
+        "sybil-honest-5": 0.33317
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.16666793845,
+      "winnerSetStability": 0.24536578699107622,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYBIL_BASELINE",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 0.04423,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.32725,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.32683,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.32488,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.329,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.32173,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.32608
+      },
+      "ownerExpectedSeats": {
+        "attacker": 0.04423,
+        "sybil-honest-0": 0.32725,
+        "sybil-honest-1": 0.32683,
+        "sybil-honest-2": 0.32488,
+        "sybil-honest-3": 0.329,
+        "sybil-honest-4": 0.32173,
+        "sybil-honest-5": 0.32608
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.1598732695,
+      "winnerSetStability": 0.23363566968992985,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "ELIGIBLE_SYBIL_CLUSTER",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 1,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.16723,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.16617,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.1653,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.16684,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.16498,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.16948
+      },
+      "ownerExpectedSeats": {
+        "attacker": 1,
+        "sybil-honest-0": 0.16723,
+        "sybil-honest-1": 0.16617,
+        "sybil-honest-2": 0.1653,
+        "sybil-honest-3": 0.16684,
+        "sybil-honest-4": 0.16498,
+        "sybil-honest-5": 0.16948
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.29166997205,
+      "winnerSetStability": 0.443341100077896,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "ELIGIBLE_SYBIL_CLUSTER",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 0.28691,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.28598,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.28272,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.28606,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.28629,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.28776,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.28428
+      },
+      "ownerExpectedSeats": {
+        "attacker": 0.28691,
+        "sybil-honest-0": 0.28598,
+        "sybil-honest-1": 0.28272,
+        "sybil-honest-2": 0.28606,
+        "sybil-honest-3": 0.28629,
+        "sybil-honest-4": 0.28776,
+        "sybil-honest-5": 0.28428
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.14286143264999998,
+      "winnerSetStability": 0.2063287299539401,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "ELIGIBLE_SYBIL_CLUSTER",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x93d11fa87875c99592df98eb9067407434c85cc921ccecb53a5210bf514c0736": 0.36331,
+        "0xa1ae73e0e343a3e7810a630cf0fd905985d2eba8011ebd7ed15190017c3fce51": 0.27227,
+        "0xa8a82bc58d4e9ae8e0b67f99a11a86fa71afc0b838c1a0d174ba7db3613b376d": 0.27379,
+        "0x20a78fd780e4218db3b086be9032b5770a0d8a000612ac49182e944f7f292889": 0.27343,
+        "0xfe0d5db89b847a5887842b8ba46d0a6ef765de43257321e64e5247771c623ec8": 0.27186,
+        "0xe09a05300e559b0ab89496a4837f5249d3bad9a59932e92d59336726c4896bc4": 0.27346,
+        "0x91e8f7a5b59807229a7857911e18ca3d067158e3b19f86221e53643f8c1aac5f": 0.27188
+      },
+      "ownerExpectedSeats": {
+        "attacker": 0.36331,
+        "sybil-honest-0": 0.27227,
+        "sybil-honest-1": 0.27379,
+        "sybil-honest-2": 0.27343,
+        "sybil-honest-3": 0.27186,
+        "sybil-honest-4": 0.27346,
+        "sybil-honest-5": 0.27188
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.1446142509,
+      "winnerSetStability": 0.2086954202875018,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_TRUTHFUL",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 1,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 1,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0
+      },
+      "ownerExpectedSeats": {
+        "selectors": 2,
+        "recipient": 0,
+        "overlap-background-0": 0,
+        "overlap-background-1": 0,
+        "overlap-background-2": 0,
+        "overlap-background-3": 0
+      },
+      "meanSelectedQuality": 8.5,
+      "qualityRecovery": 0.8947368421052632,
+      "selectionConcentration": 0.5,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_TRUTHFUL",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 0.28494,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 0.28561,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0.28762,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0.28607,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0.28371,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0.28788,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0.28417
+      },
+      "ownerExpectedSeats": {
+        "selectors": 0.57055,
+        "recipient": 0.28762,
+        "overlap-background-0": 0.28607,
+        "overlap-background-1": 0.28371,
+        "overlap-background-2": 0.28788,
+        "overlap-background-3": 0.28417
+      },
+      "meanSelectedQuality": 4.433685,
+      "qualityRecovery": 0.46670368421052627,
+      "selectionConcentration": 0.14286100810000002,
+      "winnerSetStability": 0.2066687333539733,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_TRUTHFUL",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 0.37359,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 0.33575,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0.08966,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0.29879,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0.3004,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0.30095,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0.30086
+      },
+      "ownerExpectedSeats": {
+        "selectors": 0.70934,
+        "recipient": 0.08966,
+        "overlap-background-0": 0.29879,
+        "overlap-background-1": 0.3004,
+        "overlap-background-2": 0.30095,
+        "overlap-background-3": 0.30086
+      },
+      "meanSelectedQuality": 4.072955,
+      "qualityRecovery": 0.4287321052631579,
+      "selectionConcentration": 0.15523493309999997,
+      "winnerSetStability": 0.2250522505224283,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_WEAK_CANDIDATE",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 1,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 1,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0
+      },
+      "ownerExpectedSeats": {
+        "selectors": 2,
+        "recipient": 0,
+        "overlap-background-0": 0,
+        "overlap-background-1": 0,
+        "overlap-background-2": 0,
+        "overlap-background-3": 0
+      },
+      "meanSelectedQuality": 8.5,
+      "qualityRecovery": 0.8947368421052632,
+      "selectionConcentration": 0.5,
+      "winnerSetStability": 1,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_WEAK_CANDIDATE",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 0.28303,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 0.28618,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0.28488,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0.287,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0.28665,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0.28773,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0.28453
+      },
+      "ownerExpectedSeats": {
+        "selectors": 0.56921,
+        "recipient": 0.28488,
+        "overlap-background-0": 0.287,
+        "overlap-background-1": 0.28665,
+        "overlap-background-2": 0.28773,
+        "overlap-background-3": 0.28453
+      },
+      "meanSelectedQuality": 3.13375,
+      "qualityRecovery": 0.3298684210526316,
+      "selectionConcentration": 0.14286117099999998,
+      "winnerSetStability": 0.2066320663206332,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "OVERLAP_WEAK_CANDIDATE",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x520dd796727dfd62a310ddf7093452822db53a6f6a1655bb218d420c9750c43a": 0.37143,
+        "0x057490cf3a6c1b8c91d92fcc605b3c63edd99b1d7a8e10424cbaf452a80cb5bf": 0.33781,
+        "0x0da68c57f1d7da1417a7c74002a35ba05e63c9f4e64e2eaf15578e51ee2b92f7": 0,
+        "0xc5750f8c51d500e87d04e740be3e9e78c7b1822de2ed10635d4b3f6972bf2ab5": 0.0917,
+        "0xf000ebfe328f78dc85b04fce3d94a7e9651d0b6e1e84b25cc3f481d73884c37e": 0.29945,
+        "0x9d0a6f9aa5029026271a844768068e11376b6d3738319cec1bbabefd921727f8": 0.30177,
+        "0xd175b7aa004cd0930b30d45d6f066e5c870a7e8eb9d05a20761933a885591030": 0.29843,
+        "0x14db9c1acfcb8c9dd70bc71dd8a717f9c4d4faba8245e047bb8e068587f1382a": 0.29941
+      },
+      "ownerExpectedSeats": {
+        "selectors": 0.70924,
+        "recipient": 0.0917,
+        "overlap-background-0": 0.29945,
+        "overlap-background-1": 0.30177,
+        "overlap-background-2": 0.29843,
+        "overlap-background-3": 0.29941
+      },
+      "meanSelectedQuality": 3.668055,
+      "qualityRecovery": 0.3861110526315789,
+      "selectionConcentration": 0.15498174485000005,
+      "winnerSetStability": 0.22538225382246052,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "DIRECT_RECIPROCITY_REJECTED",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x14b67d5f265fa4d25edd20f4c5a3b354e1807ff35927a9ab73b2cf665bd2b831": 0,
+        "0xe6a3e2dcdcb4940565d41d22758d108aa15748cbe6e3cd05dda067772b2c4484": 0,
+        "0x95f953081197b94dcf8cb1cf63f56889a980ff3c98cc7d1c10140637dd30ee18": 0.40049,
+        "0x2c116e7bbf7ee49084bad418c9eea02ce5954d4d9c5bad93c201cefaf48afd5d": 0.4019,
+        "0xe2f3dcaf607a610eb8e6358fc1917e65f8d658237432763f21096fb9ff9a2306": 0.39863,
+        "0x708f8695966491b945630f95172af64dd8048cdbc8d930fcdc8e0fca6a6410ca": 0.39986,
+        "0x2d1128e43cc47ef39962f0c4f1e2cd661acc7b87bab3efb16728b2e4bde8c33c": 0.39912
+      },
+      "ownerExpectedSeats": {
+        "reciprocal-pair": 0,
+        "reciprocity-honest-0": 0.40049,
+        "reciprocity-honest-1": 0.4019,
+        "reciprocity-honest-2": 0.39863,
+        "reciprocity-honest-3": 0.39986,
+        "reciprocity-honest-4": 0.39912
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.20000163025,
+      "winnerSetStability": 0.2981129811295656,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "DIRECT_RECIPROCITY_REJECTED",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x14b67d5f265fa4d25edd20f4c5a3b354e1807ff35927a9ab73b2cf665bd2b831": 0,
+        "0xe6a3e2dcdcb4940565d41d22758d108aa15748cbe6e3cd05dda067772b2c4484": 0,
+        "0x95f953081197b94dcf8cb1cf63f56889a980ff3c98cc7d1c10140637dd30ee18": 0.40231,
+        "0x2c116e7bbf7ee49084bad418c9eea02ce5954d4d9c5bad93c201cefaf48afd5d": 0.39947,
+        "0xe2f3dcaf607a610eb8e6358fc1917e65f8d658237432763f21096fb9ff9a2306": 0.39938,
+        "0x708f8695966491b945630f95172af64dd8048cdbc8d930fcdc8e0fca6a6410ca": 0.39913,
+        "0x2d1128e43cc47ef39962f0c4f1e2cd661acc7b87bab3efb16728b2e4bde8c33c": 0.39971
+      },
+      "ownerExpectedSeats": {
+        "reciprocal-pair": 0,
+        "reciprocity-honest-0": 0.40231,
+        "reciprocity-honest-1": 0.39947,
+        "reciprocity-honest-2": 0.39938,
+        "reciprocity-honest-3": 0.39913,
+        "reciprocity-honest-4": 0.39971
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.2000017106,
+      "winnerSetStability": 0.29967299672971753,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "DIRECT_RECIPROCITY_REJECTED",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x14b67d5f265fa4d25edd20f4c5a3b354e1807ff35927a9ab73b2cf665bd2b831": 0,
+        "0xe6a3e2dcdcb4940565d41d22758d108aa15748cbe6e3cd05dda067772b2c4484": 0.07149,
+        "0x95f953081197b94dcf8cb1cf63f56889a980ff3c98cc7d1c10140637dd30ee18": 0.38701,
+        "0x2c116e7bbf7ee49084bad418c9eea02ce5954d4d9c5bad93c201cefaf48afd5d": 0.38646,
+        "0xe2f3dcaf607a610eb8e6358fc1917e65f8d658237432763f21096fb9ff9a2306": 0.38539,
+        "0x708f8695966491b945630f95172af64dd8048cdbc8d930fcdc8e0fca6a6410ca": 0.38521,
+        "0x2d1128e43cc47ef39962f0c4f1e2cd661acc7b87bab3efb16728b2e4bde8c33c": 0.38444
+      },
+      "ownerExpectedSeats": {
+        "reciprocal-pair": 0.07149,
+        "reciprocity-honest-0": 0.38701,
+        "reciprocity-honest-1": 0.38646,
+        "reciprocity-honest-2": 0.38539,
+        "reciprocity-honest-3": 0.38521,
+        "reciprocity-honest-4": 0.38444
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.1872363004,
+      "winnerSetStability": 0.27920279202771575,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SHORT_CYCLE_REVIEW_ONLY",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2b002736ccf5af5ae1cd35622bbdd3d41b2efe088541c8d37d892671d9366ca2": 0,
+        "0x57c2052122255d3316d99cb877c9bc3c3e26281b6e5250e572b0d4871932fc0d": 0,
+        "0xa1fd44c65c2392febed7db373c383e22fcdd5813e5e4e6bec84db381e987367c": 0,
+        "0x76f3786f913d9a7d95c0f4ee5eb52bc5595ec312c4325b1a8357fe4f889e6990": 0.40051,
+        "0x69f82a4b90034486a3c7c3eb3841acbc901687cc5e3e8794ec17cd1f6c660871": 0.39927,
+        "0xfeb33b4a3ebf39ab4e9be51edb010124bad0852401f337713379858e0d5407a1": 0.40018,
+        "0x2aaec08bf019be0683ed73850d407e30ff32d9ec95f2e5c4462f565d734cdf38": 0.39753,
+        "0x46091656757e8327b9f771f17f2af1e2eafc96c49bd706ac6b429a5f0369d67b": 0.40251
+      },
+      "ownerExpectedSeats": {
+        "cycle": 0,
+        "cycle-honest-0": 0.40051,
+        "cycle-honest-1": 0.39927,
+        "cycle-honest-2": 0.40018,
+        "cycle-honest-3": 0.39753,
+        "cycle-honest-4": 0.40251
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.20000330660000007,
+      "winnerSetStability": 0.2976963102961927,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SHORT_CYCLE_REVIEW_ONLY",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2b002736ccf5af5ae1cd35622bbdd3d41b2efe088541c8d37d892671d9366ca2": 0,
+        "0x57c2052122255d3316d99cb877c9bc3c3e26281b6e5250e572b0d4871932fc0d": 0,
+        "0xa1fd44c65c2392febed7db373c383e22fcdd5813e5e4e6bec84db381e987367c": 0,
+        "0x76f3786f913d9a7d95c0f4ee5eb52bc5595ec312c4325b1a8357fe4f889e6990": 0.40048,
+        "0x69f82a4b90034486a3c7c3eb3841acbc901687cc5e3e8794ec17cd1f6c660871": 0.39914,
+        "0xfeb33b4a3ebf39ab4e9be51edb010124bad0852401f337713379858e0d5407a1": 0.40075,
+        "0x2aaec08bf019be0683ed73850d407e30ff32d9ec95f2e5c4462f565d734cdf38": 0.39833,
+        "0x46091656757e8327b9f771f17f2af1e2eafc96c49bd706ac6b429a5f0369d67b": 0.4013
+      },
+      "ownerExpectedSeats": {
+        "cycle": 0,
+        "cycle-honest-0": 0.40048,
+        "cycle-honest-1": 0.39914,
+        "cycle-honest-2": 0.40075,
+        "cycle-honest-3": 0.39833,
+        "cycle-honest-4": 0.4013
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.20000150285,
+      "winnerSetStability": 0.2993296599630159,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SHORT_CYCLE_REVIEW_ONLY",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x2b002736ccf5af5ae1cd35622bbdd3d41b2efe088541c8d37d892671d9366ca2": 0.06622,
+        "0x57c2052122255d3316d99cb877c9bc3c3e26281b6e5250e572b0d4871932fc0d": 0.06548,
+        "0xa1fd44c65c2392febed7db373c383e22fcdd5813e5e4e6bec84db381e987367c": 0.06494,
+        "0x76f3786f913d9a7d95c0f4ee5eb52bc5595ec312c4325b1a8357fe4f889e6990": 0.36153,
+        "0x69f82a4b90034486a3c7c3eb3841acbc901687cc5e3e8794ec17cd1f6c660871": 0.3595,
+        "0xfeb33b4a3ebf39ab4e9be51edb010124bad0852401f337713379858e0d5407a1": 0.36234,
+        "0x2aaec08bf019be0683ed73850d407e30ff32d9ec95f2e5c4462f565d734cdf38": 0.36122,
+        "0x46091656757e8327b9f771f17f2af1e2eafc96c49bd706ac6b429a5f0369d67b": 0.35877
+      },
+      "ownerExpectedSeats": {
+        "cycle": 0.19663999999999998,
+        "cycle-honest-0": 0.36153,
+        "cycle-honest-1": 0.3595,
+        "cycle-honest-2": 0.36234,
+        "cycle-honest-3": 0.36122,
+        "cycle-honest-4": 0.35877
+      },
+      "meanSelectedQuality": 1,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.16583004755000005,
+      "winnerSetStability": 0.24399243992427458,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "REPEATED_COALITION",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 1,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 1,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.16821,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.1671,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.1657,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.16672,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.16721,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.16506
+      },
+      "ownerExpectedSeats": {
+        "coalition": 2,
+        "coalition-honest-0": 0.16821,
+        "coalition-honest-1": 0.1671,
+        "coalition-honest-2": 0.1657,
+        "coalition-honest-3": 0.16672,
+        "coalition-honest-4": 0.16721,
+        "coalition-honest-5": 0.16506
+      },
+      "meanSelectedQuality": 1.6666666666666667,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.24074145002222208,
+      "winnerSetStability": 0.5829208292082921,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "REPEATED_COALITION",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.37481,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.37645,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.37345,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.3747,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.37256,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.37752,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.37613,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.37438
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.75126,
+        "coalition-honest-0": 0.37345,
+        "coalition-honest-1": 0.3747,
+        "coalition-honest-2": 0.37256,
+        "coalition-honest-3": 0.37752,
+        "coalition-honest-4": 0.37613,
+        "coalition-honest-5": 0.37438
+      },
+      "meanSelectedQuality": 1.25042,
+      "qualityRecovery": 0.750252,
+      "selectionConcentration": 0.12500206626666666,
+      "winnerSetStability": 0.25845158451609124,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "REPEATED_COALITION",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.47354,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.4738,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.34225,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.34376,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.34165,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.34074,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.34175,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.34251
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.9473400000000001,
+        "coalition-honest-0": 0.34225,
+        "coalition-honest-1": 0.34376,
+        "coalition-honest-2": 0.34165,
+        "coalition-honest-3": 0.34074,
+        "coalition-honest-4": 0.34175,
+        "coalition-honest-5": 0.34251
+      },
+      "meanSelectedQuality": 1.31578,
+      "qualityRecovery": 0.789468,
+      "selectionConcentration": 0.12788524493333334,
+      "winnerSetStability": 0.26651066510689897,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYNCHRONIZED_TEMPORAL_BURST",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 1,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 1,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.16737,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.16511,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.16565,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.16814,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.16796,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.16577
+      },
+      "ownerExpectedSeats": {
+        "coalition": 2,
+        "coalition-honest-0": 0.16737,
+        "coalition-honest-1": 0.16511,
+        "coalition-honest-2": 0.16565,
+        "coalition-honest-3": 0.16814,
+        "coalition-honest-4": 0.16796,
+        "coalition-honest-5": 0.16577
+      },
+      "meanSelectedQuality": 1.6666666666666667,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.24074169617777777,
+      "winnerSetStability": 0.5835358353583536,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYNCHRONIZED_TEMPORAL_BURST",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.37612,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.3741,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.37474,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.37478,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.37758,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.37338,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.37522,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.37408
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.75022,
+        "coalition-honest-0": 0.37474,
+        "coalition-honest-1": 0.37478,
+        "coalition-honest-2": 0.37758,
+        "coalition-honest-3": 0.37338,
+        "coalition-honest-4": 0.37522,
+        "coalition-honest-5": 0.37408
+      },
+      "meanSelectedQuality": 1.2500733333333334,
+      "qualityRecovery": 0.7500439999999999,
+      "selectionConcentration": 0.12500137288888885,
+      "winnerSetStability": 0.25774757747602,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "SYNCHRONIZED_TEMPORAL_BURST",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.47657,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.47219,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.34214,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.34318,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.34002,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.34081,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.34206,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.34303
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.94876,
+        "coalition-honest-0": 0.34214,
+        "coalition-honest-1": 0.34318,
+        "coalition-honest-2": 0.34002,
+        "coalition-honest-3": 0.34081,
+        "coalition-honest-4": 0.34206,
+        "coalition-honest-5": 0.34303
+      },
+      "meanSelectedQuality": 1.3162533333333333,
+      "qualityRecovery": 0.7897519999999999,
+      "selectionConcentration": 0.1279282593333333,
+      "winnerSetStability": 0.26576265762682305,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "COMMON_FUNDING_NOT_RUN",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 1,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 1,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.16654,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.16629,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.16916,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.16494,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.16625,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.16682
+      },
+      "ownerExpectedSeats": {
+        "coalition": 2,
+        "coalition-honest-0": 0.16654,
+        "coalition-honest-1": 0.16629,
+        "coalition-honest-2": 0.16916,
+        "coalition-honest-3": 0.16494,
+        "coalition-honest-4": 0.16625,
+        "coalition-honest-5": 0.16682
+      },
+      "meanSelectedQuality": 1.6666666666666667,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.2407418021999999,
+      "winnerSetStability": 0.5829258292582926,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "COMMON_FUNDING_NOT_RUN",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.37418,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.37354,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.36956,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.37572,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.37488,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.37802,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.37602,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.37808
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.7477199999999999,
+        "coalition-honest-0": 0.36956,
+        "coalition-honest-1": 0.37572,
+        "coalition-honest-2": 0.37488,
+        "coalition-honest-3": 0.37802,
+        "coalition-honest-4": 0.37602,
+        "coalition-honest-5": 0.37808
+      },
+      "meanSelectedQuality": 1.24924,
+      "qualityRecovery": 0.7495439999999999,
+      "selectionConcentration": 0.12500584195555556,
+      "winnerSetStability": 0.2595235952361974,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "COMMON_FUNDING_NOT_RUN",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.46989,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.4766,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.34189,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.34058,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.34461,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.34123,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.34365,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.34155
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.94649,
+        "coalition-honest-0": 0.34189,
+        "coalition-honest-1": 0.34058,
+        "coalition-honest-2": 0.34461,
+        "coalition-honest-3": 0.34123,
+        "coalition-honest-4": 0.34365,
+        "coalition-honest-5": 0.34155
+      },
+      "meanSelectedQuality": 1.3154966666666668,
+      "qualityRecovery": 0.789298,
+      "selectionConcentration": 0.12786370784444445,
+      "winnerSetStability": 0.26640866408688746,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CROSS_CAMPAIGN_REPETITION",
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 1,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 1,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.16487,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.16462,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.16753,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.16708,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.16916,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.16674
+      },
+      "ownerExpectedSeats": {
+        "coalition": 2,
+        "coalition-honest-0": 0.16487,
+        "coalition-honest-1": 0.16462,
+        "coalition-honest-2": 0.16753,
+        "coalition-honest-3": 0.16708,
+        "coalition-honest-4": 0.16916,
+        "coalition-honest-5": 0.16674
+      },
+      "meanSelectedQuality": 1.6666666666666667,
+      "qualityRecovery": 1,
+      "selectionConcentration": 0.24074235797777777,
+      "winnerSetStability": 0.5835758357583576,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CROSS_CAMPAIGN_REPETITION",
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.37391,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.37541,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.37346,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.37544,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.37558,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.37373,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.37633,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.37614
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.74932,
+        "coalition-honest-0": 0.37346,
+        "coalition-honest-1": 0.37544,
+        "coalition-honest-2": 0.37558,
+        "coalition-honest-3": 0.37373,
+        "coalition-honest-4": 0.37633,
+        "coalition-honest-5": 0.37614
+      },
+      "meanSelectedQuality": 1.2497733333333334,
+      "qualityRecovery": 0.749864,
+      "selectionConcentration": 0.12500099324444447,
+      "winnerSetStability": 0.2590135901361466,
+      "explanationCoverage": 1
+    },
+    {
+      "scenarioId": "CROSS_CAMPAIGN_REPETITION",
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "runs": 100000,
+      "selectionProbability": {
+        "0x53bcd6558a86eb621bf36290f15066831a912e7eec53eca73e7b205f7c33c065": 0.47325,
+        "0xfcc2e9acf1305ba366cd6a4725e9417b055a0c1a26d7ca66355d52fb990434e6": 0.47133,
+        "0xb62008d95eecb97155252ccb4b179d1833378ddb516f49c9c943cc89d66ca47a": 0.3441,
+        "0x575a6d60a669be78d507aad9f0ac03442c76f797a58e4d6d86ca48daa368e162": 0.34118,
+        "0xef86051e3a26d7c15605ac84e9e49cb6557b994bb501b5f960562bed42dd7b9c": 0.34238,
+        "0xcb6abe62763d0bac227ff9f8f589fc9a9be9fca20334fc10b4a4af755ccc4670": 0.3412,
+        "0x6f7672e076b64b41220695cd3de8300838e3016092aa92f9ab75a3591bea1f04": 0.34365,
+        "0xffd4eaf9e57fba3803ce535ef44dcf3b6e55e0fa4a759dc7c86e04359690ae66": 0.34291
+      },
+      "ownerExpectedSeats": {
+        "coalition": 0.94458,
+        "coalition-honest-0": 0.3441,
+        "coalition-honest-1": 0.34118,
+        "coalition-honest-2": 0.34238,
+        "coalition-honest-3": 0.3412,
+        "coalition-honest-4": 0.34365,
+        "coalition-honest-5": 0.34291
+      },
+      "meanSelectedQuality": 1.31486,
+      "qualityRecovery": 0.788916,
+      "selectionConcentration": 0.12780558097777778,
+      "winnerSetStability": 0.2657596575968222,
+      "explanationCoverage": 1
+    }
+  ],
+  "strategyAssessments": [
+    {
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "releaseCandidate": false,
+      "killCriteria": [
+        {
+          "id": "DETERMINISTIC_MONOTONICITY",
+          "status": "PASS",
+          "measured": 0,
+          "threshold": 0,
+          "explanation": "Adding one legitimate unique supporter must not worsen a candidate's deterministic rank."
+        },
+        {
+          "id": "STOCHASTIC_MONOTONICITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "The deterministic rank criterion applies to this strategy."
+        },
+        {
+          "id": "CANDIDATE_SPLITTING_ADVANTAGE",
+          "status": "PASS",
+          "measured": 0,
+          "threshold": 0.05,
+          "explanation": "This criterion is expected to reject strategies that reward splitting fixed support across candidate identities."
+        },
+        {
+          "id": "DENSE_HONEST_COMMUNITY_PENALTY",
+          "status": "PASS",
+          "measured": 0,
+          "threshold": 0.05,
+          "explanation": "Graph density is not an allocation input, so equivalent honest choices must retain equal power."
+        },
+        {
+          "id": "PARAMETER_STABILITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "This strategy has no continuous scoring parameters."
+        },
+        {
+          "id": "OVERLAP_WEAK_CANDIDATE_INCENTIVE",
+          "status": "PASS",
+          "measured": 0,
+          "threshold": 0.02,
+          "explanation": "A failing result supports disabling overlapping selector/recipient populations for protected campaigns."
+        },
+        {
+          "id": "SYBIL_SUPERLINEARITY",
+          "status": "FAIL",
+          "threshold": 10.5,
+          "explanation": "The attacker moved from zero expected seats to a selected seat, so finite amplification cannot be established."
+        },
+        {
+          "id": "EXPLANATION_COVERAGE",
+          "status": "PASS",
+          "measured": 1,
+          "threshold": 1,
+          "explanation": "Every ranked candidate must receive a structured explanation."
+        }
+      ]
+    },
+    {
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "releaseCandidate": false,
+      "killCriteria": [
+        {
+          "id": "DETERMINISTIC_MONOTONICITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "This strategy is stochastic; the paired probability criterion applies instead."
+        },
+        {
+          "id": "STOCHASTIC_MONOTONICITY",
+          "status": "PASS",
+          "threshold": -0.01,
+          "explanation": "Additional support must not produce a statistically material probability decrease."
+        },
+        {
+          "id": "CANDIDATE_SPLITTING_ADVANTAGE",
+          "status": "PASS",
+          "measured": 0,
+          "threshold": 0.05,
+          "explanation": "This criterion is expected to reject strategies that reward splitting fixed support across candidate identities."
+        },
+        {
+          "id": "DENSE_HONEST_COMMUNITY_PENALTY",
+          "status": "PASS",
+          "measured": 0.0010523408815200346,
+          "threshold": 0.05,
+          "explanation": "Graph density is not an allocation input, so equivalent honest choices must retain equal power."
+        },
+        {
+          "id": "PARAMETER_STABILITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "The integer support threshold has no meaningful +/-10% perturbation at the configured value."
+        },
+        {
+          "id": "OVERLAP_WEAK_CANDIDATE_INCENTIVE",
+          "status": "PASS",
+          "measured": -0.0013400000000000079,
+          "threshold": 0.02,
+          "explanation": "A failing result supports disabling overlapping selector/recipient populations for protected campaigns."
+        },
+        {
+          "id": "SYBIL_SUPERLINEARITY",
+          "status": "FAIL",
+          "threshold": 10.5,
+          "explanation": "The attacker moved from zero expected seats to a selected seat, so finite amplification cannot be established."
+        },
+        {
+          "id": "EXPLANATION_COVERAGE",
+          "status": "PASS",
+          "measured": 1,
+          "threshold": 1,
+          "explanation": "Every ranked candidate must receive a structured explanation."
+        }
+      ]
+    },
+    {
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "releaseCandidate": true,
+      "killCriteria": [
+        {
+          "id": "DETERMINISTIC_MONOTONICITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "This strategy is stochastic; the paired probability criterion applies instead."
+        },
+        {
+          "id": "STOCHASTIC_MONOTONICITY",
+          "status": "PASS",
+          "threshold": -0.01,
+          "explanation": "Additional support must not produce a statistically material probability decrease."
+        },
+        {
+          "id": "CANDIDATE_SPLITTING_ADVANTAGE",
+          "status": "PASS",
+          "measured": 0.00560179680274808,
+          "threshold": 0.05,
+          "explanation": "This criterion is expected to reject strategies that reward splitting fixed support across candidate identities."
+        },
+        {
+          "id": "DENSE_HONEST_COMMUNITY_PENALTY",
+          "status": "PASS",
+          "measured": 0.0005068824895536115,
+          "threshold": 0.05,
+          "explanation": "Graph density is not an allocation input, so equivalent honest choices must retain equal power."
+        },
+        {
+          "id": "PARAMETER_STABILITY",
+          "status": "NOT_APPLICABLE",
+          "explanation": "This strategy has no continuous scoring parameters."
+        },
+        {
+          "id": "OVERLAP_WEAK_CANDIDATE_INCENTIVE",
+          "status": "PASS",
+          "measured": -0.00009999999999998899,
+          "threshold": 0.02,
+          "explanation": "A failing result supports disabling overlapping selector/recipient populations for protected campaigns."
+        },
+        {
+          "id": "SYBIL_SUPERLINEARITY",
+          "status": "PASS",
+          "measured": 8.214108071444722,
+          "threshold": 10.5,
+          "explanation": "Ten added eligible identities must not produce more than approximately linear amplification."
+        },
+        {
+          "id": "EXPLANATION_COVERAGE",
+          "status": "PASS",
+          "measured": 1,
+          "threshold": 1,
+          "explanation": "Every ranked candidate must receive a structured explanation."
+        }
+      ]
+    }
+  ],
+  "killCriteria": [
+    {
+      "id": "DETERMINISTIC_MONOTONICITY",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0,
+      "explanation": "Adding one legitimate unique supporter must not worsen a candidate's deterministic rank."
+    },
+    {
+      "id": "STOCHASTIC_MONOTONICITY",
+      "status": "NOT_APPLICABLE",
+      "explanation": "The deterministic rank criterion applies to this strategy."
+    },
+    {
+      "id": "CANDIDATE_SPLITTING_ADVANTAGE",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0.05,
+      "explanation": "This criterion is expected to reject strategies that reward splitting fixed support across candidate identities."
+    },
+    {
+      "id": "DENSE_HONEST_COMMUNITY_PENALTY",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0.05,
+      "explanation": "Graph density is not an allocation input, so equivalent honest choices must retain equal power."
+    },
+    {
+      "id": "PARAMETER_STABILITY",
+      "status": "NOT_APPLICABLE",
+      "explanation": "This strategy has no continuous scoring parameters."
+    },
+    {
+      "id": "OVERLAP_WEAK_CANDIDATE_INCENTIVE",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0.02,
+      "explanation": "A failing result supports disabling overlapping selector/recipient populations for protected campaigns."
+    },
+    {
+      "id": "SYBIL_SUPERLINEARITY",
+      "status": "FAIL",
+      "threshold": 10.5,
+      "explanation": "The attacker moved from zero expected seats to a selected seat, so finite amplification cannot be established."
+    },
+    {
+      "id": "EXPLANATION_COVERAGE",
+      "status": "PASS",
+      "measured": 1,
+      "threshold": 1,
+      "explanation": "Every ranked candidate must receive a structured explanation."
+    },
+    {
+      "id": "PROHIBITED_INPUTS",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0,
+      "explanation": "No strategy consumes follower count, holdings, balance, volume, or wealth."
+    },
+    {
+      "id": "RANDOMNESS_REPLAY",
+      "status": "PASS",
+      "explanation": "The same canonical input and seed must reproduce the same result hash."
+    },
+    {
+      "id": "CORRELATION_ONLY_INVALIDATION",
+      "status": "PASS",
+      "measured": 0,
+      "threshold": 0,
+      "explanation": "Graph correlation signals never mutate eligibility or allocation inputs."
+    }
+  ],
+  "reportHash": "0x7720b1d50b485fa17ce51a3800547ed0242afdc72a9ae3e328e6860d69973e6a"
+}

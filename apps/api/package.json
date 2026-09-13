@@ -1,0 +1,37 @@
+{
+  "name": "@take/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "dev": "node --env-file=../../.env --import tsx --watch src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest run src"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@fastify/rate-limit": "^11.2.0",
+    "@privy-io/node": "^0.34.0",
+    "@take/chain": "workspace:*",
+    "@take/database": "workspace:*",
+    "@take/mechanism": "workspace:*",
+    "@take/shared": "workspace:*",
+    "drand-client": "^1.4.2",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.6.2",
+    "fastify-plugin": "^5.1.0",
+    "postgres": "^3.4.7",
+    "viem": "^2.56.3",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}
