@@ -1,0 +1,113 @@
+{
+  "artifactVersion": "1",
+  "recordedAt": "2026-09-13T15:11:21.000Z",
+  "checkpoint": {
+    "commit": "68a539fecff64bca5a4415f11fe1e13eb1a89465",
+    "baselineArtifacts": [
+      {
+        "path": "docs/mechanism-experiment-v0-simulation-ci.json",
+        "sha256": "8b600760188a01703238235deaf561e2e097f686f189ed32d4fd657a3daba357",
+        "reportHash": "0x4b4fb86a774e2cb07b303218fd4c513c2b3822724d8557a3afebf05edd509fa1"
+      },
+      {
+        "path": "docs/mechanism-v1-simulation-ci.json",
+        "sha256": "64de1b68fec538354f38faa419e7ecd9d0e0813a9a0555ac8e7847fcdcae3055"
+      },
+      {
+        "path": "docs/mechanism-v1-simulation-release.json",
+        "sha256": "34f1edffd38efb225d1008ae3ba8626035a6361ab6b4f450ce98d417fc0a95c7"
+      }
+    ]
+  },
+  "foundryRegression": {
+    "command": "forge test --root packages/contracts",
+    "passed": 16,
+    "failed": 0,
+    "contractChanged": false
+  },
+  "monadSmoke": {
+    "network": "Monad testnet",
+    "chainId": 10143,
+    "managerAddress": "0xc3A0178B31D8844455c49988736d51A2336056e5",
+    "managerVersion": "LEGACY_V1",
+    "deployedNewContract": false,
+    "onchainCampaignId": "2",
+    "databaseCampaignId": "9e2f94df-b1d9-4981-9ad5-872ecb218b09",
+    "rulesHash": "0xe64e7db37a0781542dc728e8795ce404ec7d375834447283a36a2a6df471d972",
+    "transactions": {
+      "create": {
+        "hash": "0xbb6ffcf115b1b7e718824ce4e0d066233a2f06c2c3404c76c31d970e97821e7f",
+        "block": "62214178",
+        "finality": "FINALIZED"
+      },
+      "activate": {
+        "hash": "0x43d46bba9e1c14bb01417f2658a96e335bb6d6a94e60ccc8b6d5f27a0d7c41f9",
+        "block": "62214187",
+        "finality": "FINALIZED"
+      },
+      "giveTake": {
+        "hash": "0xcdcc9723f363ae88609e57b475f2264663a74a968ad00a420138b3c0ce7f47b6",
+        "block": "62214193",
+        "finality": "FINALIZED"
+      },
+      "close": {
+        "hash": "0xcdb9b4b8123d0e5b9c43c5178fd506c0fefcca70c5fd4280ae9d04992043c941",
+        "block": "62214701",
+        "finality": "FINALIZED"
+      }
+    },
+    "canonicalEdge": {
+      "id": "353161db-a57d-4c19-8344-3b9722cd322e",
+      "blockHash": "0x56bf2a65f85783fab61bd744b3191e99ba7b7b17c1c8caa1e9b1e43474106a61",
+      "canonicalGiverKey": "0x3326d6d6f5d63d4bc18eab59ab895e71f49a654bae038eb699575263565f1a8f",
+      "canonicalRecipientKey": "0xd3227409755276c1a70a854ab9da742d6591dd902b35df36c02aed8a9a17d6b8",
+      "validity": "VALID",
+      "finality": "FINALIZED"
+    },
+    "graphSnapshot": {
+      "id": "5218a95a-3957-4303-a78d-4a63c44c0922",
+      "inputHash": "0xe01b0115d79ad8a58e4ccaaeab6660bf37d7150aa2f2c6aabfac27181ca0ce91",
+      "edgeCutoffBlock": "62214193",
+      "algorithmVersion": "1",
+      "signals": [
+        { "type": "COMMON_FUNDER", "status": "NOT_RUN" },
+        { "type": "SHARED_FUNDING_ANCESTRY", "status": "NOT_RUN" },
+        { "type": "WALLET_SEQUENCE_SIMILARITY", "status": "NOT_RUN" }
+      ],
+      "limitation": "History-dependent wallet signals are NOT_RUN because no complete wallet-history provider is configured."
+    },
+    "indexer": {
+      "eventsIngested": 4,
+      "cursorTemporarilyPositionedForSmoke": true,
+      "originalCursorRestored": true,
+      "restoredFinalizedBlock": "60558982",
+      "restoredFinalizedBlockHash": "0x093f33636abaaf72f417d300fc4e6517d9a29dc13bc766f2ead2f46172a508f4"
+    }
+  },
+  "drandSmoke": {
+    "network": "evmnet",
+    "chainHash": "04f1e9062b8a81f848fded9c12306733282b2727ecced50032187751166ec8c3",
+    "round": "20597036",
+    "status": "VERIFIED",
+    "randomness": "0x30b1de895d15e874428f8317adffd08a3bb88ef1fe7b111a29be2c5709bf9358",
+    "signature": "288d179ff152b3b499bf2faded5ab325541144fdb754d7db72359af680f3907d187f0cc76f5520204313b9e192a16a0560688c2d7668466ce0797687f8ffe1f4",
+    "publicKey": "07e1d1d335df83fa98462005690372c643340060d205306a9aa8106b6bd0b3820557ec32c2ad488e4d4f6008f89a346f18492092ccc0d594610de2732c8b808f0095685ae3a85ba243747b1b2f426049010f6b73a0cf1d389351d5aaaa1047f6297d3a4f9749b33eb2d904c9d9ebf17224150ddd7abd7567a9bec6c74480ee0b",
+    "schemeId": "bls-bn254-unchained-on-g1",
+    "artifactHash": "0x5ed34ddd4fc888452b27bc87f40421441437688fcd83f5e7ab49bfffddb9dc7c",
+    "inputSnapshotHash": "0x45db3f45de2012267786acfcb919ca040d5821dbe2ed66e023ac6c4079583970",
+    "allocationSeed": "0x68938e3db02c3dd99c53ed7cef79707c48e46b733596dfa048c3735996d441c6",
+    "replay": {
+      "sameArtifactHash": true,
+      "sameRandomness": true,
+      "sameSignature": true,
+      "sameDerivedSeed": true
+    },
+    "operationalFinding": {
+      "defaultTimeoutMilliseconds": 8000,
+      "defaultAttempt": "FAILED_ALL_RELAYS_TIMEOUT",
+      "successfulTimeoutMilliseconds": 30000,
+      "successfulAttemptDurationMilliseconds": 4700,
+      "interpretation": "The integration verified successfully, but production timeout and relay health settings need tuning before a lottery pilot."
+    }
+  }
+}

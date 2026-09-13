@@ -1,0 +1,3695 @@
+{
+  "reportVersion": "0.1",
+  "generatedAt": "2026-09-13T15:20:00.000Z",
+  "simulatorVersion": "DECISION_GATE_V0.1",
+  "runPolicy": {
+    "primaryRunsPerScenario": 10000,
+    "sensitivityRunsPerScenario": 2500,
+    "seedDomain": "TAKE_SIMULATION_RUN_V1",
+    "deterministicReplay": true
+  },
+  "frozenBaselineArtifacts": [
+    {
+      "path": "docs/mechanism-experiment-v0-simulation-ci.json",
+      "sha256": "8b600760188a01703238235deaf561e2e097f686f189ed32d4fd657a3daba357",
+      "reportHash": "0x4b4fb86a774e2cb07b303218fd4c513c2b3822724d8557a3afebf05edd509fa1"
+    },
+    {
+      "path": "docs/mechanism-v1-simulation-ci.json",
+      "sha256": "64de1b68fec538354f38faa419e7ecd9d0e0813a9a0555ac8e7847fcdcae3055"
+    },
+    {
+      "path": "docs/mechanism-v1-simulation-release.json",
+      "sha256": "34f1edffd38efb225d1008ae3ba8626035a6361ab6b4f450ce98d417fc0a95c7"
+    }
+  ],
+  "engineeringVerification": {
+    "foundryRegression": {
+      "command": "forge test --root packages/contracts",
+      "passed": 16,
+      "failed": 0,
+      "contractChanged": false
+    },
+    "monadSmoke": {
+      "network": "Monad testnet",
+      "chainId": 10143,
+      "managerAddress": "0xc3A0178B31D8844455c49988736d51A2336056e5",
+      "managerVersion": "LEGACY_V1",
+      "deployedNewContract": false,
+      "onchainCampaignId": "2",
+      "databaseCampaignId": "9e2f94df-b1d9-4981-9ad5-872ecb218b09",
+      "rulesHash": "0xe64e7db37a0781542dc728e8795ce404ec7d375834447283a36a2a6df471d972",
+      "transactions": {
+        "create": {
+          "hash": "0xbb6ffcf115b1b7e718824ce4e0d066233a2f06c2c3404c76c31d970e97821e7f",
+          "block": "62214178",
+          "finality": "FINALIZED"
+        },
+        "activate": {
+          "hash": "0x43d46bba9e1c14bb01417f2658a96e335bb6d6a94e60ccc8b6d5f27a0d7c41f9",
+          "block": "62214187",
+          "finality": "FINALIZED"
+        },
+        "giveTake": {
+          "hash": "0xcdcc9723f363ae88609e57b475f2264663a74a968ad00a420138b3c0ce7f47b6",
+          "block": "62214193",
+          "finality": "FINALIZED"
+        },
+        "close": {
+          "hash": "0xcdb9b4b8123d0e5b9c43c5178fd506c0fefcca70c5fd4280ae9d04992043c941",
+          "block": "62214701",
+          "finality": "FINALIZED"
+        }
+      },
+      "canonicalEdge": {
+        "id": "353161db-a57d-4c19-8344-3b9722cd322e",
+        "blockHash": "0x56bf2a65f85783fab61bd744b3191e99ba7b7b17c1c8caa1e9b1e43474106a61",
+        "canonicalGiverKey": "0x3326d6d6f5d63d4bc18eab59ab895e71f49a654bae038eb699575263565f1a8f",
+        "canonicalRecipientKey": "0xd3227409755276c1a70a854ab9da742d6591dd902b35df36c02aed8a9a17d6b8",
+        "validity": "VALID",
+        "finality": "FINALIZED"
+      },
+      "graphSnapshot": {
+        "id": "5218a95a-3957-4303-a78d-4a63c44c0922",
+        "inputHash": "0xe01b0115d79ad8a58e4ccaaeab6660bf37d7150aa2f2c6aabfac27181ca0ce91",
+        "edgeCutoffBlock": "62214193",
+        "algorithmVersion": "1",
+        "signals": [
+          {
+            "type": "COMMON_FUNDER",
+            "status": "NOT_RUN"
+          },
+          {
+            "type": "SHARED_FUNDING_ANCESTRY",
+            "status": "NOT_RUN"
+          },
+          {
+            "type": "WALLET_SEQUENCE_SIMILARITY",
+            "status": "NOT_RUN"
+          }
+        ],
+        "limitation": "History-dependent wallet signals are NOT_RUN because no complete wallet-history provider is configured."
+      },
+      "indexer": {
+        "eventsIngested": 4,
+        "cursorTemporarilyPositionedForSmoke": true,
+        "originalCursorRestored": true,
+        "restoredFinalizedBlock": "60558982",
+        "restoredFinalizedBlockHash": "0x093f33636abaaf72f417d300fc4e6517d9a29dc13bc766f2ead2f46172a508f4"
+      }
+    },
+    "drandSmoke": {
+      "network": "evmnet",
+      "chainHash": "04f1e9062b8a81f848fded9c12306733282b2727ecced50032187751166ec8c3",
+      "round": "20597036",
+      "status": "VERIFIED",
+      "randomness": "0x30b1de895d15e874428f8317adffd08a3bb88ef1fe7b111a29be2c5709bf9358",
+      "signature": "288d179ff152b3b499bf2faded5ab325541144fdb754d7db72359af680f3907d187f0cc76f5520204313b9e192a16a0560688c2d7668466ce0797687f8ffe1f4",
+      "publicKey": "07e1d1d335df83fa98462005690372c643340060d205306a9aa8106b6bd0b3820557ec32c2ad488e4d4f6008f89a346f18492092ccc0d594610de2732c8b808f0095685ae3a85ba243747b1b2f426049010f6b73a0cf1d389351d5aaaa1047f6297d3a4f9749b33eb2d904c9d9ebf17224150ddd7abd7567a9bec6c74480ee0b",
+      "schemeId": "bls-bn254-unchained-on-g1",
+      "artifactHash": "0x5ed34ddd4fc888452b27bc87f40421441437688fcd83f5e7ab49bfffddb9dc7c",
+      "inputSnapshotHash": "0x45db3f45de2012267786acfcb919ca040d5821dbe2ed66e023ac6c4079583970",
+      "allocationSeed": "0x68938e3db02c3dd99c53ed7cef79707c48e46b733596dfa048c3735996d441c6",
+      "replay": {
+        "sameArtifactHash": true,
+        "sameRandomness": true,
+        "sameSignature": true,
+        "sameDerivedSeed": true
+      },
+      "operationalFinding": {
+        "defaultTimeoutMilliseconds": 8000,
+        "defaultAttempt": "FAILED_ALL_RELAYS_TIMEOUT",
+        "successfulTimeoutMilliseconds": 30000,
+        "successfulAttemptDurationMilliseconds": 4700,
+        "interpretation": "The integration verified successfully, but production timeout and relay health settings need tuning before a lottery pilot."
+      }
+    }
+  },
+  "provisionalProductDecision": {
+    "overlapping": "EXPERIMENTAL_LOW_ASSURANCE",
+    "disjoint": "LEADING_HIGH_ASSURANCE_DESIGN",
+    "evidenceLevel": "PROVISIONAL_SYNTHETIC",
+    "explanation": "Disjoint populations remove the selector's direct weak-recipient self-interest, but do not solve coalition capture or identity acquisition."
+  },
+  "constitutionalChecks": {
+    "validIdentityInfluenceConservation": "PASS",
+    "fixedBudgetAmplificationEvaluatedSeparately": true,
+    "graphWeightingUsed": false,
+    "researchVariablesUsedByAllocation": false,
+    "correlationCanInvalidateSupport": false
+  },
+  "parameterFamilies": {
+    "thresholdMinimumSupport": [
+      1,
+      2,
+      3,
+      5,
+      8
+    ],
+    "cappedMinimumSupport": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "cappedSupportCap": [
+      2,
+      3,
+      5,
+      8
+    ]
+  },
+  "decisionHeuristics": {
+    "note": "Operational decision gates, not scientific definitions. They were fixed before this comparative run.",
+    "maximumCandidateSplittingSeatShareGain": 0.05,
+    "minimumQualityRecovery": 0.8,
+    "maximumTwentyFiveIdentityCartelSeatShare": 0.3,
+    "maximumHeadlineParameterRange": 0.15
+  },
+  "comparison": [
+    {
+      "strategy": "RAW_UNIQUE_SUPPORT@2",
+      "populationMode": "OVERLAPPING + DISJOINT",
+      "qualityRecovery": 1,
+      "popularity": {
+        "supportCorrelation": 1,
+        "seatCorrelation": 0.8553989227683015,
+        "topDecileSeatShare": 0.25,
+        "lesserKnownMeanSelectionProbability": 0
+      },
+      "candidateSplitting": {
+        "baselineExpectedSeats": 1,
+        "bestExpectedSeats": 2,
+        "absoluteSeatShareGain": 0.3333333333333333,
+        "bestPattern": [
+          10,
+          10
+        ]
+      },
+      "cartelSeatCapture": {
+        "coalitionSize": 25,
+        "selectorShare": 0.25,
+        "fixedTakeBudget": 25,
+        "bestPattern": [
+          7,
+          6,
+          6,
+          6
+        ],
+        "expectedSeats": 4,
+        "expectedSeatShare": 0.4,
+        "seatStatistics": {
+          "expectedSeats": 4,
+          "expectedSeatShare": 0.4,
+          "variance": 0,
+          "probabilityZeroSeats": 0,
+          "probabilityMajoritySeats": 0
+        }
+      },
+      "weakCandidateIncentive": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0.6597,
+          "selectorWinningProbabilityGain": 0.6597
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 1,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 1,
+        "coalitionAt25": {
+          "expectedSeats": 4,
+          "expectedSeatShare": 0.4,
+          "variance": 0,
+          "probabilityZeroSeats": 0,
+          "probabilityMajoritySeats": 0
+        }
+      },
+      "explainability": 1,
+      "parameterSensitivity": "No tunable parameter.",
+      "verdict": "CONTROL ONLY",
+      "verdictReason": "Frozen V0 baseline; retained for comparison despite known strategic failures."
+    },
+    {
+      "strategy": "THRESHOLD_UNIFORM_LOTTERY@1(minimumSupport=2)",
+      "populationMode": "OVERLAPPING + DISJOINT",
+      "qualityRecovery": 0.6142666666666666,
+      "popularity": {
+        "supportCorrelation": 1,
+        "seatCorrelation": 0.2857156055296303,
+        "topDecileSeatShare": 0.100425,
+        "lesserKnownMeanSelectionProbability": 0.39963333333333334
+      },
+      "candidateSplitting": {
+        "baselineExpectedSeats": 0.4295,
+        "bestExpectedSeats": 1.5037,
+        "absoluteSeatShareGain": 0.35806666666666664,
+        "bestPattern": [
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "cartelSeatCapture": {
+        "coalitionSize": 25,
+        "selectorShare": 0.25,
+        "fixedTakeBudget": 25,
+        "bestPattern": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "expectedSeats": 3.8451,
+        "expectedSeatShare": 0.38451,
+        "seatStatistics": {
+          "expectedSeats": 3.8451,
+          "expectedSeatShare": 0.38451,
+          "variance": 1.495905989999999,
+          "probabilityZeroSeats": 0.0011,
+          "probabilityMajoritySeats": 0.0815
+        }
+      },
+      "weakCandidateIncentive": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0.9994000000000001,
+          "strategicSelectorExpectedSeats": 0.8052,
+          "selectorWinningProbabilityGain": -0.19420000000000004
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.70255,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.27008986612948127,
+        "coalitionAt25": {
+          "expectedSeats": 3.8451,
+          "expectedSeatShare": 0.38451,
+          "variance": 1.495905989999999,
+          "probabilityZeroSeats": 0.0011,
+          "probabilityMajoritySeats": 0.0815
+        }
+      },
+      "explainability": 1,
+      "parameterSensitivity": "quality range 0.613-0.811 (span 0.198); splitting-gain range 0.169-0.365 (span 0.195); cartel-share range 0.300-0.386 (span 0.086)",
+      "verdict": "REJECT",
+      "verdictReason": "Fails: fixed-budget candidate splitting, quality recovery, 25-identity cartel capture, parameter sensitivity."
+    },
+    {
+      "strategy": "LINEAR_PPS_WITHOUT_REPLACEMENT@1",
+      "populationMode": "OVERLAPPING + DISJOINT",
+      "qualityRecovery": 0.7656309523809524,
+      "popularity": {
+        "supportCorrelation": 1,
+        "seatCorrelation": 0.9969650916353059,
+        "topDecileSeatShare": 0.2247,
+        "lesserKnownMeanSelectionProbability": 0.13249999999999998
+      },
+      "candidateSplitting": {
+        "baselineExpectedSeats": 0.7625,
+        "bestExpectedSeats": 1.0481,
+        "absoluteSeatShareGain": 0.0952,
+        "bestPattern": [
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "cartelSeatCapture": {
+        "coalitionSize": 25,
+        "selectorShare": 0.25,
+        "fixedTakeBudget": 25,
+        "bestPattern": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "expectedSeats": 2.7244,
+        "expectedSeatShare": 0.27244,
+        "seatStatistics": {
+          "expectedSeats": 2.7244,
+          "expectedSeatShare": 0.27244,
+          "variance": 1.3798446399999982,
+          "probabilityZeroSeats": 0.0188,
+          "probabilityMajoritySeats": 0.0098
+        }
+      },
+      "weakCandidateIncentive": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0.914,
+          "strategicSelectorExpectedSeats": 0.8931,
+          "selectorWinningProbabilityGain": -0.02090000000000003
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.8470222222222222,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.43343858195344415,
+        "coalitionAt25": {
+          "expectedSeats": 2.7244,
+          "expectedSeatShare": 0.27244,
+          "variance": 1.3798446399999982,
+          "probabilityZeroSeats": 0.0188,
+          "probabilityMajoritySeats": 0.0098
+        }
+      },
+      "explainability": 1,
+      "parameterSensitivity": "No tunable parameter.",
+      "verdict": "PROMISING FOR MORE TESTING",
+      "verdictReason": "Fails: fixed-budget candidate splitting, quality recovery."
+    },
+    {
+      "strategy": "CAPPED_SUPPORT_PPS@1(minimumSupport=2,supportCap=3)",
+      "populationMode": "OVERLAPPING + DISJOINT",
+      "qualityRecovery": 0.6344642857142857,
+      "popularity": {
+        "supportCorrelation": 1,
+        "seatCorrelation": 0.3039527718400323,
+        "topDecileSeatShare": 0.1041,
+        "lesserKnownMeanSelectionProbability": 0.37496666666666667
+      },
+      "candidateSplitting": {
+        "baselineExpectedSeats": 0.4285,
+        "bestExpectedSeats": 1.4917,
+        "absoluteSeatShareGain": 0.35440000000000005,
+        "bestPattern": [
+          4,
+          4,
+          3,
+          3,
+          3,
+          3
+        ]
+      },
+      "cartelSeatCapture": {
+        "coalitionSize": 25,
+        "selectorShare": 0.25,
+        "fixedTakeBudget": 25,
+        "bestPattern": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "expectedSeats": 3.5906,
+        "expectedSeatShare": 0.35906,
+        "seatStatistics": {
+          "expectedSeats": 3.5906,
+          "expectedSeatShare": 0.35906,
+          "variance": 1.4629916400000003,
+          "probabilityZeroSeats": 0.0021,
+          "probabilityMajoritySeats": 0.0553
+        }
+      },
+      "weakCandidateIncentive": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 1.0042,
+          "strategicSelectorExpectedSeats": 0.8555999999999999,
+          "selectorWinningProbabilityGain": -0.14860000000000007
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.7563,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.2714128555712846,
+        "coalitionAt25": {
+          "expectedSeats": 3.5906,
+          "expectedSeatShare": 0.35906,
+          "variance": 1.4629916400000003,
+          "probabilityZeroSeats": 0.0021,
+          "probabilityMajoritySeats": 0.0553
+        }
+      },
+      "explainability": 1,
+      "parameterSensitivity": "quality range 0.619-0.735 (span 0.116); splitting-gain range 0.179-0.369 (span 0.190); cartel-share range 0.275-0.385 (span 0.110)",
+      "verdict": "REJECT",
+      "verdictReason": "Fails: fixed-budget candidate splitting, quality recovery, 25-identity cartel capture, parameter sensitivity."
+    }
+  ],
+  "strategyAssessments": [
+    {
+      "strategy": {
+        "strategyId": "RAW_UNIQUE_SUPPORT",
+        "strategyVersion": "2"
+      },
+      "candidateSplitting": {
+        "coalitionTakes": 20,
+        "seats": 3,
+        "search": "Best-found across balanced 1-to-6 allied-recipient partitions fixed before execution.",
+        "baseline": {
+          "pattern": [
+            20
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 1,
+          "expectedSeatShare": 0.3333333333333333,
+          "variance": 0,
+          "probabilityZeroSeats": 0,
+          "probabilityMajoritySeats": 0
+        },
+        "best": {
+          "pattern": [
+            10,
+            10
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 2,
+          "expectedSeatShare": 0.6666666666666666,
+          "variance": 0,
+          "probabilityZeroSeats": 0,
+          "probabilityMajoritySeats": 1
+        },
+        "absoluteExpectedSeatGain": 1,
+        "absoluteSeatShareGain": 0.3333333333333333,
+        "fixedBudgetAmplification": 2,
+        "patterns": [
+          {
+            "pattern": [
+              20
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1,
+            "expectedSeatShare": 0.3333333333333333,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              10,
+              10
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 2,
+            "expectedSeatShare": 0.6666666666666666,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 1
+          },
+          {
+            "pattern": [
+              7,
+              7,
+              6
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.5037,
+            "expectedSeatShare": 0.16790000000000002,
+            "variance": 0.24998631,
+            "probabilityZeroSeats": 0.4963,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              4,
+              4,
+              4
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        ]
+      },
+      "coalitionCapture": [
+        {
+          "coalitionSize": 1,
+          "selectorShare": 0.01,
+          "fixedTakeBudget": 1,
+          "bestPattern": [
+            1
+          ],
+          "expectedSeats": 0,
+          "expectedSeatShare": 0,
+          "seatStatistics": {
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 2,
+          "selectorShare": 0.02,
+          "fixedTakeBudget": 2,
+          "bestPattern": [
+            2
+          ],
+          "expectedSeats": 0,
+          "expectedSeatShare": 0,
+          "seatStatistics": {
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 3,
+          "selectorShare": 0.03,
+          "fixedTakeBudget": 3,
+          "bestPattern": [
+            3
+          ],
+          "expectedSeats": 0,
+          "expectedSeatShare": 0,
+          "seatStatistics": {
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 5,
+          "selectorShare": 0.05,
+          "fixedTakeBudget": 5,
+          "bestPattern": [
+            5
+          ],
+          "expectedSeats": 0.512,
+          "expectedSeatShare": 0.0512,
+          "seatStatistics": {
+            "expectedSeats": 0.512,
+            "expectedSeatShare": 0.0512,
+            "variance": 0.24985600000000002,
+            "probabilityZeroSeats": 0.488,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 8,
+          "selectorShare": 0.08,
+          "fixedTakeBudget": 8,
+          "bestPattern": [
+            8
+          ],
+          "expectedSeats": 1,
+          "expectedSeatShare": 0.1,
+          "seatStatistics": {
+            "expectedSeats": 1,
+            "expectedSeatShare": 0.1,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 10,
+          "selectorShare": 0.1,
+          "fixedTakeBudget": 10,
+          "bestPattern": [
+            5,
+            5
+          ],
+          "expectedSeats": 1.0092,
+          "expectedSeatShare": 0.10092000000000001,
+          "seatStatistics": {
+            "expectedSeats": 1.0092,
+            "expectedSeatShare": 0.10092000000000001,
+            "variance": 0.33211535999999975,
+            "probabilityZeroSeats": 0.1615,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 15,
+          "selectorShare": 0.15,
+          "fixedTakeBudget": 15,
+          "bestPattern": [
+            8,
+            7
+          ],
+          "expectedSeats": 2,
+          "expectedSeatShare": 0.2,
+          "seatStatistics": {
+            "expectedSeats": 2,
+            "expectedSeatShare": 0.2,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 20,
+          "selectorShare": 0.2,
+          "fixedTakeBudget": 20,
+          "bestPattern": [
+            7,
+            7,
+            6
+          ],
+          "expectedSeats": 3,
+          "expectedSeatShare": 0.3,
+          "seatStatistics": {
+            "expectedSeats": 3,
+            "expectedSeatShare": 0.3,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 25,
+          "selectorShare": 0.25,
+          "fixedTakeBudget": 25,
+          "bestPattern": [
+            7,
+            6,
+            6,
+            6
+          ],
+          "expectedSeats": 4,
+          "expectedSeatShare": 0.4,
+          "seatStatistics": {
+            "expectedSeats": 4,
+            "expectedSeatShare": 0.4,
+            "variance": 0,
+            "probabilityZeroSeats": 0,
+            "probabilityMajoritySeats": 0
+          }
+        }
+      ],
+      "popularity": {
+        "supportCorrelation": 1,
+        "supportCorrelation95": [
+          1,
+          1
+        ],
+        "seatCorrelation": 0.8553989227683015,
+        "topDecileSeatShare": 0.25,
+        "winnerOverlap": 1,
+        "supportGini": 0.4983333333333333,
+        "lesserKnownMeanSelectionProbability": 0,
+        "marginalSupportCurve": [
+          {
+            "support": 1,
+            "selectionProbability": 0
+          },
+          {
+            "support": 2,
+            "selectionProbability": 0
+          },
+          {
+            "support": 3,
+            "selectionProbability": 0
+          },
+          {
+            "support": 5,
+            "selectionProbability": 0
+          },
+          {
+            "support": 8,
+            "selectionProbability": 0
+          },
+          {
+            "support": 13,
+            "selectionProbability": 1
+          },
+          {
+            "support": 21,
+            "selectionProbability": 1
+          },
+          {
+            "support": 34,
+            "selectionProbability": 1
+          }
+        ],
+        "report": {
+          "scenarioId": "HONEST_POPULARITY_SKEW",
+          "strategy": {
+            "strategyId": "RAW_UNIQUE_SUPPORT",
+            "strategyVersion": "2"
+          },
+          "runs": 10000,
+          "selectionProbability": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 1,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 1,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 1,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 1,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0
+          },
+          "ownerExpectedSeats": {
+            "popularity-skew-0": 1,
+            "popularity-skew-1": 1,
+            "popularity-skew-2": 1,
+            "popularity-skew-3": 1,
+            "popularity-skew-4": 0,
+            "popularity-skew-5": 0,
+            "popularity-skew-6": 0,
+            "popularity-skew-7": 0,
+            "popularity-skew-8": 0,
+            "popularity-skew-9": 0
+          },
+          "ownerSeatStatistics": {
+            "popularity-skew-0": {
+              "expectedSeats": 1,
+              "expectedSeatShare": 0.25,
+              "variance": 0,
+              "probabilityZeroSeats": 0,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-1": {
+              "expectedSeats": 1,
+              "expectedSeatShare": 0.25,
+              "variance": 0,
+              "probabilityZeroSeats": 0,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-2": {
+              "expectedSeats": 1,
+              "expectedSeatShare": 0.25,
+              "variance": 0,
+              "probabilityZeroSeats": 0,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-3": {
+              "expectedSeats": 1,
+              "expectedSeatShare": 0.25,
+              "variance": 0,
+              "probabilityZeroSeats": 0,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-4": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-5": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-6": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-7": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-8": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-9": {
+              "expectedSeats": 0,
+              "expectedSeatShare": 0,
+              "variance": 0,
+              "probabilityZeroSeats": 1,
+              "probabilityMajoritySeats": 0
+            }
+          },
+          "candidateSupport": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 42,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 24,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 8,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 12,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 2,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 3,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 4,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 16,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 6,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 3
+          },
+          "ownerSupportUnits": {
+            "popularity-skew-0": 42,
+            "popularity-skew-1": 24,
+            "popularity-skew-2": 16,
+            "popularity-skew-3": 12,
+            "popularity-skew-4": 8,
+            "popularity-skew-5": 6,
+            "popularity-skew-6": 4,
+            "popularity-skew-7": 3,
+            "popularity-skew-8": 3,
+            "popularity-skew-9": 2
+          },
+          "meanSelectedQuality": 8.5,
+          "qualityRecovery": 1,
+          "selectionConcentration": 0.25,
+          "winnerSetStability": 1,
+          "explanationCoverage": 1,
+          "supportDistribution": [
+            42,
+            24,
+            16,
+            12,
+            8,
+            6,
+            4,
+            3,
+            3,
+            2
+          ],
+          "invalidAttemptRate": 0,
+          "reciprocitySignals": 0,
+          "shortCycleSignals": 0,
+          "popularity": {
+            "coefficient": 1,
+            "confidenceInterval95": [
+              1,
+              1
+            ],
+            "sampleSize": 10,
+            "missing": 0,
+            "winnerOverlap": 1,
+            "topDecileSeatShare": 0.25,
+            "supportGini": 0.4983333333333333
+          }
+        }
+      },
+      "quality": {
+        "qualityRecovery": 1,
+        "meanSelectedQuality": 10.5
+      },
+      "honestDenseCommunity": {
+        "denseQualityRecovery": 1,
+        "sparseQualityRecovery": 1,
+        "penalty": 0,
+        "identicalAllocationInputs": true
+      },
+      "weakCandidate": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0.6597,
+          "selectorWinningProbabilityGain": 0.6597
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 1,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 1,
+        "coalitionAt25": {
+          "expectedSeats": 4,
+          "expectedSeatShare": 0.4,
+          "variance": 0,
+          "probabilityZeroSeats": 0,
+          "probabilityMajoritySeats": 0
+        }
+      },
+      "explainability": 1,
+      "smallCampaigns": [
+        {
+          "selectors": 10,
+          "seats": 2,
+          "qualityRecovery": 0.9552181818181819,
+          "winnerSetStability": 0.6666333299996263,
+          "supportDistribution": [
+            3,
+            2,
+            2,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 25,
+          "seats": 3,
+          "qualityRecovery": 1,
+          "winnerSetStability": 1,
+          "supportDistribution": [
+            5,
+            4,
+            4,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 50,
+          "seats": 5,
+          "qualityRecovery": 1,
+          "winnerSetStability": 1,
+          "supportDistribution": [
+            6,
+            6,
+            5,
+            5,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 100,
+          "seats": 10,
+          "qualityRecovery": 1,
+          "winnerSetStability": 1,
+          "supportDistribution": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            5,
+            5,
+            5,
+            5,
+            5,
+            4,
+            4,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "behavioralObservationBoundary": {
+        "reciprocitySignals": 1,
+        "reciprocityInvalidAttemptRate": 0,
+        "shortCycleSignals": 1,
+        "shortCycleInvalidAttemptRate": 0,
+        "lateTimingChangesSupport": false,
+        "lateTimingChangesSelectionProbabilities": false,
+        "conclusion": "Reciprocity, cycles, and timing remain observations; no signal changes validity, support, or allocation."
+      },
+      "influenceConservation": {
+        "invariant": "m additional valid canonical givers contribute at most m raw support units",
+        "passed": true,
+        "note": "This is not a claim of Sybil resistance or acceptable seat capture."
+      }
+    },
+    {
+      "strategy": {
+        "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+        "strategyVersion": "1",
+        "minimumSupport": 2
+      },
+      "candidateSplitting": {
+        "coalitionTakes": 20,
+        "seats": 3,
+        "search": "Best-found across balanced 1-to-6 allied-recipient partitions fixed before execution.",
+        "baseline": {
+          "pattern": [
+            20
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 0.4295,
+          "expectedSeatShare": 0.14316666666666666,
+          "variance": 0.24502975,
+          "probabilityZeroSeats": 0.5705,
+          "probabilityMajoritySeats": 0
+        },
+        "best": {
+          "pattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 1.5037,
+          "expectedSeatShare": 0.5012333333333333,
+          "variance": 0.6117863099999998,
+          "probabilityZeroSeats": 0.0871,
+          "probabilityMajoritySeats": 0.497
+        },
+        "absoluteExpectedSeatGain": 1.0742,
+        "absoluteSeatShareGain": 0.35806666666666664,
+        "fixedBudgetAmplification": 3.50104772991851,
+        "patterns": [
+          {
+            "pattern": [
+              20
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.4295,
+            "expectedSeatShare": 0.14316666666666666,
+            "variance": 0.24502975,
+            "probabilityZeroSeats": 0.5705,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              10,
+              10
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.75,
+            "expectedSeatShare": 0.25,
+            "variance": 0.40869999999999995,
+            "probabilityZeroSeats": 0.3606,
+            "probabilityMajoritySeats": 0.1106
+          },
+          {
+            "pattern": [
+              7,
+              7,
+              6
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.0096,
+            "expectedSeatShare": 0.33653333333333335,
+            "variance": 0.5019078400000001,
+            "probabilityZeroSeats": 0.234,
+            "probabilityMajoritySeats": 0.2314
+          },
+          {
+            "pattern": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.202,
+            "expectedSeatShare": 0.40066666666666667,
+            "variance": 0.5575960000000002,
+            "probabilityZeroSeats": 0.1657,
+            "probabilityMajoritySeats": 0.3352
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              4,
+              4,
+              4
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.3703,
+            "expectedSeatShare": 0.4567666666666667,
+            "variance": 0.5939779099999996,
+            "probabilityZeroSeats": 0.1177,
+            "probabilityMajoritySeats": 0.4253
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.5037,
+            "expectedSeatShare": 0.5012333333333333,
+            "variance": 0.6117863099999998,
+            "probabilityZeroSeats": 0.0871,
+            "probabilityMajoritySeats": 0.497
+          }
+        ]
+      },
+      "coalitionCapture": [
+        {
+          "coalitionSize": 1,
+          "selectorShare": 0.01,
+          "fixedTakeBudget": 1,
+          "bestPattern": [
+            1
+          ],
+          "expectedSeats": 0,
+          "expectedSeatShare": 0,
+          "seatStatistics": {
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 2,
+          "selectorShare": 0.02,
+          "fixedTakeBudget": 2,
+          "bestPattern": [
+            2
+          ],
+          "expectedSeats": 0.5541,
+          "expectedSeatShare": 0.05541,
+          "seatStatistics": {
+            "expectedSeats": 0.5541,
+            "expectedSeatShare": 0.05541,
+            "variance": 0.24707319,
+            "probabilityZeroSeats": 0.4459,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 3,
+          "selectorShare": 0.03,
+          "fixedTakeBudget": 3,
+          "bestPattern": [
+            3
+          ],
+          "expectedSeats": 0.5512,
+          "expectedSeatShare": 0.05512,
+          "seatStatistics": {
+            "expectedSeats": 0.5512,
+            "expectedSeatShare": 0.05512,
+            "variance": 0.24737856000000003,
+            "probabilityZeroSeats": 0.4488,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 5,
+          "selectorShare": 0.05,
+          "fixedTakeBudget": 5,
+          "bestPattern": [
+            3,
+            2
+          ],
+          "expectedSeats": 1.0585,
+          "expectedSeatShare": 0.10585,
+          "seatStatistics": {
+            "expectedSeats": 1.0585,
+            "expectedSeatShare": 0.10585,
+            "variance": 0.46707774999999985,
+            "probabilityZeroSeats": 0.206,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 8,
+          "selectorShare": 0.08,
+          "fixedTakeBudget": 8,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 1.916,
+          "expectedSeatShare": 0.1916,
+          "seatStatistics": {
+            "expectedSeats": 1.916,
+            "expectedSeatShare": 0.1916,
+            "variance": 0.8551440000000006,
+            "probabilityZeroSeats": 0.0565,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 10,
+          "selectorShare": 0.1,
+          "fixedTakeBudget": 10,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 2.2735,
+          "expectedSeatShare": 0.22735,
+          "seatStatistics": {
+            "expectedSeats": 2.2735,
+            "expectedSeatShare": 0.22735,
+            "variance": 1.01349775,
+            "probabilityZeroSeats": 0.0305,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 15,
+          "selectorShare": 0.15,
+          "fixedTakeBudget": 15,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1
+          ],
+          "expectedSeats": 2.9301,
+          "expectedSeatShare": 0.29301,
+          "seatStatistics": {
+            "expectedSeats": 2.9301,
+            "expectedSeatShare": 0.29301,
+            "variance": 1.2446139899999995,
+            "probabilityZeroSeats": 0.0078,
+            "probabilityMajoritySeats": 0.0086
+          }
+        },
+        {
+          "coalitionSize": 20,
+          "selectorShare": 0.2,
+          "fixedTakeBudget": 20,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 3.6789,
+          "expectedSeatShare": 0.36789,
+          "seatStatistics": {
+            "expectedSeats": 3.6789,
+            "expectedSeatShare": 0.36789,
+            "variance": 1.5393947899999993,
+            "probabilityZeroSeats": 0.0029,
+            "probabilityMajoritySeats": 0.0694
+          }
+        },
+        {
+          "coalitionSize": 25,
+          "selectorShare": 0.25,
+          "fixedTakeBudget": 25,
+          "bestPattern": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 3.8451,
+          "expectedSeatShare": 0.38451,
+          "seatStatistics": {
+            "expectedSeats": 3.8451,
+            "expectedSeatShare": 0.38451,
+            "variance": 1.495905989999999,
+            "probabilityZeroSeats": 0.0011,
+            "probabilityMajoritySeats": 0.0815
+          }
+        }
+      ],
+      "popularity": {
+        "supportCorrelation": 1,
+        "supportCorrelation95": [
+          1,
+          1
+        ],
+        "seatCorrelation": 0.2857156055296303,
+        "topDecileSeatShare": 0.100425,
+        "winnerOverlap": 0.75,
+        "supportGini": 0.4983333333333333,
+        "lesserKnownMeanSelectionProbability": 0.39963333333333334,
+        "marginalSupportCurve": [
+          {
+            "support": 1,
+            "selectionProbability": 0
+          },
+          {
+            "support": 2,
+            "selectionProbability": 0.3362
+          },
+          {
+            "support": 3,
+            "selectionProbability": 0.3366
+          },
+          {
+            "support": 5,
+            "selectionProbability": 0.3358
+          },
+          {
+            "support": 8,
+            "selectionProbability": 0.3295
+          },
+          {
+            "support": 13,
+            "selectionProbability": 0.3357
+          },
+          {
+            "support": 21,
+            "selectionProbability": 0.3258
+          },
+          {
+            "support": 34,
+            "selectionProbability": 0.3298
+          }
+        ],
+        "report": {
+          "scenarioId": "HONEST_POPULARITY_SKEW",
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 2
+          },
+          "runs": 10000,
+          "selectionProbability": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 0.4017,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 0.4014,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 0.4,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 0.4095,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0.3954,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0.3983,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0.3948,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0.3995,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0.3965,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0.4029
+          },
+          "ownerExpectedSeats": {
+            "popularity-skew-0": 0.4017,
+            "popularity-skew-1": 0.4014,
+            "popularity-skew-2": 0.4,
+            "popularity-skew-3": 0.4095,
+            "popularity-skew-4": 0.3954,
+            "popularity-skew-5": 0.3983,
+            "popularity-skew-6": 0.3948,
+            "popularity-skew-7": 0.3995,
+            "popularity-skew-8": 0.3965,
+            "popularity-skew-9": 0.4029
+          },
+          "ownerSeatStatistics": {
+            "popularity-skew-0": {
+              "expectedSeats": 0.4017,
+              "expectedSeatShare": 0.100425,
+              "variance": 0.24033711,
+              "probabilityZeroSeats": 0.5983,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-1": {
+              "expectedSeats": 0.4014,
+              "expectedSeatShare": 0.10035,
+              "variance": 0.24027804,
+              "probabilityZeroSeats": 0.5986,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-2": {
+              "expectedSeats": 0.4,
+              "expectedSeatShare": 0.1,
+              "variance": 0.24,
+              "probabilityZeroSeats": 0.6,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-3": {
+              "expectedSeats": 0.4095,
+              "expectedSeatShare": 0.102375,
+              "variance": 0.24180975,
+              "probabilityZeroSeats": 0.5905,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-4": {
+              "expectedSeats": 0.3954,
+              "expectedSeatShare": 0.09885,
+              "variance": 0.23905884,
+              "probabilityZeroSeats": 0.6046,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-5": {
+              "expectedSeats": 0.3983,
+              "expectedSeatShare": 0.099575,
+              "variance": 0.23965711,
+              "probabilityZeroSeats": 0.6017,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-6": {
+              "expectedSeats": 0.3948,
+              "expectedSeatShare": 0.0987,
+              "variance": 0.23893296,
+              "probabilityZeroSeats": 0.6052,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-7": {
+              "expectedSeats": 0.3995,
+              "expectedSeatShare": 0.099875,
+              "variance": 0.23989975,
+              "probabilityZeroSeats": 0.6005,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-8": {
+              "expectedSeats": 0.3965,
+              "expectedSeatShare": 0.099125,
+              "variance": 0.23928775,
+              "probabilityZeroSeats": 0.6035,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-9": {
+              "expectedSeats": 0.4029,
+              "expectedSeatShare": 0.100725,
+              "variance": 0.24057159,
+              "probabilityZeroSeats": 0.5971,
+              "probabilityMajoritySeats": 0
+            }
+          },
+          "candidateSupport": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 42,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 24,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 8,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 12,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 2,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 3,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 4,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 16,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 6,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 3
+          },
+          "ownerSupportUnits": {
+            "popularity-skew-0": 42,
+            "popularity-skew-1": 24,
+            "popularity-skew-2": 16,
+            "popularity-skew-3": 12,
+            "popularity-skew-4": 8,
+            "popularity-skew-5": 6,
+            "popularity-skew-6": 4,
+            "popularity-skew-7": 3,
+            "popularity-skew-8": 3,
+            "popularity-skew-9": 2
+          },
+          "meanSelectedQuality": 5.5084,
+          "qualityRecovery": 0.6480470588235294,
+          "selectionConcentration": 0.10001044375,
+          "winnerSetStability": 0.27008986612948127,
+          "explanationCoverage": 1,
+          "supportDistribution": [
+            42,
+            24,
+            16,
+            12,
+            8,
+            6,
+            4,
+            3,
+            3,
+            2
+          ],
+          "invalidAttemptRate": 0,
+          "reciprocitySignals": 0,
+          "shortCycleSignals": 0,
+          "popularity": {
+            "coefficient": 1,
+            "confidenceInterval95": [
+              1,
+              1
+            ],
+            "sampleSize": 10,
+            "missing": 0,
+            "winnerOverlap": 0.75,
+            "topDecileSeatShare": 0.100425,
+            "supportGini": 0.4983333333333333
+          }
+        }
+      },
+      "quality": {
+        "qualityRecovery": 0.6142666666666666,
+        "meanSelectedQuality": 6.4498
+      },
+      "honestDenseCommunity": {
+        "denseQualityRecovery": 0.6193761904761905,
+        "sparseQualityRecovery": 0.6193761904761905,
+        "penalty": 0,
+        "identicalAllocationInputs": true
+      },
+      "weakCandidate": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0.9994000000000001,
+          "strategicSelectorExpectedSeats": 0.8052,
+          "selectorWinningProbabilityGain": -0.19420000000000004
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.70255,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.27008986612948127,
+        "coalitionAt25": {
+          "expectedSeats": 3.8451,
+          "expectedSeatShare": 0.38451,
+          "variance": 1.495905989999999,
+          "probabilityZeroSeats": 0.0011,
+          "probabilityMajoritySeats": 0.0815
+        }
+      },
+      "explainability": 1,
+      "smallCampaigns": [
+        {
+          "selectors": 10,
+          "seats": 2,
+          "qualityRecovery": 0.9078454545454545,
+          "winnerSetStability": 0.553755375537528,
+          "supportDistribution": [
+            3,
+            2,
+            2,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 25,
+          "seats": 3,
+          "qualityRecovery": 0.74955,
+          "winnerSetStability": 0.3037803780377843,
+          "supportDistribution": [
+            5,
+            4,
+            4,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 50,
+          "seats": 5,
+          "qualityRecovery": 0.7303523076923076,
+          "winnerSetStability": 0.28077212483154057,
+          "supportDistribution": [
+            6,
+            6,
+            5,
+            5,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 100,
+          "seats": 10,
+          "qualityRecovery": 0.7250078431372549,
+          "winnerSetStability": 0.2707755578250827,
+          "supportDistribution": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            5,
+            5,
+            5,
+            5,
+            5,
+            4,
+            4,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "behavioralObservationBoundary": {
+        "reciprocitySignals": 1,
+        "reciprocityInvalidAttemptRate": 0,
+        "shortCycleSignals": 1,
+        "shortCycleInvalidAttemptRate": 0,
+        "lateTimingChangesSupport": false,
+        "lateTimingChangesSelectionProbabilities": false,
+        "conclusion": "Reciprocity, cycles, and timing remain observations; no signal changes validity, support, or allocation."
+      },
+      "influenceConservation": {
+        "invariant": "m additional valid canonical givers contribute at most m raw support units",
+        "passed": true,
+        "note": "This is not a claim of Sybil resistance or acceptable seat capture."
+      }
+    },
+    {
+      "strategy": {
+        "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+        "strategyVersion": "1"
+      },
+      "candidateSplitting": {
+        "coalitionTakes": 20,
+        "seats": 3,
+        "search": "Best-found across balanced 1-to-6 allied-recipient partitions fixed before execution.",
+        "baseline": {
+          "pattern": [
+            20
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 0.7625,
+          "expectedSeatShare": 0.25416666666666665,
+          "variance": 0.18109375000000005,
+          "probabilityZeroSeats": 0.2375,
+          "probabilityMajoritySeats": 0
+        },
+        "best": {
+          "pattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 1.0481,
+          "expectedSeatShare": 0.34936666666666666,
+          "variance": 0.5805863899999999,
+          "probabilityZeroSeats": 0.2412,
+          "probabilityMajoritySeats": 0.2631
+        },
+        "absoluteExpectedSeatGain": 0.2856000000000001,
+        "absoluteSeatShareGain": 0.0952,
+        "fixedBudgetAmplification": 1.3745573770491804,
+        "patterns": [
+          {
+            "pattern": [
+              20
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.7625,
+            "expectedSeatShare": 0.25416666666666665,
+            "variance": 0.18109375000000005,
+            "probabilityZeroSeats": 0.2375,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              10,
+              10
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.955,
+            "expectedSeatShare": 0.3183333333333333,
+            "variance": 0.416975,
+            "probabilityZeroSeats": 0.232,
+            "probabilityMajoritySeats": 0.187
+          },
+          {
+            "pattern": [
+              7,
+              7,
+              6
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.0051,
+            "expectedSeatShare": 0.33503333333333335,
+            "variance": 0.5110739899999999,
+            "probabilityZeroSeats": 0.2393,
+            "probabilityMajoritySeats": 0.2307
+          },
+          {
+            "pattern": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.031,
+            "expectedSeatShare": 0.3436666666666666,
+            "variance": 0.5250390000000003,
+            "probabilityZeroSeats": 0.2294,
+            "probabilityMajoritySeats": 0.2423
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              4,
+              4,
+              4
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.0419,
+            "expectedSeatShare": 0.3473,
+            "variance": 0.54274439,
+            "probabilityZeroSeats": 0.231,
+            "probabilityMajoritySeats": 0.2526
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.0481,
+            "expectedSeatShare": 0.34936666666666666,
+            "variance": 0.5805863899999999,
+            "probabilityZeroSeats": 0.2412,
+            "probabilityMajoritySeats": 0.2631
+          }
+        ]
+      },
+      "coalitionCapture": [
+        {
+          "coalitionSize": 1,
+          "selectorShare": 0.01,
+          "fixedTakeBudget": 1,
+          "bestPattern": [
+            1
+          ],
+          "expectedSeats": 0.1419,
+          "expectedSeatShare": 0.01419,
+          "seatStatistics": {
+            "expectedSeats": 0.1419,
+            "expectedSeatShare": 0.01419,
+            "variance": 0.12176439,
+            "probabilityZeroSeats": 0.8581,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 2,
+          "selectorShare": 0.02,
+          "fixedTakeBudget": 2,
+          "bestPattern": [
+            1,
+            1
+          ],
+          "expectedSeats": 0.2804,
+          "expectedSeatShare": 0.02804,
+          "seatStatistics": {
+            "expectedSeats": 0.2804,
+            "expectedSeatShare": 0.02804,
+            "variance": 0.23557583999999998,
+            "probabilityZeroSeats": 0.7365,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 3,
+          "selectorShare": 0.03,
+          "fixedTakeBudget": 3,
+          "bestPattern": [
+            1,
+            1,
+            1
+          ],
+          "expectedSeats": 0.4128,
+          "expectedSeatShare": 0.04128,
+          "seatStatistics": {
+            "expectedSeats": 0.4128,
+            "expectedSeatShare": 0.04128,
+            "variance": 0.3381961600000001,
+            "probabilityZeroSeats": 0.633,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 5,
+          "selectorShare": 0.05,
+          "fixedTakeBudget": 5,
+          "bestPattern": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "expectedSeats": 0.6649,
+          "expectedSeatShare": 0.06649000000000001,
+          "seatStatistics": {
+            "expectedSeats": 0.6649,
+            "expectedSeatShare": 0.06649000000000001,
+            "variance": 0.52240799,
+            "probabilityZeroSeats": 0.4727,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 8,
+          "selectorShare": 0.08,
+          "fixedTakeBudget": 8,
+          "bestPattern": [
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "expectedSeats": 1.0457,
+          "expectedSeatShare": 0.10457000000000001,
+          "seatStatistics": {
+            "expectedSeats": 1.0457,
+            "expectedSeatShare": 0.10457000000000001,
+            "variance": 0.7432115099999999,
+            "probabilityZeroSeats": 0.2883,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 10,
+          "selectorShare": 0.1,
+          "fixedTakeBudget": 10,
+          "bestPattern": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "expectedSeats": 1.3038,
+          "expectedSeatShare": 0.13038,
+          "seatStatistics": {
+            "expectedSeats": 1.3038,
+            "expectedSeatShare": 0.13038,
+            "variance": 0.9097055599999997,
+            "probabilityZeroSeats": 0.207,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 15,
+          "selectorShare": 0.15,
+          "fixedTakeBudget": 15,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "expectedSeats": 1.8172,
+          "expectedSeatShare": 0.18172,
+          "seatStatistics": {
+            "expectedSeats": 1.8172,
+            "expectedSeatShare": 0.18172,
+            "variance": 1.11558416,
+            "probabilityZeroSeats": 0.094,
+            "probabilityMajoritySeats": 0.0012
+          }
+        },
+        {
+          "coalitionSize": 20,
+          "selectorShare": 0.2,
+          "fixedTakeBudget": 20,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 2.2809,
+          "expectedSeatShare": 0.22809,
+          "seatStatistics": {
+            "expectedSeats": 2.2809,
+            "expectedSeatShare": 0.22809,
+            "variance": 1.27019519,
+            "probabilityZeroSeats": 0.0455,
+            "probabilityMajoritySeats": 0.0028
+          }
+        },
+        {
+          "coalitionSize": 25,
+          "selectorShare": 0.25,
+          "fixedTakeBudget": 25,
+          "bestPattern": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 2.7244,
+          "expectedSeatShare": 0.27244,
+          "seatStatistics": {
+            "expectedSeats": 2.7244,
+            "expectedSeatShare": 0.27244,
+            "variance": 1.3798446399999982,
+            "probabilityZeroSeats": 0.0188,
+            "probabilityMajoritySeats": 0.0098
+          }
+        }
+      ],
+      "popularity": {
+        "supportCorrelation": 1,
+        "supportCorrelation95": [
+          1,
+          1
+        ],
+        "seatCorrelation": 0.9969650916353059,
+        "topDecileSeatShare": 0.2247,
+        "winnerOverlap": 1,
+        "supportGini": 0.4983333333333333,
+        "lesserKnownMeanSelectionProbability": 0.13249999999999998,
+        "marginalSupportCurve": [
+          {
+            "support": 1,
+            "selectionProbability": 0.0475
+          },
+          {
+            "support": 2,
+            "selectionProbability": 0.0988
+          },
+          {
+            "support": 3,
+            "selectionProbability": 0.1404
+          },
+          {
+            "support": 5,
+            "selectionProbability": 0.2183
+          },
+          {
+            "support": 8,
+            "selectionProbability": 0.3226
+          },
+          {
+            "support": 13,
+            "selectionProbability": 0.4566
+          },
+          {
+            "support": 21,
+            "selectionProbability": 0.6103
+          },
+          {
+            "support": 34,
+            "selectionProbability": 0.7513
+          }
+        ],
+        "report": {
+          "scenarioId": "HONEST_POPULARITY_SKEW",
+          "strategy": {
+            "strategyId": "LINEAR_PPS_WITHOUT_REPLACEMENT",
+            "strategyVersion": "1"
+          },
+          "runs": 10000,
+          "selectionProbability": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 0.8988,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 0.7556,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 0.6111,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 0.5028,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0.3612,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0.2852,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0.1878,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0.1473,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0.1503,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0.0999
+          },
+          "ownerExpectedSeats": {
+            "popularity-skew-0": 0.8988,
+            "popularity-skew-1": 0.7556,
+            "popularity-skew-2": 0.6111,
+            "popularity-skew-3": 0.5028,
+            "popularity-skew-4": 0.3612,
+            "popularity-skew-5": 0.2852,
+            "popularity-skew-6": 0.1878,
+            "popularity-skew-7": 0.1473,
+            "popularity-skew-8": 0.1503,
+            "popularity-skew-9": 0.0999
+          },
+          "ownerSeatStatistics": {
+            "popularity-skew-0": {
+              "expectedSeats": 0.8988,
+              "expectedSeatShare": 0.2247,
+              "variance": 0.09095855999999991,
+              "probabilityZeroSeats": 0.1012,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-1": {
+              "expectedSeats": 0.7556,
+              "expectedSeatShare": 0.1889,
+              "variance": 0.18466863999999994,
+              "probabilityZeroSeats": 0.2444,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-2": {
+              "expectedSeats": 0.6111,
+              "expectedSeatShare": 0.152775,
+              "variance": 0.23765679,
+              "probabilityZeroSeats": 0.3889,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-3": {
+              "expectedSeats": 0.5028,
+              "expectedSeatShare": 0.1257,
+              "variance": 0.24999216000000002,
+              "probabilityZeroSeats": 0.4972,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-4": {
+              "expectedSeats": 0.3612,
+              "expectedSeatShare": 0.0903,
+              "variance": 0.23073456,
+              "probabilityZeroSeats": 0.6388,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-5": {
+              "expectedSeats": 0.2852,
+              "expectedSeatShare": 0.0713,
+              "variance": 0.20386096,
+              "probabilityZeroSeats": 0.7148,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-6": {
+              "expectedSeats": 0.1878,
+              "expectedSeatShare": 0.04695,
+              "variance": 0.15253116,
+              "probabilityZeroSeats": 0.8122,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-7": {
+              "expectedSeats": 0.1473,
+              "expectedSeatShare": 0.036825,
+              "variance": 0.12560270999999998,
+              "probabilityZeroSeats": 0.8527,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-8": {
+              "expectedSeats": 0.1503,
+              "expectedSeatShare": 0.037575,
+              "variance": 0.12770990999999998,
+              "probabilityZeroSeats": 0.8497,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-9": {
+              "expectedSeats": 0.0999,
+              "expectedSeatShare": 0.024975,
+              "variance": 0.08991999,
+              "probabilityZeroSeats": 0.9001,
+              "probabilityMajoritySeats": 0
+            }
+          },
+          "candidateSupport": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 42,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 24,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 8,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 12,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 2,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 3,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 4,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 16,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 6,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 3
+          },
+          "ownerSupportUnits": {
+            "popularity-skew-0": 42,
+            "popularity-skew-1": 24,
+            "popularity-skew-2": 16,
+            "popularity-skew-3": 12,
+            "popularity-skew-4": 8,
+            "popularity-skew-5": 6,
+            "popularity-skew-6": 4,
+            "popularity-skew-7": 3,
+            "popularity-skew-8": 3,
+            "popularity-skew-9": 2
+          },
+          "meanSelectedQuality": 7.3459,
+          "qualityRecovery": 0.8642235294117647,
+          "selectionConcentration": 0.14414778499999997,
+          "winnerSetStability": 0.43343858195344415,
+          "explanationCoverage": 1,
+          "supportDistribution": [
+            42,
+            24,
+            16,
+            12,
+            8,
+            6,
+            4,
+            3,
+            3,
+            2
+          ],
+          "invalidAttemptRate": 0,
+          "reciprocitySignals": 0,
+          "shortCycleSignals": 0,
+          "popularity": {
+            "coefficient": 1,
+            "confidenceInterval95": [
+              1,
+              1
+            ],
+            "sampleSize": 10,
+            "missing": 0,
+            "winnerOverlap": 1,
+            "topDecileSeatShare": 0.2247,
+            "supportGini": 0.4983333333333333
+          }
+        }
+      },
+      "quality": {
+        "qualityRecovery": 0.7656309523809524,
+        "meanSelectedQuality": 8.039125
+      },
+      "honestDenseCommunity": {
+        "denseQualityRecovery": 0.7680690476190476,
+        "sparseQualityRecovery": 0.7680690476190476,
+        "penalty": 0,
+        "identicalAllocationInputs": true
+      },
+      "weakCandidate": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 0.914,
+          "strategicSelectorExpectedSeats": 0.8931,
+          "selectorWinningProbabilityGain": -0.02090000000000003
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.8470222222222222,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.43343858195344415,
+        "coalitionAt25": {
+          "expectedSeats": 2.7244,
+          "expectedSeatShare": 0.27244,
+          "variance": 1.3798446399999982,
+          "probabilityZeroSeats": 0.0188,
+          "probabilityMajoritySeats": 0.0098
+        }
+      },
+      "explainability": 1,
+      "smallCampaigns": [
+        {
+          "selectors": 10,
+          "seats": 2,
+          "qualityRecovery": 0.7494727272727272,
+          "winnerSetStability": 0.28562856285629784,
+          "supportDistribution": [
+            3,
+            2,
+            2,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 25,
+          "seats": 3,
+          "qualityRecovery": 0.7582666666666666,
+          "winnerSetStability": 0.2731973197319627,
+          "supportDistribution": [
+            5,
+            4,
+            4,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 50,
+          "seats": 5,
+          "qualityRecovery": 0.7734907692307692,
+          "winnerSetStability": 0.27514378421969965,
+          "supportDistribution": [
+            6,
+            6,
+            5,
+            5,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 100,
+          "seats": 10,
+          "qualityRecovery": 0.7724498039215686,
+          "winnerSetStability": 0.26999275699579156,
+          "supportDistribution": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            5,
+            5,
+            5,
+            5,
+            5,
+            4,
+            4,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "behavioralObservationBoundary": {
+        "reciprocitySignals": 1,
+        "reciprocityInvalidAttemptRate": 0,
+        "shortCycleSignals": 1,
+        "shortCycleInvalidAttemptRate": 0,
+        "lateTimingChangesSupport": false,
+        "lateTimingChangesSelectionProbabilities": false,
+        "conclusion": "Reciprocity, cycles, and timing remain observations; no signal changes validity, support, or allocation."
+      },
+      "influenceConservation": {
+        "invariant": "m additional valid canonical givers contribute at most m raw support units",
+        "passed": true,
+        "note": "This is not a claim of Sybil resistance or acceptable seat capture."
+      }
+    },
+    {
+      "strategy": {
+        "strategyId": "CAPPED_SUPPORT_PPS",
+        "strategyVersion": "1",
+        "minimumSupport": 2,
+        "supportCap": 3
+      },
+      "candidateSplitting": {
+        "coalitionTakes": 20,
+        "seats": 3,
+        "search": "Best-found across balanced 1-to-6 allied-recipient partitions fixed before execution.",
+        "baseline": {
+          "pattern": [
+            20
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 0.4285,
+          "expectedSeatShare": 0.14283333333333334,
+          "variance": 0.24488775,
+          "probabilityZeroSeats": 0.5715,
+          "probabilityMajoritySeats": 0
+        },
+        "best": {
+          "pattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "supportBudget": 20,
+          "expectedSeats": 1.4917,
+          "expectedSeatShare": 0.49723333333333336,
+          "variance": 0.6189311100000001,
+          "probabilityZeroSeats": 0.094,
+          "probabilityMajoritySeats": 0.4952
+        },
+        "absoluteExpectedSeatGain": 1.0632000000000001,
+        "absoluteSeatShareGain": 0.35440000000000005,
+        "fixedBudgetAmplification": 3.481213535589265,
+        "patterns": [
+          {
+            "pattern": [
+              20
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.4285,
+            "expectedSeatShare": 0.14283333333333334,
+            "variance": 0.24488775,
+            "probabilityZeroSeats": 0.5715,
+            "probabilityMajoritySeats": 0
+          },
+          {
+            "pattern": [
+              10,
+              10
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.7627,
+            "expectedSeatShare": 0.25423333333333337,
+            "variance": 0.40858870999999986,
+            "probabilityZeroSeats": 0.3511,
+            "probabilityMajoritySeats": 0.1138
+          },
+          {
+            "pattern": [
+              7,
+              7,
+              6
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 0.9999,
+            "expectedSeatShare": 0.3333,
+            "variance": 0.49489998999999985,
+            "probabilityZeroSeats": 0.2346,
+            "probabilityMajoritySeats": 0.2216
+          },
+          {
+            "pattern": [
+              5,
+              5,
+              5,
+              5
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.2049,
+            "expectedSeatShare": 0.40163333333333334,
+            "variance": 0.5703159899999999,
+            "probabilityZeroSeats": 0.1679,
+            "probabilityMajoritySeats": 0.337
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              4,
+              4,
+              4
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.3707,
+            "expectedSeatShare": 0.45690000000000003,
+            "variance": 0.60708151,
+            "probabilityZeroSeats": 0.1207,
+            "probabilityMajoritySeats": 0.4252
+          },
+          {
+            "pattern": [
+              4,
+              4,
+              3,
+              3,
+              3,
+              3
+            ],
+            "supportBudget": 20,
+            "expectedSeats": 1.4917,
+            "expectedSeatShare": 0.49723333333333336,
+            "variance": 0.6189311100000001,
+            "probabilityZeroSeats": 0.094,
+            "probabilityMajoritySeats": 0.4952
+          }
+        ]
+      },
+      "coalitionCapture": [
+        {
+          "coalitionSize": 1,
+          "selectorShare": 0.01,
+          "fixedTakeBudget": 1,
+          "bestPattern": [
+            1
+          ],
+          "expectedSeats": 0,
+          "expectedSeatShare": 0,
+          "seatStatistics": {
+            "expectedSeats": 0,
+            "expectedSeatShare": 0,
+            "variance": 0,
+            "probabilityZeroSeats": 1,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 2,
+          "selectorShare": 0.02,
+          "fixedTakeBudget": 2,
+          "bestPattern": [
+            2
+          ],
+          "expectedSeats": 0.4389,
+          "expectedSeatShare": 0.04389,
+          "seatStatistics": {
+            "expectedSeats": 0.4389,
+            "expectedSeatShare": 0.04389,
+            "variance": 0.24626679,
+            "probabilityZeroSeats": 0.5611,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 3,
+          "selectorShare": 0.03,
+          "fixedTakeBudget": 3,
+          "bestPattern": [
+            3
+          ],
+          "expectedSeats": 0.5677,
+          "expectedSeatShare": 0.05677,
+          "seatStatistics": {
+            "expectedSeats": 0.5677,
+            "expectedSeatShare": 0.05677,
+            "variance": 0.24541670999999998,
+            "probabilityZeroSeats": 0.4323,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 5,
+          "selectorShare": 0.05,
+          "fixedTakeBudget": 5,
+          "bestPattern": [
+            3,
+            2
+          ],
+          "expectedSeats": 0.9499,
+          "expectedSeatShare": 0.09498999999999999,
+          "seatStatistics": {
+            "expectedSeats": 0.9499,
+            "expectedSeatShare": 0.09498999999999999,
+            "variance": 0.4647899900000001,
+            "probabilityZeroSeats": 0.2587,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 8,
+          "selectorShare": 0.08,
+          "fixedTakeBudget": 8,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 1.5224,
+          "expectedSeatShare": 0.15224,
+          "seatStatistics": {
+            "expectedSeats": 1.5224,
+            "expectedSeatShare": 0.15224,
+            "variance": 0.8056982400000003,
+            "probabilityZeroSeats": 0.1212,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 10,
+          "selectorShare": 0.1,
+          "fixedTakeBudget": 10,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 1.8184,
+          "expectedSeatShare": 0.18184,
+          "seatStatistics": {
+            "expectedSeats": 1.8184,
+            "expectedSeatShare": 0.18184,
+            "variance": 0.9514214399999998,
+            "probabilityZeroSeats": 0.078,
+            "probabilityMajoritySeats": 0
+          }
+        },
+        {
+          "coalitionSize": 15,
+          "selectorShare": 0.15,
+          "fixedTakeBudget": 15,
+          "bestPattern": [
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 2.4889,
+          "expectedSeatShare": 0.24889,
+          "seatStatistics": {
+            "expectedSeats": 2.4889,
+            "expectedSeatShare": 0.24889,
+            "variance": 1.1850767899999992,
+            "probabilityZeroSeats": 0.0229,
+            "probabilityMajoritySeats": 0.0021
+          }
+        },
+        {
+          "coalitionSize": 20,
+          "selectorShare": 0.2,
+          "fixedTakeBudget": 20,
+          "bestPattern": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 3.0956,
+          "expectedSeatShare": 0.30956,
+          "seatStatistics": {
+            "expectedSeats": 3.0956,
+            "expectedSeatShare": 0.30956,
+            "variance": 1.4610606399999977,
+            "probabilityZeroSeats": 0.0099,
+            "probabilityMajoritySeats": 0.0221
+          }
+        },
+        {
+          "coalitionSize": 25,
+          "selectorShare": 0.25,
+          "fixedTakeBudget": 25,
+          "bestPattern": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "expectedSeats": 3.5906,
+          "expectedSeatShare": 0.35906,
+          "seatStatistics": {
+            "expectedSeats": 3.5906,
+            "expectedSeatShare": 0.35906,
+            "variance": 1.4629916400000003,
+            "probabilityZeroSeats": 0.0021,
+            "probabilityMajoritySeats": 0.0553
+          }
+        }
+      ],
+      "popularity": {
+        "supportCorrelation": 1,
+        "supportCorrelation95": [
+          1,
+          1
+        ],
+        "seatCorrelation": 0.3039527718400323,
+        "topDecileSeatShare": 0.1041,
+        "winnerOverlap": 0.5,
+        "supportGini": 0.4983333333333333,
+        "lesserKnownMeanSelectionProbability": 0.37496666666666667,
+        "marginalSupportCurve": [
+          {
+            "support": 1,
+            "selectionProbability": 0
+          },
+          {
+            "support": 2,
+            "selectionProbability": 0.2344
+          },
+          {
+            "support": 3,
+            "selectionProbability": 0.3312
+          },
+          {
+            "support": 5,
+            "selectionProbability": 0.3319
+          },
+          {
+            "support": 8,
+            "selectionProbability": 0.334
+          },
+          {
+            "support": 13,
+            "selectionProbability": 0.3398
+          },
+          {
+            "support": 21,
+            "selectionProbability": 0.332
+          },
+          {
+            "support": 34,
+            "selectionProbability": 0.3319
+          }
+        ],
+        "report": {
+          "scenarioId": "HONEST_POPULARITY_SKEW",
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 2,
+            "supportCap": 3
+          },
+          "runs": 10000,
+          "selectionProbability": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 0.4164,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 0.4176,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 0.4077,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 0.4067,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 0.4089,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 0.4068,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 0.411,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 0.4166,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 0.4104,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 0.2979
+          },
+          "ownerExpectedSeats": {
+            "popularity-skew-0": 0.4164,
+            "popularity-skew-1": 0.4176,
+            "popularity-skew-2": 0.4077,
+            "popularity-skew-3": 0.4067,
+            "popularity-skew-4": 0.4089,
+            "popularity-skew-5": 0.4068,
+            "popularity-skew-6": 0.411,
+            "popularity-skew-7": 0.4166,
+            "popularity-skew-8": 0.4104,
+            "popularity-skew-9": 0.2979
+          },
+          "ownerSeatStatistics": {
+            "popularity-skew-0": {
+              "expectedSeats": 0.4164,
+              "expectedSeatShare": 0.1041,
+              "variance": 0.24301104,
+              "probabilityZeroSeats": 0.5836,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-1": {
+              "expectedSeats": 0.4176,
+              "expectedSeatShare": 0.1044,
+              "variance": 0.24321024,
+              "probabilityZeroSeats": 0.5824,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-2": {
+              "expectedSeats": 0.4077,
+              "expectedSeatShare": 0.101925,
+              "variance": 0.24148071000000002,
+              "probabilityZeroSeats": 0.5923,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-3": {
+              "expectedSeats": 0.4067,
+              "expectedSeatShare": 0.101675,
+              "variance": 0.24129511,
+              "probabilityZeroSeats": 0.5933,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-4": {
+              "expectedSeats": 0.4089,
+              "expectedSeatShare": 0.102225,
+              "variance": 0.24170079,
+              "probabilityZeroSeats": 0.5911,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-5": {
+              "expectedSeats": 0.4068,
+              "expectedSeatShare": 0.1017,
+              "variance": 0.24131376,
+              "probabilityZeroSeats": 0.5932,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-6": {
+              "expectedSeats": 0.411,
+              "expectedSeatShare": 0.10275,
+              "variance": 0.242079,
+              "probabilityZeroSeats": 0.589,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-7": {
+              "expectedSeats": 0.4166,
+              "expectedSeatShare": 0.10415,
+              "variance": 0.24304444,
+              "probabilityZeroSeats": 0.5834,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-8": {
+              "expectedSeats": 0.4104,
+              "expectedSeatShare": 0.1026,
+              "variance": 0.24197184,
+              "probabilityZeroSeats": 0.5896,
+              "probabilityMajoritySeats": 0
+            },
+            "popularity-skew-9": {
+              "expectedSeats": 0.2979,
+              "expectedSeatShare": 0.074475,
+              "variance": 0.20915559,
+              "probabilityZeroSeats": 0.7021,
+              "probabilityMajoritySeats": 0
+            }
+          },
+          "candidateSupport": {
+            "0x7ab285430779c8f1ca3d2686333a8d3f37b7c988f37f0a4432625db88f30cbc1": 42,
+            "0xbd3d8ee90123b819b5a18ab358004bbeb56dcd3356b47457c70c97717b255754": 24,
+            "0xb8b26bbbb16b97df809d4d007105aa5970e421904d90de3c974cf2c618a69247": 8,
+            "0x7536cdf1ca58764661e5d5cf3e5328342941db6994c4d639734866a9dafd4288": 12,
+            "0x0644e0f14b63dd5d73d2b17cc568c80ad8caa1493178d24316f5589002325c19": 2,
+            "0x1487c0074c69ee5481879b10e83a3217ce2522c02788a8b4ed265f2a971a17fd": 3,
+            "0xce8d395c9e9f5fd5b4ff66a4ac263ca3e6d50d4e0b3a11737d1d6b80d53dfd71": 4,
+            "0xe7c0420b16a3f0ec41b69c775cb38216b9941e249d9c6703f6fdcfcd4bf0434e": 16,
+            "0xeb753b28eb72415a37545db59d35fa9a124a4d6c55ff073acb6f491e5fe83ae6": 6,
+            "0xd721f162dc9a8cad6b6811c5aa093e4a7edcb910eb0a49461fa10eb1fec9409f": 3
+          },
+          "ownerSupportUnits": {
+            "popularity-skew-0": 42,
+            "popularity-skew-1": 24,
+            "popularity-skew-2": 16,
+            "popularity-skew-3": 12,
+            "popularity-skew-4": 8,
+            "popularity-skew-5": 6,
+            "popularity-skew-6": 4,
+            "popularity-skew-7": 3,
+            "popularity-skew-8": 3,
+            "popularity-skew-9": 2
+          },
+          "meanSelectedQuality": 5.6327,
+          "qualityRecovery": 0.6626705882352941,
+          "selectionConcentration": 0.1007335925,
+          "winnerSetStability": 0.2714128555712846,
+          "explanationCoverage": 1,
+          "supportDistribution": [
+            42,
+            24,
+            16,
+            12,
+            8,
+            6,
+            4,
+            3,
+            3,
+            2
+          ],
+          "invalidAttemptRate": 0,
+          "reciprocitySignals": 0,
+          "shortCycleSignals": 0,
+          "popularity": {
+            "coefficient": 1,
+            "confidenceInterval95": [
+              1,
+              1
+            ],
+            "sampleSize": 10,
+            "missing": 0,
+            "winnerOverlap": 0.5,
+            "topDecileSeatShare": 0.1041,
+            "supportGini": 0.4983333333333333
+          }
+        }
+      },
+      "quality": {
+        "qualityRecovery": 0.6344642857142857,
+        "meanSelectedQuality": 6.661875
+      },
+      "honestDenseCommunity": {
+        "denseQualityRecovery": 0.6318619047619047,
+        "sparseQualityRecovery": 0.6318619047619047,
+        "penalty": 0,
+        "identicalAllocationInputs": true
+      },
+      "weakCandidate": {
+        "overlapping": {
+          "truthfulSelectorExpectedSeats": 1.0042,
+          "strategicSelectorExpectedSeats": 0.8555999999999999,
+          "selectorWinningProbabilityGain": -0.14860000000000007
+        },
+        "disjoint": {
+          "truthfulSelectorExpectedSeats": 0,
+          "strategicSelectorExpectedSeats": 0,
+          "selectorWinningProbabilityGain": 0,
+          "truthfulQualityRecovery": 1,
+          "strategicQualityRecovery": 0.7563,
+          "note": "Selectors are not recipient candidates, so nominating weakly cannot improve their own seat probability; it can still reduce allocation quality."
+        }
+      },
+      "volatility": {
+        "winnerSetStability": 0.2714128555712846,
+        "coalitionAt25": {
+          "expectedSeats": 3.5906,
+          "expectedSeatShare": 0.35906,
+          "variance": 1.4629916400000003,
+          "probabilityZeroSeats": 0.0021,
+          "probabilityMajoritySeats": 0.0553
+        }
+      },
+      "explainability": 1,
+      "smallCampaigns": [
+        {
+          "selectors": 10,
+          "seats": 2,
+          "qualityRecovery": 0.9227454545454545,
+          "winnerSetStability": 0.5601560156015356,
+          "supportDistribution": [
+            3,
+            2,
+            2,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 25,
+          "seats": 3,
+          "qualityRecovery": 0.7777208333333333,
+          "winnerSetStability": 0.3100710071006885,
+          "supportDistribution": [
+            5,
+            4,
+            4,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 50,
+          "seats": 5,
+          "qualityRecovery": 0.7498307692307692,
+          "winnerSetStability": 0.28274732235129174,
+          "supportDistribution": [
+            6,
+            6,
+            5,
+            5,
+            5,
+            4,
+            4,
+            3,
+            3,
+            3,
+            2,
+            2,
+            1,
+            1
+          ]
+        },
+        {
+          "selectors": 100,
+          "seats": 10,
+          "qualityRecovery": 0.7492749019607843,
+          "winnerSetStability": 0.27628524243595953,
+          "supportDistribution": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            5,
+            5,
+            5,
+            5,
+            5,
+            4,
+            4,
+            4,
+            4,
+            3,
+            3,
+            3,
+            3,
+            3,
+            2,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      ],
+      "behavioralObservationBoundary": {
+        "reciprocitySignals": 1,
+        "reciprocityInvalidAttemptRate": 0,
+        "shortCycleSignals": 1,
+        "shortCycleInvalidAttemptRate": 0,
+        "lateTimingChangesSupport": false,
+        "lateTimingChangesSelectionProbabilities": false,
+        "conclusion": "Reciprocity, cycles, and timing remain observations; no signal changes validity, support, or allocation."
+      },
+      "influenceConservation": {
+        "invariant": "m additional valid canonical givers contribute at most m raw support units",
+        "passed": true,
+        "note": "This is not a claim of Sybil resistance or acceptable seat capture."
+      }
+    }
+  ],
+  "parameterSensitivity": [
+    {
+      "family": "THRESHOLD_UNIFORM_LOTTERY",
+      "points": [
+        {
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 1
+          },
+          "qualityRecovery": 0.618847619047619,
+          "candidateSplittingSeatShareGain": 0.36186666666666667,
+          "fixedBudgetAmplification": 3.529356943150046,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.666,
+          "nominationInformativeness": -0.1366026613259775,
+          "cartelSeatShareAt25Identities": 0.34516,
+          "popularityTopDecileSeatShare": 0.0984,
+          "winnerSetStability": 0.26835114998380605
+        },
+        {
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 2
+          },
+          "qualityRecovery": 0.6127238095238096,
+          "candidateSplittingSeatShareGain": 0.36453333333333326,
+          "fixedBudgetAmplification": 3.621284755512943,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.6716,
+          "nominationInformativeness": -0.6363636363636364,
+          "cartelSeatShareAt25Identities": 0.38639999999999997,
+          "popularityTopDecileSeatShare": 0.0968,
+          "winnerSetStability": 0.2642352178966849
+        },
+        {
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 3
+          },
+          "qualityRecovery": 0.6686666666666666,
+          "candidateSplittingSeatShareGain": 0.3569333333333333,
+          "fixedBudgetAmplification": 3.4559633027522936,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 11,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.5314685314685315,
+          "cartelSeatShareAt25Identities": 0.36216,
+          "popularityTopDecileSeatShare": 0.1101,
+          "winnerSetStability": 0.3039349072962562
+        },
+        {
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 5
+          },
+          "qualityRecovery": 0.7149047619047619,
+          "candidateSplittingSeatShareGain": 0.27159999999999995,
+          "fixedBudgetAmplification": 2.9055191768007482,
+          "bestSplittingPattern": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "qualifiedCoalitionAllies": 4,
+          "qualifiedLatentQualityCandidates": 10,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.43509039760995244,
+          "cartelSeatShareAt25Identities": 0.383,
+          "popularityTopDecileSeatShare": 0.167,
+          "winnerSetStability": 0.5236494597839078
+        },
+        {
+          "strategy": {
+            "strategyId": "THRESHOLD_UNIFORM_LOTTERY",
+            "strategyVersion": "1",
+            "minimumSupport": 8
+          },
+          "qualityRecovery": 0.8109904761904762,
+          "candidateSplittingSeatShareGain": 0.16920000000000007,
+          "fixedBudgetAmplification": 1.5076,
+          "bestSplittingPattern": [
+            10,
+            10
+          ],
+          "qualifiedCoalitionAllies": 2,
+          "qualifiedLatentQualityCandidates": 8,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.847109202052897,
+          "cartelSeatShareAt25Identities": 0.3,
+          "popularityTopDecileSeatShare": 0.2002,
+          "winnerSetStability": 0.6805122048819324
+        }
+      ],
+      "ranges": {
+        "qualityRecovery": {
+          "min": 0.6127238095238096,
+          "max": 0.8109904761904762,
+          "span": 0.1982666666666666
+        },
+        "candidateSplitting": {
+          "min": 0.16920000000000007,
+          "max": 0.36453333333333326,
+          "span": 0.1953333333333332
+        },
+        "cartelSeatShare": {
+          "min": 0.3,
+          "max": 0.38639999999999997,
+          "span": 0.08639999999999998
+        }
+      },
+      "summary": "quality range 0.613-0.811 (span 0.198); splitting-gain range 0.169-0.365 (span 0.195); cartel-share range 0.300-0.386 (span 0.086)"
+    },
+    {
+      "family": "CAPPED_SUPPORT_PPS",
+      "points": [
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 1,
+            "supportCap": 2
+          },
+          "qualityRecovery": 0.6276666666666666,
+          "candidateSplittingSeatShareGain": 0.3548,
+          "fixedBudgetAmplification": 3.44577205882353,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.6692,
+          "nominationInformativeness": 0.6643356643356644,
+          "cartelSeatShareAt25Identities": 0.36232000000000003,
+          "popularityTopDecileSeatShare": 0.1017,
+          "winnerSetStability": 0.2751348158310973
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 1,
+            "supportCap": 3
+          },
+          "qualityRecovery": 0.6329619047619047,
+          "candidateSplittingSeatShareGain": 0.3688,
+          "fixedBudgetAmplification": 3.631779257849667,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.5472,
+          "nominationInformativeness": 0.09090909090909091,
+          "cartelSeatShareAt25Identities": 0.34216,
+          "popularityTopDecileSeatShare": 0.101,
+          "winnerSetStability": 0.277676784999717
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 1,
+            "supportCap": 5
+          },
+          "qualityRecovery": 0.6619047619047619,
+          "candidateSplittingSeatShareGain": 0.27026666666666666,
+          "fixedBudgetAmplification": 2.8444040036396725,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.3952,
+          "nominationInformativeness": 0.5944055944055944,
+          "cartelSeatShareAt25Identities": 0.28912,
+          "popularityTopDecileSeatShare": 0.1169,
+          "winnerSetStability": 0.29006269174336874
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 1,
+            "supportCap": 8
+          },
+          "qualityRecovery": 0.6982952380952381,
+          "candidateSplittingSeatShareGain": 0.19133333333333333,
+          "fixedBudgetAmplification": 2.219201359388275,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.3556,
+          "nominationInformativeness": 0.8461538461538461,
+          "cartelSeatShareAt25Identities": 0.27464,
+          "popularityTopDecileSeatShare": 0.1302,
+          "winnerSetStability": 0.31658377636769475
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 2,
+            "supportCap": 2
+          },
+          "qualityRecovery": 0.6193619047619048,
+          "candidateSplittingSeatShareGain": 0.36506666666666665,
+          "fixedBudgetAmplification": 3.6816846229187075,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.678,
+          "nominationInformativeness": -0.08391608391608392,
+          "cartelSeatShareAt25Identities": 0.38316,
+          "popularityTopDecileSeatShare": 0.1039,
+          "winnerSetStability": 0.2688427752053225
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 2,
+            "supportCap": 3
+          },
+          "qualityRecovery": 0.6312666666666666,
+          "candidateSplittingSeatShareGain": 0.34853333333333336,
+          "fixedBudgetAmplification": 3.4384328358208953,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.5364,
+          "nominationInformativeness": 0.20665530815981215,
+          "cartelSeatShareAt25Identities": 0.35528,
+          "popularityTopDecileSeatShare": 0.106,
+          "winnerSetStability": 0.27752434307056545
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 2,
+            "supportCap": 5
+          },
+          "qualityRecovery": 0.6556285714285714,
+          "candidateSplittingSeatShareGain": 0.27213333333333334,
+          "fixedBudgetAmplification": 2.9056956115779644,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.4128,
+          "nominationInformativeness": 0.39930008695285735,
+          "cartelSeatShareAt25Identities": 0.29824,
+          "popularityTopDecileSeatShare": 0.121,
+          "winnerSetStability": 0.287379713790282
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 2,
+            "supportCap": 8
+          },
+          "qualityRecovery": 0.6989714285714286,
+          "candidateSplittingSeatShareGain": 0.18173333333333336,
+          "fixedBudgetAmplification": 2.0800316957210776,
+          "bestSplittingPattern": [
+            4,
+            4,
+            4,
+            4,
+            4
+          ],
+          "qualifiedCoalitionAllies": 5,
+          "qualifiedLatentQualityCandidates": 12,
+          "weakCandidateAdmissionProbability": 0.3268,
+          "nominationInformativeness": 0.8601398601398601,
+          "cartelSeatShareAt25Identities": 0.28344,
+          "popularityTopDecileSeatShare": 0.1337,
+          "winnerSetStability": 0.30880542693268254
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 3,
+            "supportCap": 2
+          },
+          "qualityRecovery": 0.665952380952381,
+          "candidateSplittingSeatShareGain": 0.3630666666666667,
+          "fixedBudgetAmplification": 3.600764087870105,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 11,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.21678321678321677,
+          "cartelSeatShareAt25Identities": 0.36112,
+          "popularityTopDecileSeatShare": 0.1119,
+          "winnerSetStability": 0.3031955639398657
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 3,
+            "supportCap": 3
+          },
+          "qualityRecovery": 0.6632666666666667,
+          "candidateSplittingSeatShareGain": 0.3522666666666666,
+          "fixedBudgetAmplification": 3.4714686623012163,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 11,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": -0.2907184843604137,
+          "cartelSeatShareAt25Identities": 0.36052,
+          "popularityTopDecileSeatShare": 0.1078,
+          "winnerSetStability": 0.3094075725528346
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 3,
+            "supportCap": 5
+          },
+          "qualityRecovery": 0.6815714285714286,
+          "candidateSplittingSeatShareGain": 0.2785333333333334,
+          "fixedBudgetAmplification": 2.9633458646616546,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 11,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.5174825174825175,
+          "cartelSeatShareAt25Identities": 0.3086,
+          "popularityTopDecileSeatShare": 0.1189,
+          "winnerSetStability": 0.31109205586997163
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 3,
+            "supportCap": 8
+          },
+          "qualityRecovery": 0.7169142857142857,
+          "candidateSplittingSeatShareGain": 0.1937333333333333,
+          "fixedBudgetAmplification": 2.2440068493150687,
+          "bestSplittingPattern": [
+            4,
+            4,
+            3,
+            3,
+            3,
+            3
+          ],
+          "qualifiedCoalitionAllies": 6,
+          "qualifiedLatentQualityCandidates": 11,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.7832167832167832,
+          "cartelSeatShareAt25Identities": 0.298,
+          "popularityTopDecileSeatShare": 0.139,
+          "winnerSetStability": 0.34525048114484547
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 5,
+            "supportCap": 2
+          },
+          "qualityRecovery": 0.7132761904761905,
+          "candidateSplittingSeatShareGain": 0.25439999999999996,
+          "fixedBudgetAmplification": 2.774883720930233,
+          "bestSplittingPattern": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "qualifiedCoalitionAllies": 4,
+          "qualifiedLatentQualityCandidates": 10,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.3193002111492393,
+          "cartelSeatShareAt25Identities": 0.38392,
+          "popularityTopDecileSeatShare": 0.1665,
+          "winnerSetStability": 0.5198612778444659
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 5,
+            "supportCap": 3
+          },
+          "qualityRecovery": 0.7147142857142857,
+          "candidateSplittingSeatShareGain": 0.276,
+          "fixedBudgetAmplification": 3.0414201183431953,
+          "bestSplittingPattern": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "qualifiedCoalitionAllies": 4,
+          "qualifiedLatentQualityCandidates": 10,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.4736871264301901,
+          "cartelSeatShareAt25Identities": 0.38288,
+          "popularityTopDecileSeatShare": 0.1668,
+          "winnerSetStability": 0.512978524743226
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 5,
+            "supportCap": 5
+          },
+          "qualityRecovery": 0.7129809523809524,
+          "candidateSplittingSeatShareGain": 0.2601333333333333,
+          "fixedBudgetAmplification": 2.840566037735849,
+          "bestSplittingPattern": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "qualifiedCoalitionAllies": 4,
+          "qualifiedLatentQualityCandidates": 10,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.19298364410118857,
+          "cartelSeatShareAt25Identities": 0.38488,
+          "popularityTopDecileSeatShare": 0.1644,
+          "winnerSetStability": 0.524129651860738
+        },
+        {
+          "strategy": {
+            "strategyId": "CAPPED_SUPPORT_PPS",
+            "strategyVersion": "1",
+            "minimumSupport": 5,
+            "supportCap": 8
+          },
+          "qualityRecovery": 0.7351904761904762,
+          "candidateSplittingSeatShareGain": 0.17853333333333335,
+          "fixedBudgetAmplification": 2.0842105263157897,
+          "bestSplittingPattern": [
+            5,
+            5,
+            5,
+            5
+          ],
+          "qualifiedCoalitionAllies": 4,
+          "qualifiedLatentQualityCandidates": 10,
+          "weakCandidateAdmissionProbability": 0,
+          "nominationInformativeness": 0.6386004222984786,
+          "cartelSeatShareAt25Identities": 0.37028,
+          "popularityTopDecileSeatShare": 0.1704,
+          "winnerSetStability": 0.526210484193671
+        }
+      ],
+      "ranges": {
+        "qualityRecovery": {
+          "min": 0.6193619047619048,
+          "max": 0.7351904761904762,
+          "span": 0.11582857142857139
+        },
+        "candidateSplitting": {
+          "min": 0.17853333333333335,
+          "max": 0.3688,
+          "span": 0.19026666666666667
+        },
+        "cartelSeatShare": {
+          "min": 0.27464,
+          "max": 0.38488,
+          "span": 0.11024
+        }
+      },
+      "summary": "quality range 0.619-0.735 (span 0.116); splitting-gain range 0.179-0.369 (span 0.190); cartel-share range 0.275-0.385 (span 0.110)"
+    }
+  ],
+  "decision": {
+    "pilotCandidates": [],
+    "seriousCampaignRecipientRule": "UNKNOWN: none of the modeled allocation strategies is adequate for a serious TAKE campaign.",
+    "stopRuleTriggered": true,
+    "newMechanismImplemented": false,
+    "propertiesRequiredOfFutureCandidate": [
+      "Independent genuine support remains consequential and monotone.",
+      "Redistributing a fixed coalition TAKE budget cannot materially increase expected seat control.",
+      "Small support differences do not become deterministic opportunity cliffs.",
+      "The rule remains legible and exactly replayable from public artifacts.",
+      "Disjoint selectors and recipients remain compatible with the rule.",
+      "Parameter choices are robust across small campaign sizes."
+    ]
+  },
+  "reportHash": "0x77cbbc810c6b161aeaa35a9ecb0d3350a83b8952a8f12cc62d8450b7c9a172ca"
+}

@@ -96,6 +96,7 @@ describe("mechanism simulation report", () => {
     expect(campaignExperimentProtocolV0Schema.shape.allocation.safeParse({
       strategyId: "CAPPED_SUPPORT_PPS",
       strategyVersion: "1",
+      minimumSupport: 1,
       supportCap: 3
     }).success).toBe(false);
   });

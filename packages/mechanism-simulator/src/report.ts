@@ -62,7 +62,7 @@ const recommended: SimulationStrategyConfig = {
 const experimental: SimulationStrategyConfig[] = [
   { strategyId: "THRESHOLD_UNIFORM_LOTTERY", strategyVersion: "1", minimumSupport: 2 },
   { strategyId: "LINEAR_PPS_WITHOUT_REPLACEMENT", strategyVersion: "1" },
-  { strategyId: "CAPPED_SUPPORT_PPS", strategyVersion: "1", supportCap: 3 }
+  { strategyId: "CAPPED_SUPPORT_PPS", strategyVersion: "1", minimumSupport: 1, supportCap: 3 }
 ];
 
 export function buildMechanismSimulationReport(runs: number): MechanismSimulationReport {

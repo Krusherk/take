@@ -13,8 +13,17 @@ import { popularityDiagnostics, type PopularityDiagnostics } from "./research.js
 export type SimulationStrategyConfig = AllocationStrategyConfig | {
   strategyId: "CAPPED_SUPPORT_PPS";
   strategyVersion: "1";
+  minimumSupport: number;
   supportCap: number;
 };
+
+export interface OwnerSeatStatistics {
+  expectedSeats: number;
+  expectedSeatShare: number;
+  variance: number;
+  probabilityZeroSeats: number;
+  probabilityMajoritySeats: number;
+}
 
 export interface ScenarioStrategyReport {
   scenarioId: string;
@@ -22,6 +31,7 @@ export interface ScenarioStrategyReport {
   runs: number;
   selectionProbability: Record<string, number>;
   ownerExpectedSeats: Record<string, number>;
+  ownerSeatStatistics: Record<string, OwnerSeatStatistics>;
   candidateSupport: Record<string, number>;
   ownerSupportUnits: Record<string, number>;
   meanSelectedQuality: number;
@@ -43,6 +53,7 @@ export function runScenario(
 ): ScenarioStrategyReport {
   if (!Number.isSafeInteger(runs) || runs <= 0) throw new RangeError("runs must be a positive safe integer");
   const selectionCounts = new Map<string, number>();
+  const ownerSeatMoments = new Map<string, { sum: number; sumSquares: number; zero: number; majority: number }>();
   let selectedQuality = 0;
   let selectedTotal = 0;
   let explained = 0;
@@ -58,7 +69,13 @@ export function runScenario(
   });
   const sampleSeed = simulationSeed(scenario.id, strategy, 0);
   const sampleResults = strategy.strategyId === "CAPPED_SUPPORT_PPS"
-    ? cappedResults(prepared.candidates, scenario.seats, strategy.supportCap, sampleSeed)
+    ? cappedResults(
+        prepared.candidates,
+        scenario.seats,
+        strategy.minimumSupport,
+        strategy.supportCap,
+        sampleSeed
+      )
     : runPreparedAllocationStrategy(prepared, sampleSeed);
   explained = sampleResults.filter((result) => Object.keys(result.explanation).length > 0).length;
   resultTotal = sampleResults.length;
@@ -66,7 +83,13 @@ export function runScenario(
   for (let run = 0; run < runs; run += 1) {
     const randomnessSeed = simulationSeed(scenario.id, strategy, run);
     const selected = strategy.strategyId === "CAPPED_SUPPORT_PPS"
-      ? selectCappedPps(prepared.candidates, scenario.seats, strategy.supportCap, randomnessSeed)
+      ? selectCappedPps(
+          prepared.candidates,
+          scenario.seats,
+          strategy.minimumSupport,
+          strategy.supportCap,
+          randomnessSeed
+        )
       : selectPreparedRecipientKeys(prepared, randomnessSeed);
     const selectedSet = new Set<string>(selected);
     if (previousSelected) winnerSetJaccard += jaccard(previousSelected, selectedSet);
@@ -75,6 +98,20 @@ export function runScenario(
       selectionCounts.set(recipientKey, (selectionCounts.get(recipientKey) ?? 0) + 1);
       selectedQuality += candidateByKey.get(recipientKey)?.quality ?? 0;
       selectedTotal += 1;
+    }
+    const seatsByOwner = new Map<string, number>();
+    for (const recipientKey of selected) {
+      const owner = candidateByKey.get(recipientKey)?.ownerGroup;
+      if (owner) seatsByOwner.set(owner, (seatsByOwner.get(owner) ?? 0) + 1);
+    }
+    for (const owner of new Set(scenario.candidates.map((candidate) => candidate.ownerGroup))) {
+      const seats = seatsByOwner.get(owner) ?? 0;
+      const moments = ownerSeatMoments.get(owner) ?? { sum: 0, sumSquares: 0, zero: 0, majority: 0 };
+      moments.sum += seats;
+      moments.sumSquares += seats * seats;
+      if (seats === 0) moments.zero += 1;
+      if (seats > scenario.seats / 2) moments.majority += 1;
+      ownerSeatMoments.set(owner, moments);
     }
   }
 
@@ -88,6 +125,18 @@ export function runScenario(
     ownerSupportUnits[candidate.ownerGroup] = (ownerSupportUnits[candidate.ownerGroup] ?? 0)
       + (prepared.candidates.find((item) => item.recipientKey === candidate.key)?.uniqueSupport ?? 0);
   }
+  const ownerSeatStatistics = Object.fromEntries(
+    [...ownerSeatMoments.entries()].map(([owner, moments]) => {
+      const expectedSeats = moments.sum / runs;
+      return [owner, {
+        expectedSeats,
+        expectedSeatShare: scenario.seats > 0 ? expectedSeats / scenario.seats : 0,
+        variance: Math.max(0, moments.sumSquares / runs - expectedSeats ** 2),
+        probabilityZeroSeats: moments.zero / runs,
+        probabilityMajoritySeats: moments.majority / runs
+      }];
+    })
+  );
   const idealSelected = [...scenario.candidates]
     .sort((left, right) => right.quality - left.quality)
     .slice(0, scenario.seats);
@@ -107,6 +156,7 @@ export function runScenario(
     runs,
     selectionProbability,
     ownerExpectedSeats,
+    ownerSeatStatistics,
     candidateSupport: support,
     ownerSupportUnits,
     meanSelectedQuality: selectedTotal ? selectedQuality / selectedTotal : 0,
@@ -158,12 +208,18 @@ function mechanismStrategy(strategy: SimulationStrategyConfig): AllocationStrate
 function selectCappedPps(
   candidates: Array<{ recipientKey: `0x${string}`; uniqueSupport: number }>,
   seats: number,
+  minimumSupport: number,
   supportCap: number,
   seed: `0x${string}`
 ) {
+  if (!Number.isSafeInteger(minimumSupport) || minimumSupport <= 0) {
+    throw new RangeError("minimumSupport must be positive");
+  }
   if (!Number.isSafeInteger(supportCap) || supportCap <= 0) throw new RangeError("supportCap must be positive");
   const random = new DeterministicRandom(seed);
-  const pool = [...candidates].sort((left, right) => left.recipientKey.localeCompare(right.recipientKey));
+  const pool = candidates
+    .filter((candidate) => candidate.uniqueSupport >= minimumSupport)
+    .sort((left, right) => left.recipientKey.localeCompare(right.recipientKey));
   const selected: `0x${string}`[] = [];
   while (selected.length < seats && pool.length > 0) {
     const weights = pool.map((candidate) => Math.min(candidate.uniqueSupport, supportCap));
@@ -187,10 +243,11 @@ function selectCappedPps(
 function cappedResults(
   candidates: Array<{ recipientKey: `0x${string}`; uniqueSupport: number }>,
   seats: number,
+  minimumSupport: number,
   supportCap: number,
   seed: `0x${string}`
 ) {
-  const selected = selectCappedPps(candidates, seats, supportCap, seed);
+  const selected = selectCappedPps(candidates, seats, minimumSupport, supportCap, seed);
   const selectedOrder = new Map(selected.map((key, index) => [key, index + 1]));
   return [...candidates].sort((left, right) =>
     right.uniqueSupport - left.uniqueSupport || left.recipientKey.localeCompare(right.recipientKey)
@@ -203,8 +260,10 @@ function cappedResults(
     explanation: {
       strategyId: "CAPPED_SUPPORT_PPS",
       strategyVersion: "1",
+      minimumSupport,
       supportCap,
       uniqueSupport: candidate.uniqueSupport,
+      qualified: candidate.uniqueSupport >= minimumSupport,
       cappedWeight: Math.min(candidate.uniqueSupport, supportCap)
     }
   }));

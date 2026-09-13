@@ -10,7 +10,8 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run src",
     "simulate": "tsx src/cli.ts --runs 10000",
-    "report": "tsx src/cli.ts --runs 100000"
+    "report": "tsx src/cli.ts --runs 100000",
+    "decision-gate": "tsx src/decisionGateCli.ts --runs 10000"
   },
   "dependencies": {
     "@take/database": "workspace:*",
