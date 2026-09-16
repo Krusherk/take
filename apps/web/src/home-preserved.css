@@ -1,0 +1,110 @@
+/* Authenticated Home preservation layer.
+   Everything here is scoped so the retained Home composition cannot leak. */
+.app-shell--home {
+  --take-bg: #10110e;
+  --take-surface: #171914;
+  --take-surface-raised: #1d1f19;
+  --take-text: #fffdf6;
+  --take-text-soft: #d2d0c7;
+  --take-muted: #a6a49b;
+  --take-muted-strong: #c8c6bd;
+  --take-line: rgba(255, 255, 255, 0.1);
+  --take-line-medium: rgba(255, 255, 255, 0.18);
+  --take-accent: #caff38;
+  color-scheme: dark;
+  background:
+    linear-gradient(rgba(202, 255, 56, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(202, 255, 56, 0.035) 1px, transparent 1px),
+    #10110e;
+  background-size: 64px 64px;
+  color: #fffdf6;
+}
+
+.app-shell--home::before,
+.app-shell--home::after { display: none; }
+.app-shell--home .app-header { border-bottom: 1px solid rgba(202, 255, 56, 0.22); background: rgba(16, 17, 14, 0.93); color: #fffdf6; }
+.app-shell--home .app-header .brand { color: #fffdf6; }
+.app-shell--home .app-header .brand span { color: var(--take-accent); }
+.app-shell--home .desktop-nav a { color: #aaa99f; }
+.app-shell--home .desktop-nav a.is-active { color: #fffdf6; }
+.app-shell--home .icon-action { border-color: rgba(255, 255, 255, 0.18); background: #1a1b17; color: #fffdf6; }
+.app-shell--home .account-chip { border-color: rgba(255, 255, 255, 0.2); background: #1a1b17; color: #fffdf6; }
+.app-shell--home .account-chip small { color: #aaa99f; }
+.app-shell--home .app-main { color: #fffdf6; }
+
+.app-shell--home .home-intro {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1.05fr) auto;
+  align-items: center;
+  min-height: 390px;
+  padding: clamp(34px, 4vw, 58px);
+  overflow: hidden;
+  border: 1.5px solid var(--take-accent);
+  background:
+    linear-gradient(rgba(202, 255, 56, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(202, 255, 56, 0.07) 1px, transparent 1px),
+    #10110e;
+  background-size: 54px 54px;
+  color: #fffdf6;
+  box-shadow: 9px 9px 0 var(--take-accent);
+}
+.app-shell--home .home-intro::after { display: none; }
+.app-shell--home .home-intro .eyebrow { color: var(--take-accent); }
+.app-shell--home .home-intro h1 { max-width: 600px; color: #fffdf6; font-size: clamp(50px, 5.6vw, 84px); font-weight: 830; line-height: 0.91; }
+.app-shell--home .home-intro h1 em { color: var(--take-accent); }
+.app-shell--home .home-intro__line { max-width: 420px; margin-top: 20px; color: #c9c8bf; font-size: 16px; }
+.app-shell--home .home-intro__art { position: relative; align-self: stretch; min-height: 300px; }
+.app-shell--home .home-intro__art img { position: absolute; right: -2%; bottom: -13%; width: min(620px, 115%); max-height: 390px; object-fit: contain; filter: drop-shadow(0 14px 0 rgba(0, 0, 0, 0.18)); }
+.app-shell--home .home-intro__sticker,
+.app-shell--home .home-intro__note { position: absolute; z-index: 2; font-size: 10px; font-weight: 850; letter-spacing: 0.09em; }
+.app-shell--home .home-intro__sticker { top: 12%; left: 8%; padding: 8px 11px; border: 1px solid #111; border-radius: 4px; background: var(--take-accent); color: #111; transform: rotate(-6deg); }
+.app-shell--home .home-intro__note { top: 15%; right: 1%; color: #fffdf6; transform: rotate(7deg); }
+.app-shell--home .home-intro__identity { position: absolute; top: 22px; right: 24px; z-index: 5; padding: 6px 9px 6px 6px; border: 1px solid rgba(255,255,255,0.24); border-radius: 5px; background: rgba(16,17,14,0.76); backdrop-filter: blur(10px); }
+.app-shell--home .home-intro__identity strong { color: #fffdf6; }
+.app-shell--home .home-intro__identity span { color: #b8b7ae; }
+
+.app-shell--home .home-lead { margin-top: 52px; border-color: #111; background: #111; }
+.app-shell--home .available-take { border-color: #111; background: var(--take-accent); color: #111; }
+.app-shell--home .available-take.is-given { background: #e6e0d4; }
+.app-shell--home .featured-campaign { overflow: hidden; background: #111; color: #fffdf6; }
+.app-shell--home .featured-campaign > .campaign-artwork { min-height: 390px; }
+.app-shell--home .featured-campaign__content { background: #111; }
+.app-shell--home .featured-campaign__content h2 { color: #fffdf6; font-size: clamp(40px, 4vw, 66px); line-height: 0.93; }
+.app-shell--home .featured-campaign__content p { color: #c8c4b8; }
+.app-shell--home .featured-campaign__foot > button { color: #fffdf6; }
+.app-shell--home .home-columns { color: #fffdf6; }
+.app-shell--home .section-heading { border-color: rgba(255,255,255,.18); }
+.app-shell--home .section-heading .eyebrow { color: var(--take-accent); }
+.app-shell--home .section-heading h2,
+.app-shell--home .text-action { color: #fffdf6; }
+.app-shell--home .campaign-row,
+.app-shell--home .activity-row { border-color: rgba(255,255,255,.16); color: #fffdf6; }
+.app-shell--home .campaign-row small,
+.app-shell--home .campaign-row em,
+.app-shell--home .activity-row__copy span,
+.app-shell--home .activity-row__copy button,
+.app-shell--home .activity-row time { color: #aaa99f; }
+.app-shell--home .activity-row__copy p,
+.app-shell--home .activity-row__copy p strong { color: #fffdf6; }
+
+.campaign-artwork { position: relative; min-width: 0; min-height: 100%; overflow: hidden; background: #12130f; }
+.campaign-artwork__world { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 68% center; }
+.campaign-artwork::after { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16,17,14,.6), transparent 42%); content: ""; }
+.campaign-artwork__sticker { position: absolute; top: 18px; left: 18px; z-index: 4; padding: 8px 10px; border: 1px solid #111; background: #caff38; color: #111; font-size: 10px; font-weight: 800; transform: rotate(-3deg); }
+.campaign-artwork__spark { position: absolute; z-index: 4; width: 15px; height: 15px; background: #fffdf6; clip-path: polygon(50% 0,60% 39%,100% 50%,60% 61%,50% 100%,40% 61%,0 50%,40% 39%); }
+.campaign-artwork__spark--one { top: 16%; right: 9%; }
+.campaign-artwork__spark--two { right: 27%; bottom: 11%; width: 10px; height: 10px; background: #caff38; }
+.campaign-artwork > .take-handoff { position: absolute; right: 5%; bottom: 5%; left: 5%; z-index: 2; height: 38%; min-height: 112px; }
+.campaign-row__visual { display: contents; }
+.campaign-row__visual > .campaign-artwork { display: none; }
+
+@media (max-width: 760px) {
+  .app-shell--home .home-intro { grid-template-columns: 1fr; min-height: 610px; align-content: start; padding: 28px 22px; }
+  .app-shell--home .home-intro h1 { font-size: clamp(48px, 14vw, 64px); }
+  .app-shell--home .home-intro__art { position: absolute; right: -9%; bottom: -2%; left: -3%; min-height: 350px; }
+  .app-shell--home .home-intro__art img { right: 0; bottom: -5%; width: 108%; }
+  .app-shell--home .home-intro__identity { display: none; }
+  .app-shell--home .home-lead { margin-top: 28px; }
+  .app-shell--home .featured-campaign > .campaign-artwork { min-height: 260px; }
+}

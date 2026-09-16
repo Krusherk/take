@@ -1,0 +1,1200 @@
+/* Recovered authenticated product layer.
+   This file fixes typography and layout around newer product flows without
+   changing the preserved Home composition or the public landing page. */
+
+/* ---------- Shared authenticated typography ---------- */
+
+.app-shell,
+.campaign-page,
+.give-page,
+.confirmation-page,
+.pending-page,
+.success-page {
+  --take-heading: "Inter Tight Variable", "Inter Tight", "Inter Variable", "Inter", "Segoe UI", sans-serif;
+  font-family: var(--take-font);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell :is(button, input, select, textarea),
+.campaign-page :is(button, input, select, textarea),
+.give-page :is(button, input, select, textarea),
+.confirmation-page :is(button, input, select, textarea) {
+  font-family: var(--take-font);
+  letter-spacing: 0;
+}
+
+.app-shell :is(h1, h2, h3),
+.campaign-page :is(h1, h2, h3),
+.give-page :is(h1, h2, h3),
+.confirmation-page :is(h1, h2, h3),
+.pending-page :is(h1, h2, h3),
+.success-page :is(h1, h2, h3) {
+  max-width: 100%;
+  font-family: var(--take-heading);
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.app-shell :is(p, li, dd, dt, label, small, strong, span),
+.campaign-page :is(p, li, dd, dt, label, small, strong, span),
+.give-page :is(p, li, dd, dt, label, small, strong, span) {
+  overflow-wrap: anywhere;
+}
+
+.app-shell :is(.eyebrow, .step-kicker, .operator-state, .eligibility-state, .status-chip, .mechanism-state, .gas-status, .review-resolved),
+.campaign-page :is(.eyebrow, .campaign-status, .live-signal, .status-chip),
+.give-page :is(.eyebrow, .campaign-status, .status-chip) {
+  font-family: var(--take-font);
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.3;
+  letter-spacing: 0.035em;
+}
+
+.app-shell :is(.action, .text-action, .desktop-nav, .mobile-nav, .account-menu),
+.campaign-page :is(.action, .text-action),
+.give-page :is(.action, .text-action),
+.confirmation-page :is(.action, .text-action) {
+  font-family: var(--take-font);
+  letter-spacing: 0;
+}
+
+.app-shell :is(code, .mechanism-hash code, .snapshot-row code, .operator-authority dd, .campaign-onchain-audit dd, .operator-wallet-panel strong),
+.campaign-page .campaign-onchain-audit dd {
+  font-family: var(--take-mono);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.app-shell :is(.page-container, section, article, header, footer, form, fieldset, div),
+.campaign-page :is(section, article, header, footer, form, div),
+.give-page :is(section, article, header, footer, form, div) {
+  min-width: 0;
+}
+
+/* ---------- Organizer ---------- */
+
+.organize-page,
+.operator-page {
+  padding-bottom: 100px;
+}
+
+.organize-intro,
+.operator-page > .page-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.45fr);
+  gap: clamp(24px, 4vw, 52px);
+  align-items: end;
+}
+
+.organize-intro p,
+.operator-page > .page-intro p {
+  max-width: 48ch;
+  color: var(--take-muted-strong);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.organize-notice,
+.organize-error,
+.form-error {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.organize-notice svg,
+.organize-error svg,
+.form-error svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.organize-error,
+.form-error {
+  color: var(--take-danger);
+}
+
+.organize-selector,
+.operator-control-head {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 18px;
+  align-items: end;
+  margin-top: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--take-line-medium);
+}
+
+.organize-selector {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+}
+
+.organize-selector label,
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field > span,
+.organize-selector label > span,
+.policy-editor label > span,
+.operator-ratings label > span {
+  color: var(--take-muted-strong);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
+
+.field input,
+.field select,
+.field textarea,
+.organize-selector select,
+.eligibility-workspace input,
+.eligibility-workspace select,
+.eligibility-workspace textarea,
+.operator-page input,
+.operator-page select,
+.operator-page textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface-raised);
+  color: var(--take-text);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.field textarea,
+.eligibility-workspace textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.field small {
+  color: var(--take-muted-strong);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.organize-create-panel,
+.campaign-request-list,
+.organize-discord,
+.advanced-mechanism,
+.eligibility-workspace,
+.operator-requests,
+.operator-control,
+.campaign-onchain-audit {
+  margin-top: 30px;
+  padding: 26px 0;
+  border-top: 1px solid var(--take-line-medium);
+}
+
+.organize-create-panel > :is(h2, p),
+.organize-create-panel form > :is(h2, p) {
+  max-width: 720px;
+}
+
+.organize-create-panel > h2,
+.organize-create-panel form > h2,
+.eligibility-workspace h2,
+.operator-page h2 {
+  font-size: clamp(27px, 3vw, 40px);
+  line-height: 1.05;
+}
+
+.organize-create-panel > p,
+.organize-create-panel form > p,
+.eligibility-workspace p,
+.operator-page p {
+  line-height: 1.55;
+}
+
+.organize-create-panel > summary,
+.advanced-mechanism > summary,
+.operator-advanced > summary,
+.campaign-onchain-audit > summary,
+.developer-tools > summary,
+.eligibility-handoff details > summary {
+  cursor: pointer;
+  font-family: var(--take-font);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.organize-create-grid,
+.policy-categories,
+.eligibility-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.organize-create-panel form,
+.eligibility-form,
+.policy-editor {
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.organize-create-panel form > .action {
+  justify-self: start;
+}
+
+.campaign-request-list article,
+.operator-requests > article,
+.snapshot-row,
+.operator-intent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.campaign-request-list article p,
+.operator-requests > article p {
+  margin-top: 4px;
+  color: var(--take-muted-strong);
+  font-size: 14px;
+}
+
+.campaign-request-list article > span,
+.operator-requests > article > span {
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.organize-preview-link {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.campaign-launch {
+  margin-top: 24px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--take-line);
+}
+
+.campaign-launch strong {
+  display: block;
+  margin-top: 7px;
+  font-family: var(--take-heading);
+  font-size: 23px;
+}
+
+.campaign-launch p {
+  max-width: 780px;
+  margin-top: 7px;
+  color: var(--take-muted-strong);
+  line-height: 1.55;
+}
+
+.organize-discord {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(340px, 1.2fr);
+  gap: clamp(24px, 4vw, 54px);
+}
+
+.organize-discord > div:first-child p {
+  max-width: 50ch;
+  margin-top: 8px;
+}
+
+.organize-discord__status {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.organize-discord__status > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.organize-discord__status > div > span {
+  display: grid;
+  gap: 3px;
+}
+
+/* ---------- Eligibility and evidence review ---------- */
+
+.eligibility-workspace__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.eligibility-workspace__header > div {
+  max-width: 720px;
+}
+
+.eligibility-workspace__header p {
+  max-width: 62ch;
+  margin-top: 8px;
+  color: var(--take-muted-strong);
+}
+
+.eligibility-state,
+.operator-state,
+.status-chip,
+.mechanism-state,
+.gas-status,
+.review-resolved {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 999px;
+  white-space: normal;
+}
+
+.eligibility-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(30px, 5vw, 72px);
+  margin-top: 30px;
+}
+
+.eligibility-setup > section {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.eligibility-setup h3,
+.assessment-detail h3,
+.review-queue h3,
+.eligibility-handoff h3 {
+  font-size: clamp(22px, 2.3vw, 32px);
+  line-height: 1.1;
+}
+
+.people-picker {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.people-picker > label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface-raised);
+}
+
+.people-picker > label input {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.people-picker > div,
+.recipient-picker {
+  display: grid;
+  gap: 0;
+  max-height: 360px;
+  overflow: auto;
+  border-top: 1px solid var(--take-line);
+}
+
+.assessment-list > button,
+.people-picker button,
+.recipient-picker button,
+.preset-grid button {
+  width: 100%;
+  min-width: 0;
+  padding: 14px;
+  border: 0;
+  border-bottom: 1px solid var(--take-line);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.people-picker button,
+.recipient-picker button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.people-picker button > span {
+  display: grid;
+  gap: 3px;
+}
+
+.people-picker button small {
+  color: var(--take-muted-strong);
+}
+
+.people-picker button.is-selected,
+.recipient-picker button.is-selected,
+.preset-grid button.is-selected,
+.assessment-list > button.is-selected {
+  background: color-mix(in srgb, var(--take-accent) 18%, transparent);
+}
+
+.people-picker__empty,
+.eligibility-empty,
+.assessment-empty,
+.operator-inline-empty,
+.mechanism-empty {
+  color: var(--take-muted-strong);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preset-grid button {
+  display: grid;
+  gap: 5px;
+  min-height: 88px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+}
+
+.preset-grid button span {
+  color: var(--take-muted-strong);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.policy-editor__summary,
+.eligibility-handoff__controls,
+.operator-next-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.policy-editor__summary label {
+  display: grid;
+  gap: 7px;
+}
+
+.policy-categories article {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--take-surface) 72%, transparent);
+}
+
+.policy-categories article > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.policy-categories article > header label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.policy-categories article > header label:last-child {
+  flex: 0 0 78px;
+}
+
+.policy-categories article > header input[type="number"] {
+  width: 54px;
+  min-height: 38px;
+}
+
+.policy-categories article > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--take-line);
+  font-size: 13px;
+}
+
+.policy-categories article > div:last-child {
+  border-bottom: 0;
+}
+
+.policy-categories article > div > span {
+  color: var(--take-muted-strong);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.policy-categories article > div > em {
+  font-style: normal;
+  font-weight: 750;
+}
+
+.policy-toggles {
+  display: grid;
+  gap: 10px;
+}
+
+.policy-toggles label {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.policy-toggles input,
+.policy-categories input[type="checkbox"] {
+  width: 17px;
+  min-height: 17px;
+  margin: 2px 0 0;
+}
+
+.eligibility-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 26px;
+  border-top: 1px solid var(--take-line);
+  border-bottom: 1px solid var(--take-line);
+}
+
+.eligibility-metrics > div {
+  display: grid;
+  gap: 7px;
+  padding: 18px 0;
+}
+
+.eligibility-metrics span {
+  color: var(--take-muted-strong);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.eligibility-metrics strong {
+  font-family: var(--take-heading);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.eligibility-toolbar,
+.eligibility-form-actions,
+.roster-actions,
+.eligibility-handoff__controls + details,
+.review-queue article footer,
+.operator-lifecycle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.eligibility-toolbar {
+  margin: 20px 0;
+}
+
+.eligibility-review-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.assessment-list,
+.assessment-detail,
+.review-queue,
+.recipient-picker,
+.people-picker {
+  min-width: 0;
+}
+
+.assessment-list > nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.assessment-list > nav button {
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--take-muted-strong);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.assessment-list > nav button.is-active {
+  border-color: var(--take-line-medium);
+  color: var(--take-text);
+}
+
+.assessment-list > button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.assessment-list > button > span {
+  display: grid;
+  gap: 3px;
+}
+
+.assessment-list > button small {
+  color: var(--take-muted-strong);
+}
+
+.assessment-list > button em {
+  font-style: normal;
+}
+
+.assessment-detail {
+  padding-left: 28px;
+  border-left: 1px solid var(--take-line-medium);
+}
+
+.assessment-detail > header,
+.participant-eligibility > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.eligibility-category,
+.eligibility-rule-list li,
+.eligibility-evidence-list li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.eligibility-rule-list,
+.eligibility-evidence-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-queue,
+.eligibility-lock,
+.eligibility-handoff {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--take-line-medium);
+}
+
+.review-queue > article {
+  display: grid;
+  gap: 13px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.review-queue > article > div:first-child {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.review-queue > article > div:first-child > span {
+  display: grid;
+  gap: 3px;
+}
+
+.review-queue article > a {
+  color: var(--take-accent-deep);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.eligibility-lock {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.eligibility-lock code {
+  display: block;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.eligibility-handoff {
+  display: grid;
+  gap: 18px;
+}
+
+.recipient-picker {
+  margin: 14px 0;
+}
+
+.eligibility-form {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface);
+}
+
+.eligibility-form > header {
+  display: grid;
+  gap: 4px;
+}
+
+.eligibility-form > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.eligibility-locked-note,
+.eligibility-submitted {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 15px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Operator ---------- */
+
+.operator-campaign-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--take-line-medium);
+}
+
+.operator-campaign-summary p {
+  margin-top: 7px;
+  color: var(--take-muted-strong);
+}
+
+.operator-next-action {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 24px;
+  border-left: 4px solid var(--take-accent);
+  background: var(--take-surface);
+}
+
+.operator-next-action > div:first-child {
+  max-width: 760px;
+}
+
+.operator-next-action h2 {
+  margin-top: 5px;
+}
+
+.operator-next-action p {
+  margin-top: 7px;
+  color: var(--take-muted-strong);
+}
+
+.operator-next-link {
+  justify-self: start;
+  color: var(--take-accent-deep);
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.operator-blocker,
+.operator-wallet-panel,
+.eligibility-locked-note {
+  margin-top: 0;
+  padding: 16px;
+  border: 1px solid var(--take-line-medium);
+  border-radius: 6px;
+  background: var(--take-surface);
+}
+
+.operator-blocker {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  color: var(--take-danger);
+}
+
+.operator-readiness {
+  margin-top: 24px;
+}
+
+.operator-readiness > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--take-line-medium);
+}
+
+.operator-readiness > header > span {
+  font-family: var(--take-heading);
+  font-size: 28px;
+}
+
+.operator-readiness > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 24px;
+}
+
+.operator-readiness > div > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 9px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.operator-readiness small {
+  grid-column: 2;
+  color: var(--take-muted-strong);
+  line-height: 1.4;
+}
+
+.readiness-dot {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--take-muted-strong);
+  border-radius: 999px;
+}
+
+.operator-wallet-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.operator-wallet-panel > div:first-child {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.operator-wallet-panel > div:first-child > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.operator-wallet-panel strong {
+  overflow-wrap: anywhere;
+}
+
+.operator-wallet-panel p {
+  color: var(--take-muted-strong);
+  font-size: 13px;
+}
+
+.operator-steps {
+  display: grid;
+  gap: 0;
+  margin-top: 20px;
+}
+
+.operator-step {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.operator-step > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.operator-step > header > span {
+  color: var(--take-muted-strong);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.operator-step > div,
+.operator-lifecycle-actions,
+.operator-next-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.operator-next-fields .field {
+  flex: 1 1 280px;
+}
+
+.operator-authority,
+.campaign-onchain-audit dl {
+  width: 100%;
+  margin: 0;
+}
+
+.operator-authority div,
+.campaign-onchain-audit dl div {
+  display: grid;
+  grid-template-columns: minmax(140px, 190px) minmax(0, 1fr);
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.operator-authority dt,
+.campaign-onchain-audit dt {
+  color: var(--take-muted-strong);
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.operator-authority dd,
+.campaign-onchain-audit dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.operator-intent {
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+
+.operator-intent small {
+  grid-column: 2 / -1;
+  color: var(--take-danger);
+}
+
+.operator-ratings {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 760px);
+}
+
+.operator-ratings > p {
+  color: var(--take-muted-strong);
+}
+
+.operator-ratings label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+  gap: 16px;
+  align-items: center;
+}
+
+.developer-tools,
+.advanced-mechanism,
+.operator-advanced {
+  margin-top: 28px;
+}
+
+/* ---------- Responsive recovery ---------- */
+
+@media (max-width: 980px) {
+  .eligibility-setup,
+  .eligibility-review-layout,
+  .organize-discord {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-detail {
+    padding-top: 24px;
+    padding-left: 0;
+    border-top: 1px solid var(--take-line-medium);
+    border-left: 0;
+  }
+
+  .operator-wallet-panel {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .operator-wallet-panel .gas-status {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 760px) {
+  .organize-intro,
+  .operator-page > .page-intro,
+  .organize-selector,
+  .operator-control-head,
+  .organize-create-grid,
+  .policy-categories,
+  .policy-editor__summary,
+  .eligibility-handoff__controls,
+  .operator-readiness > div,
+  .eligibility-review-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .organize-page,
+  .operator-page {
+    padding-bottom: 76px;
+  }
+
+  .organize-intro,
+  .operator-page > .page-intro {
+    gap: 14px;
+  }
+
+  .organize-intro p,
+  .operator-page > .page-intro p {
+    font-size: 15px;
+  }
+
+  .field--wide {
+    grid-column: auto;
+  }
+
+  .campaign-request-list article,
+  .operator-requests > article {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .campaign-request-list article .action,
+  .operator-requests > article .action {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .eligibility-workspace__header,
+  .assessment-detail > header,
+  .participant-eligibility > header,
+  .operator-campaign-summary {
+    flex-direction: column;
+  }
+
+  .eligibility-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .assessment-list > button {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .assessment-list > button > b {
+    grid-column: 3;
+  }
+
+  .assessment-list > button > em {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .eligibility-lock,
+  .operator-wallet-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .eligibility-lock > svg {
+    display: none;
+  }
+
+  .operator-wallet-panel > .action,
+  .operator-wallet-panel .gas-status {
+    grid-column: auto;
+    justify-self: start;
+  }
+
+  .operator-next-action {
+    padding: 20px 17px;
+  }
+
+  .operator-authority div,
+  .campaign-onchain-audit dl div,
+  .operator-ratings label {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .operator-intent {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .operator-intent > :is(span, a, small) {
+    grid-column: 2;
+  }
+
+  .organize-preview-link {
+    justify-content: stretch;
+  }
+
+  .organize-preview-link .action,
+  .organize-create-panel form > .action,
+  .eligibility-form > footer .action {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .preset-grid,
+  .eligibility-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .eligibility-state,
+  .operator-state,
+  .status-chip,
+  .mechanism-state,
+  .gas-status,
+  .review-resolved {
+    max-width: 100%;
+  }
+}

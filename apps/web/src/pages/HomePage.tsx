@@ -1,7 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { PrimaryAction, SecondaryAction, TextAction } from "../components/Actions";
 import { Avatar } from "../components/Avatar";
-import { CampaignArtwork, CampaignRow, CampaignStatus } from "../components/Campaign";
+import { CampaignRow, CampaignStatus } from "../components/Campaign";
+import { HomeCampaignArtwork } from "../components/home/HomeCampaignArtwork";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { ActivityRow } from "../components/Social";
 import { TakeMascotAccent } from "../components/TakeMascotAccent";
@@ -38,6 +39,12 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
         <div>
           <span className="eyebrow">HOME</span>
           <h1>Good to see you, <em>{firstName(currentPerson.name)}.</em></h1>
+          <p className="home-intro__line">People lift people. Your next choice starts here.</p>
+        </div>
+        <div className="home-intro__art" aria-hidden="true">
+          <span className="home-intro__sticker">ONE TAKE</span>
+          <span className="home-intro__note">FOR SOMEONE ELSE</span>
+          <img src="/assets/take-social-lift-v3.png" alt="" decoding="async" />
         </div>
         <div className="home-intro__identity">
           <Avatar person={currentPerson} size="md" />
@@ -54,7 +61,7 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
             <ActiveTake campaign={activeTake} isGiven={isGiven} recipient={givenPerson} navigate={navigate} />
             {featured ? (
               <article className={`featured-campaign featured-campaign--${featured.visual}`}>
-                <CampaignArtwork campaign={featured} giver={currentPerson} recipient={featuredRecipient} />
+                <HomeCampaignArtwork campaign={featured} giver={currentPerson} recipient={featuredRecipient} />
                 <div className="featured-campaign__content">
                   <div className="featured-campaign__heading"><CampaignStatus status={featured.status} /><span>FEATURED OPPORTUNITY</span></div>
                   <div><h2>{featured.title}</h2><p>{featured.description}</p></div>

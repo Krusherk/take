@@ -65,6 +65,20 @@ export interface Campaign {
     status: string;
     activeNominationDataHidden: boolean;
   } | null;
+  launchApproved?: boolean;
+  eligibilityDescription?: string | null;
+  onchain?: CampaignOnchainView;
+}
+
+export interface CampaignOnchainView {
+  published: boolean;
+  network: string;
+  chainId: number | null;
+  managerContractAddress: string | null;
+  campaignId: string | null;
+  authorityWalletAddress: string | null;
+  organizerAddress: string | null;
+  lifecycle: Record<string, { status: string; transactionHash: string | null }>;
 }
 
 export type ActivityKind = "given" | "received" | "campaign" | "deadline" | "result" | "joined";
@@ -110,6 +124,9 @@ export interface ApiCampaign {
     activeNominationDataHidden: boolean;
   } | null;
   viewer: CampaignViewerState | null;
+  launchApproved?: boolean;
+  eligibilityDescription?: string | null;
+  onchain?: CampaignOnchainView;
 }
 
 export interface ApiPerson {

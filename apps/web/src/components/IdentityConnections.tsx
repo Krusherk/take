@@ -1,4 +1,5 @@
 import {
+  Copy,
   Link2,
   Wallet,
 } from "lucide-react";
@@ -24,7 +25,7 @@ interface ConnectionRowProps {
   label: string;
   identity: string;
   connected: boolean;
-  actionLabel?: string;
+  actionLabel?: ReactNode;
   busy?: boolean;
   onAction?: () => void;
 }
@@ -97,6 +98,7 @@ export function IdentityConnections({ me }: { me: TakeMe }) {
   const [disconnectTarget, setDisconnectTarget] = useState<DisconnectTarget | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [copiedWallet, setCopiedWallet] = useState<string | null>(null);
 
   const synchronize = useCallback(async (message: string) => {
     await refreshUser();
@@ -138,6 +140,13 @@ export function IdentityConnections({ me }: { me: TakeMe }) {
       setWorking(null);
       setError(privyError(caught, "That identity could not be disconnected. Keep at least one sign-in method connected."));
     }
+  }
+
+  async function copyWallet(address: string) {
+    await navigator.clipboard.writeText(address);
+    setCopiedWallet(address);
+    setNotice("TAKE WALLET ADDRESS COPIED");
+    window.setTimeout(() => setCopiedWallet((current) => current === address ? null : current), 1_500);
   }
 
   const twitter = me.socials.twitter;
@@ -198,9 +207,9 @@ export function IdentityConnections({ me }: { me: TakeMe }) {
               label={wallet.embedded ? "TAKE WALLET" : "WALLET"}
               identity={shortAddress(wallet.address)}
               connected
-              actionLabel={wallet.embedded ? undefined : "DISCONNECT"}
+              actionLabel={wallet.embedded ? <><Copy size={14} />{copiedWallet === wallet.address ? "COPIED" : "COPY"}</> : "DISCONNECT"}
               busy={working === key}
-              onAction={wallet.embedded ? undefined : () => setDisconnectTarget({ key, kind: "wallet", address: wallet.address, label: "wallet" })}
+              onAction={wallet.embedded ? () => void copyWallet(wallet.address) : () => setDisconnectTarget({ key, kind: "wallet", address: wallet.address, label: "wallet" })}
             />
           );
         })}

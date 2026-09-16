@@ -1,4 +1,4 @@
-import { Activity, Bell, ChevronDown, Compass, Link2, LogOut, Home, PanelsTopLeft, Send, Settings, UserRound } from "lucide-react";
+import { Activity, Bell, ChevronDown, Compass, Link2, LogOut, Home, PanelsTopLeft, Send, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Person } from "../types/product";
 import type { TakePath } from "../hooks/usePathRouter";
@@ -97,7 +97,7 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${path === "/home" ? " app-shell--home" : ""}`}>
       <div className="app-noise" aria-hidden="true" />
       <header className="app-header">
         <div className="app-header__inner">
@@ -152,6 +152,10 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
                 <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); navigate("/organize"); }}>
                   <PanelsTopLeft size={16} aria-hidden="true" />
                   ORGANIZE
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); navigate("/operator"); }}>
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  TAKE OPERATOR
                 </button>
                 <div className="account-menu__rule" />
                 <button className="account-menu__logout" type="button" role="menuitem" disabled={loggingOut} onClick={() => void handleLogout()}>

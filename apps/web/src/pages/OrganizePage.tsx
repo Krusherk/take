@@ -1,6 +1,7 @@
 import { Check, Copy, Link2, LockKeyhole, RefreshCw, ShieldAlert } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
+import { OrganizerEligibilityWorkspace } from "../components/eligibility/OrganizerEligibilityWorkspace";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
@@ -17,7 +18,7 @@ type LoadState = "loading" | "ready" | "error";
 
 export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void }) {
   const { request } = useTakeMe();
-  const { campaigns } = useTakeProduct();
+  const { campaigns, refetch: refetchProducts } = useTakeProduct();
   const [organizations, setOrganizations] = useState<TakeOrganizationMembership[]>([]);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [campaignId, setCampaignId] = useState<string | null>(null);
@@ -29,6 +30,12 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const [action, setAction] = useState<"snapshot" | "lock" | "discord" | null>(null);
   const [confirmingLock, setConfirmingLock] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
+  const [organizationName, setOrganizationName] = useState("");
+  const [creatingOrganization, setCreatingOrganization] = useState(false);
+  const [campaignRequests, setCampaignRequests] = useState<CampaignRequestView[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [creatingCampaign, setCreatingCampaign] = useState(false);
+  const [submittedRequestTitle, setSubmittedRequestTitle] = useState<string | null>(null);
   const discordConnected = new URLSearchParams(window.location.search).get("discord") === "connected";
 
   const manageableOrganizations = useMemo(
@@ -45,8 +52,12 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
     setState("loading");
     setError(null);
     try {
-      const result = await request<TakeOrganizationMembership[]>("/organizations/mine");
+      const [result, submittedRequests] = await Promise.all([
+        request<TakeOrganizationMembership[]>("/organizations/mine"),
+        request<CampaignRequestView[]>("/campaign-requests/mine"),
+      ]);
       setOrganizations(result);
+      setCampaignRequests(submittedRequests);
       const firstManager = result.find((organization) => organization.role === "OWNER" || organization.role === "ADMIN");
       setOrganizationId((current) => current && result.some((organization) => organization.id === current)
         ? current
@@ -160,21 +171,52 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
     }
   }
 
+  async function createOrganization() {
+    if (organizationName.trim().length < 2) return setError("Enter a community or organization name.");
+    setCreatingOrganization(true); setError(null);
+    try {
+      await request("/organizations", { method: "POST", body: JSON.stringify({ name: organizationName }) });
+      setOrganizationName("");
+      await loadOrganizations();
+    } catch (caught) { setError(message(caught)); } finally { setCreatingOrganization(false); }
+  }
+
+  async function submitCampaignRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const parsed = normalizeCampaignRequest(new FormData(form), organizationId);
+    setFieldErrors(parsed.errors);
+    if (!parsed.value) return;
+    setCreatingCampaign(true); setError(null);
+    try {
+      const created = await request<{ id: string }>("/campaign-requests", {
+        method: "POST",
+        body: JSON.stringify(parsed.value),
+      });
+      await request(`/campaign-requests/${created.id}/submit`, { method: "POST", body: "{}" });
+      setSubmittedRequestTitle(parsed.value.title);
+      form.reset();
+      setFieldErrors({});
+      await loadOrganizations();
+    } catch (caught) { setError(message(caught)); } finally { setCreatingCampaign(false); }
+  }
+
   if (state === "loading") return <div className="page-container"><ProductLoading label="Loading organizer access" /></div>;
   if (state === "error") return <div className="page-container"><ProductError message={error ?? "Organizer access could not load."} onRetry={() => void loadOrganizations()} /></div>;
 
   return (
     <div className="page-container organize-page">
       <header className="page-intro organize-intro">
-        <div><span className="eyebrow">ORGANIZE</span><h1>Mechanism control.</h1></div>
-        <p>Evidence becomes eligibility only when the campaign snapshot is complete and locked.</p>
+        <div><span className="eyebrow">ORGANIZE</span><h1>Your opportunities.</h1></div>
+        <p>Request a campaign, prepare the people involved, and review eligibility before TAKE launches it.</p>
       </header>
 
       {discordConnected ? <div className="organize-notice"><Check size={18} />Discord community evidence is connected.</div> : null}
+      {submittedRequestTitle ? <div className="organize-notice" role="status"><Check size={18} /><span><strong>Request submitted.</strong> TAKE will review and provision {submittedRequestTitle}.</span></div> : null}
       {error ? <div className="organize-error" role="alert"><ShieldAlert size={18} /><span>{error}</span></div> : null}
 
       {!manageableOrganizations.length ? (
-        <SocialEmpty title="No campaigns to manage." action="BACK TO HOME" onAction={() => navigate("/home")}>Organizer controls appear for organization owners and admins.</SocialEmpty>
+        <section className="organize-create-panel"><span className="eyebrow">START HERE</span><h2>Create your community.</h2><p>You need one organizer space before you can create an opportunity and define selector eligibility.</p><label className="field"><span>COMMUNITY OR ORGANIZATION NAME</span><input value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} placeholder="Monad Creators" /></label><PrimaryAction onClick={() => void createOrganization()} disabled={creatingOrganization}>{creatingOrganization ? "CREATING" : "CREATE ORGANIZATION"}</PrimaryAction></section>
       ) : (
         <>
           <section className="organize-selector" aria-label="Organizer scope">
@@ -182,23 +224,61 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
             <label><span>CAMPAIGN</span><select value={campaignId ?? ""} onChange={(event) => setCampaignId(event.target.value)} disabled={!organizationCampaigns.length}>{organizationCampaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.title} / {campaign.sourceStatus}</option>)}</select></label>
           </section>
 
+          <details className="organize-create-panel organize-create-panel--details" open={!organizationCampaigns.length && !campaignRequests.length}>
+            <summary>{campaignRequests.length ? "REQUEST ANOTHER CAMPAIGN" : "REQUEST A CAMPAIGN"}</summary>
+            <form onSubmit={(event) => void submitCampaignRequest(event)} noValidate>
+              <span className="eyebrow">MANAGED CAMPAIGN REQUEST</span>
+              <h2>What are you giving?</h2>
+              <p>Send TAKE the opportunity details. A TAKE operator provisions the real campaign before eligibility setup begins.</p>
+              <div className="organize-create-grid">
+                <RequestField name="title" label="CAMPAIGN TITLE" error={fieldErrors.title} onChange={() => clearFieldError("title", setFieldErrors)}>
+                  <input id="campaign-request-title" name="title" autoComplete="off" required placeholder="Monad community creator spots" />
+                </RequestField>
+                <RequestField name="resourceName" label="OPPORTUNITY" error={fieldErrors.resourceName} onChange={() => clearFieldError("resourceName", setFieldErrors)}>
+                  <input id="campaign-request-resourceName" name="resourceName" autoComplete="off" required placeholder="Creator residency access" />
+                </RequestField>
+                <RequestField name="description" label="SHORT DESCRIPTION" error={fieldErrors.description} wide onChange={() => clearFieldError("description", setFieldErrors)}>
+                  <textarea id="campaign-request-description" name="description" required placeholder="Five creators will receive access to..." />
+                </RequestField>
+                <RequestField name="seats" label="NUMBER OF SPOTS" error={fieldErrors.seats} onChange={() => clearFieldError("seats", setFieldErrors)}>
+                  <input id="campaign-request-seats" name="seats" type="number" min="1" step="1" defaultValue="5" required />
+                </RequestField>
+                <RequestField name="startTime" label="CAMPAIGN OPENS" error={fieldErrors.startTime} onChange={() => clearFieldError("startTime", setFieldErrors)}>
+                  <input id="campaign-request-startTime" name="startTime" type="datetime-local" required />
+                </RequestField>
+                <RequestField name="endTime" label="CAMPAIGN ENDS" error={fieldErrors.endTime} onChange={() => clearFieldError("endTime", setFieldErrors)}>
+                  <input id="campaign-request-endTime" name="endTime" type="datetime-local" required />
+                </RequestField>
+              </div>
+              <PrimaryAction type="submit" disabled={creatingCampaign}>{creatingCampaign ? "SUBMITTING REQUEST" : "SUBMIT CAMPAIGN REQUEST"}</PrimaryAction>
+            </form>
+          </details>
+
+          {campaignRequests.length ? <section className="campaign-request-list" aria-label="Campaign requests">
+            <span className="eyebrow">YOUR REQUESTS</span>
+            {campaignRequests.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.resourceName} / {item.seatCount} spots</p></div><span>{item.status.replaceAll("_", " ")}</span></article>)}
+          </section> : null}
+
           {!selectedCampaign ? (
-            <SocialEmpty title="No campaign drafts here.">Create a campaign draft before configuring evidence and eligibility.</SocialEmpty>
-          ) : mechanism ? (
-            <MechanismWorkspace
+            <SocialEmpty title="No campaign assigned yet.">Submit a campaign request above. TAKE will review it and provision the offchain campaign for setup.</SocialEmpty>
+          ) : <>
+            <div className="organize-preview-link"><SecondaryAction onClick={() => navigate(`/campaign/${selectedCampaign.id}`)}>OPEN PARTICIPANT VIEW</SecondaryAction></div>
+            {organizationId ? <OrganizerEligibilityWorkspace campaign={selectedCampaign} organizationId={organizationId} request={request} managed discordGuildId={discord?.integrations.find((item) => item.status === "ACTIVE")?.guildId} onMechanismChanged={() => void loadMechanism(selectedCampaign.id)} /> : null}
+            {mechanism ? <details className="advanced-mechanism"><summary>Advanced mechanism and snapshot controls</summary><MechanismWorkspace
               campaign={selectedCampaign}
               mechanism={mechanism}
               snapshots={snapshotDetails}
               action={action}
               confirmingLock={confirmingLock}
               copiedHash={copiedHash}
-              onBuildSnapshots={() => void buildSnapshots()}
-              onConfirmLock={() => setConfirmingLock(true)}
+              onBuildSnapshots={() => undefined}
+              onConfirmLock={() => undefined}
               onCancelLock={() => setConfirmingLock(false)}
               onLock={() => void lockMechanism()}
               onCopyHash={() => void copyHash()}
-            />
-          ) : <ProductLoading label="Loading mechanism" />}
+            /></details> : <ProductLoading label="Loading mechanism" />}
+            <div className="campaign-launch"><div><span className="eyebrow">MANAGED LIFECYCLE</span><strong>{managedLifecycleLabel(selectedCampaign.sourceStatus)}</strong><p>TAKE operators control final lock, publication, activation, close, and result commitment. Locked campaign rules cannot be changed by lifecycle actions.</p></div></div>
+          </>}
 
           <section className="organize-discord">
             <div><span className="eyebrow">DISCORD EVIDENCE</span><h2>Community connection</h2><p>TAKE checks only known candidate membership, role IDs, and join time. It does not read messages.</p></div>
@@ -254,8 +334,7 @@ function MechanismWorkspace({ campaign, mechanism, snapshots, action, confirming
         </div>
       ) : (
         <div className="mechanism-actions">
-          <SecondaryAction onClick={onBuildSnapshots} disabled={!mechanism.config || locked || action === "snapshot"}><RefreshCw size={16} />{action === "snapshot" ? "COLLECTING EVIDENCE" : "BUILD EVIDENCE SNAPSHOTS"}</SecondaryAction>
-          <PrimaryAction onClick={onConfirmLock} disabled={!ready || locked}>{locked ? "ELIGIBILITY LOCKED" : "REVIEW AND LOCK"}</PrimaryAction>
+          <p className="mechanism-empty">{locked ? "Campaign artifacts are locked." : ready ? "Snapshots are ready for TAKE operator review." : "TAKE will build and lock final snapshots after organizer setup is complete."}</p>
         </div>
       )}
     </section>
@@ -279,4 +358,71 @@ function shortHash(value: string) {
 
 function message(error: unknown) {
   return error instanceof Error ? error.message : "TAKE could not complete this organizer action.";
+}
+
+interface CampaignRequestView {
+  id: string;
+  organizationId: string;
+  status: "DRAFT" | "SUBMITTED" | "CHANGES_REQUESTED" | "PROVISIONED" | "REJECTED";
+  title: string;
+  description: string;
+  resourceName: string;
+  seatCount: number;
+  endTime: string;
+  startTime: string;
+  provisionedCampaignId: string | null;
+}
+
+function normalizeCampaignRequest(form: FormData, organizationId: string | null) {
+  const text = (name: string) => String(form.get(name) ?? "").trim();
+  const title = text("title");
+  const description = text("description");
+  const resourceName = text("resourceName");
+  const seatText = text("seats");
+  const startText = text("startTime");
+  const endText = text("endTime");
+  const seats = Number(seatText);
+  const start = new Date(startText);
+  const end = new Date(endText);
+  const errors: Record<string, string> = {};
+  if (!organizationId) errors.organizationId = "Choose an organization.";
+  if (!title) errors.title = "Enter a campaign title.";
+  if (!resourceName) errors.resourceName = "Describe the opportunity.";
+  if (!description) errors.description = "Add a short campaign description.";
+  if (!Number.isInteger(seats) || seats < 1) errors.seats = "Spots must be a positive whole number.";
+  if (!startText || Number.isNaN(start.getTime())) errors.startTime = "Choose a valid campaign start time.";
+  else if (start.getTime() <= Date.now()) errors.startTime = "Campaign start must be in the future.";
+  if (!endText || Number.isNaN(end.getTime())) errors.endTime = "Choose a valid campaign end time.";
+  else if (end.getTime() <= Date.now()) errors.endTime = "Campaign end must be in the future.";
+  else if (!Number.isNaN(start.getTime()) && end <= start) errors.endTime = "Campaign end must be after its start.";
+  if (Object.keys(errors).length || !organizationId) return { value: null, errors };
+  return {
+    value: { organizationId, title, description, resourceName, seatCount: seats, startTime: start.toISOString(), endTime: end.toISOString(), selectorMode: "DISJOINT" },
+    errors,
+  };
+}
+
+function RequestField({ name, label, error, wide = false, onChange, children }: { name: string; label: string; error?: string; wide?: boolean; onChange: () => void; children: ReactNode }) {
+  return <label className={`field${wide ? " field--wide" : ""}`} htmlFor={`campaign-request-${name}`} onChange={onChange}>
+    <span>{label}</span>
+    {children}
+    {error ? <small id={`campaign-request-${name}-error`} role="alert">{error}</small> : null}
+  </label>;
+}
+
+function clearFieldError(name: string, setErrors: React.Dispatch<React.SetStateAction<Record<string, string>>>) {
+  setErrors((current) => {
+    if (!current[name]) return current;
+    const next = { ...current };
+    delete next[name];
+    return next;
+  });
+}
+
+function managedLifecycleLabel(status: string) {
+  if (status === "ACTIVE") return "Nominations are active on Monad.";
+  if (status === "CREATED") return "Published on Monad; awaiting activation.";
+  if (status === "CLOSED") return "Campaign closed; results are processing.";
+  if (status === "FINALIZED") return "Results finalized on Monad.";
+  return "Offchain setup in progress.";
 }

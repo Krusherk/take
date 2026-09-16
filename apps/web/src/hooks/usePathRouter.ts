@@ -8,6 +8,7 @@ export type TakePath =
   | "/activity"
   | "/notifications"
   | "/organize"
+  | "/operator"
   | "/takes"
   | "/profile"
   | `/campaign/${string}`
@@ -23,6 +24,7 @@ const validPaths = new Set<TakePath>([
   "/activity",
   "/notifications",
   "/organize",
+  "/operator",
   "/takes",
   "/profile",
 ]);
@@ -34,8 +36,7 @@ const legacyPaths: Record<string, TakePath> = {
   "/campaign/pending": "/campaign/monad-creator-round/pending",
   "/campaign/success": "/campaign/monad-creator-round/success",
   "/campaign/take": "/campaign/monad-creator-round",
-  "/received": "/invite/sarah",
-  "/profile/kubo": "/profile",
+  "/received": "/takes",
 };
 
 function readPath(): TakePath {
