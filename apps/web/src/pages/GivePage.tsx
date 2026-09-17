@@ -22,7 +22,7 @@ interface GivePageProps {
 export function GivePage({ campaignId, selected, onSelect, navigate, currentPerson }: GivePageProps) {
   const { request } = useTakeMe();
   const { campaigns, peoplePreview, status: productStatus } = useTakeProduct();
-  const campaign = campaigns.find((item) => item.id === campaignId) ?? (campaignId === "monad-creator-round" ? campaigns.find((item) => item.status === "LIVE") : undefined);
+  const campaign = campaigns.find((item) => item.id === campaignId);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Person[]>(peoplePreview);
   const [searching, setSearching] = useState(false);

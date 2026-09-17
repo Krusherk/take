@@ -7,7 +7,7 @@ import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { activityFromHistory } from "../lib/currentIdentity";
-import { campaignPath } from "../lib/productData";
+import { campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { Person } from "../types/product";
 
 export function TakesPage({ navigate, optimisticGivenCampaigns, optimisticRecipient }: { navigate: (path: TakePath) => void; optimisticGivenCampaigns: string[]; optimisticRecipient: Person | null }) {
@@ -15,7 +15,16 @@ export function TakesPage({ navigate, optimisticGivenCampaigns, optimisticRecipi
   const { campaigns } = useTakeProduct();
   if (!me || !history) return null;
   const activity = activityFromHistory(me, history);
-  const activeCampaigns = campaigns.filter((campaign) => campaign.viewer && campaign.status !== "CLOSED");
+  const activeCampaigns = campaigns.filter((campaign) =>
+    isParticipantCampaign(campaign)
+    && campaign.sourceStatus === "ACTIVE"
+    && campaign.status === "LIVE"
+    && Boolean(
+      campaign.viewer?.canParticipate
+      || (campaign.viewer?.usedTakes ?? 0) > 0
+      || optimisticGivenCampaigns.includes(campaign.id)
+    )
+  );
 
   return (
     <div className="page-container takes-page">

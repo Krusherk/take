@@ -262,7 +262,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
           {!selectedCampaign ? (
             <SocialEmpty title="No campaign assigned yet.">Submit a campaign request above. TAKE will review it and provision the offchain campaign for setup.</SocialEmpty>
           ) : <>
-            <div className="organize-preview-link"><SecondaryAction onClick={() => navigate(`/campaign/${selectedCampaign.id}`)}>OPEN PARTICIPANT VIEW</SecondaryAction></div>
+            <div className="organize-preview-link"><SecondaryAction onClick={() => navigate(`/campaign/${selectedCampaign.id}`)}>{selectedCampaign.onchain?.published ? "OPEN PARTICIPANT VIEW" : "PREVIEW OFFCHAIN DRAFT"}</SecondaryAction></div>
             {organizationId ? <OrganizerEligibilityWorkspace campaign={selectedCampaign} organizationId={organizationId} request={request} managed discordGuildId={discord?.integrations.find((item) => item.status === "ACTIVE")?.guildId} onMechanismChanged={() => void loadMechanism(selectedCampaign.id)} /> : null}
             {mechanism ? <details className="advanced-mechanism"><summary>Advanced mechanism and snapshot controls</summary><MechanismWorkspace
               campaign={selectedCampaign}

@@ -13,7 +13,7 @@ import { TAKE_API_BASE_URL } from "../lib/takeApi";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
 import { rememberPostAuthDestination, routeAfterAuthentication } from "../lib/authDestination";
-import { campaignFromApi, campaignPath } from "../lib/productData";
+import { campaignFromApi, campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { ApiCampaign, Campaign, Person } from "../types/product";
 
 export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, optimisticRecipient }: { campaignId: string; navigate: (path: TakePath) => void; optimisticGivenCampaigns: string[]; optimisticRecipient: Person | null }) {
@@ -25,7 +25,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
   const [publicLoading, setPublicLoading] = useState(false);
   const [publicError, setPublicError] = useState<string | null>(null);
   const { login } = useLogin({ onComplete: ({ isNewUser }) => navigate(routeAfterAuthentication(isNewUser)) });
-  const campaign = campaigns.find((item) => item.id === campaignId) ?? publicCampaign ?? (campaignId === "monad-creator-round" ? campaigns.find((item) => item.status === "LIVE") : undefined);
+  const campaign = campaigns.find((item) => item.id === campaignId) ?? publicCampaign;
 
   useEffect(() => {
     if (campaigns.some((item) => item.id === campaignId)) return;
@@ -46,6 +46,29 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
   if (!campaign && (publicLoading || status === "loading")) return <div className="page-container"><ProductLoading label="Loading campaign" /></div>;
   if (!campaign && (publicError || status === "error")) return <div className="page-container"><ProductError message={publicError ?? error ?? "This campaign could not be loaded."} onRetry={() => void refetch()} /></div>;
   if (!campaign) return <div className="page-container"><ProductError message="This campaign does not exist or is no longer available." onRetry={() => navigate("/explore")} /></div>;
+
+  if (!isParticipantCampaign(campaign)) {
+    return (
+      <div className="page-container campaign-page campaign-prelaunch-page">
+        <button className="back-link" type="button" onClick={() => navigate("/organize")}><ArrowLeft size={17} />ORGANIZE</button>
+        <section className="campaign-prelaunch">
+          <div>
+            <span className="eyebrow">{campaign.sourceStatus === "DRAFT" ? "OFFCHAIN DRAFT" : campaign.sourceStatus.replaceAll("_", " ")}</span>
+            <h1>{campaign.title}</h1>
+            <p>{campaign.description}</p>
+          </div>
+          <dl>
+            <div><dt>OPPORTUNITY</dt><dd>{campaign.resource}</dd></div>
+            <div><dt>ORGANIZER</dt><dd>{campaign.organizer}</dd></div>
+            <div><dt>MONAD</dt><dd>Not published</dd></div>
+            <div><dt>NOMINATIONS</dt><dd>Not open</dd></div>
+          </dl>
+          <p className="campaign-prelaunch__note">This is an organizer preview, not a participant campaign. Finish eligibility and both rosters, then a TAKE operator must lock, publish, and activate it before anyone receives a TAKE.</p>
+          <PrimaryAction onClick={() => navigate("/organize")}>CONTINUE CAMPAIGN SETUP</PrimaryAction>
+        </section>
+      </div>
+    );
+  }
 
   const given = (campaign.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(campaign.id);
   const available = !given && Boolean(campaign.viewer?.canParticipate) && (campaign.viewer?.availableTakes ?? 0) > 0 && campaign.status === "LIVE";
@@ -73,7 +96,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
 
       <div className="campaign-body">
         <section className="campaign-about">
-          <div><span className="eyebrow">THE OPPORTUNITY</span><h2>{campaign.resource}</h2><p>{campaign.description} {campaign.resourceName} recipients are published when the campaign closes.</p></div>
+          <div><span className="eyebrow">THE OPPORTUNITY</span><h2>{campaign.resource}</h2><p>{campaign.description}</p><small>Final recipients are published when the campaign closes.</small></div>
           <div className="campaign-rules">
             <article><span>WHO CAN GIVE</span><strong>{giverRule(campaign.nominatorEligibilityMode)}</strong><p>{campaign.nominationLimit === 1 ? "Exactly one TAKE per eligible person." : `Up to ${campaign.nominationLimit} TAKEs per eligible person.`}</p></article>
             <article><span>WHO CAN RECEIVE</span><strong>{recipientRule(campaign.recipientEligibilityMode)}</strong><p>People can be chosen whether or not they already use TAKE.</p></article>

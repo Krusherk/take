@@ -7,6 +7,7 @@ import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
+import { isParticipantCampaign } from "../lib/productData";
 import type { TakeHistoryEntry } from "../types/identity";
 import type { Person } from "../types/product";
 import type { CampaignState } from "../types/product";
@@ -22,6 +23,7 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
   const visible = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return campaigns.filter((campaign) => {
+      if (!isParticipantCampaign(campaign)) return false;
       const matchesFilter = filter === "ALL" || campaign.status === filter;
       const matchesQuery = !normalized || `${campaign.title} ${campaign.organizer} ${campaign.resource}`.toLowerCase().includes(normalized);
       return matchesFilter && matchesQuery;

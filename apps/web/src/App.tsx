@@ -89,7 +89,6 @@ export function App() {
   const inviteId = useMemo(() => parseInvitePath(path), [path]);
   const routeCampaign = useMemo(() => campaignRoute
     ? campaigns.find((campaign) => campaign.id === campaignRoute.campaignId)
-      ?? (campaignRoute.campaignId === "monad-creator-round" ? campaigns.find((campaign) => campaign.status === "LIVE") : undefined)
     : undefined, [campaignRoute, campaigns]);
   const selectedRecipient = routeCampaign && selection?.campaignId === routeCampaign.id ? selection.person : null;
   const publicCampaignDetail = campaignRoute?.step === "detail";

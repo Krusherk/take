@@ -25,7 +25,7 @@ export function ConfirmationPage({ campaignId, recipient, navigate, onConfirm, s
   const { campaigns } = useTakeProduct();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
-  const campaign = campaigns.find((item) => item.id === campaignId) ?? (campaignId === "monad-creator-round" ? campaigns.find((item) => item.status === "LIVE") : undefined);
+  const campaign = campaigns.find((item) => item.id === campaignId);
   if (!campaign) return <div className="page-container"><ProductError message="This campaign is not available." onRetry={() => navigate("/explore")} /></div>;
 
   async function copyWalletAddress() {

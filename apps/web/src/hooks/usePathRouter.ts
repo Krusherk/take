@@ -30,12 +30,12 @@ const validPaths = new Set<TakePath>([
 ]);
 
 const legacyPaths: Record<string, TakePath> = {
-  "/campaign": "/campaign/monad-creator-round",
-  "/campaign/give": "/campaign/monad-creator-round/give",
-  "/campaign/confirm": "/campaign/monad-creator-round/confirm",
-  "/campaign/pending": "/campaign/monad-creator-round/pending",
-  "/campaign/success": "/campaign/monad-creator-round/success",
-  "/campaign/take": "/campaign/monad-creator-round",
+  "/campaign": "/explore",
+  "/campaign/give": "/explore",
+  "/campaign/confirm": "/explore",
+  "/campaign/pending": "/explore",
+  "/campaign/success": "/explore",
+  "/campaign/take": "/explore",
   "/received": "/takes",
 };
 

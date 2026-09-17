@@ -19,7 +19,7 @@ interface SuccessPageProps {
 
 export function SuccessPage({ campaignId, recipient, navigate, transactionHash, currentPerson }: SuccessPageProps) {
   const { campaigns } = useTakeProduct();
-  const campaign = campaigns.find((item) => item.id === campaignId) ?? (campaignId === "monad-creator-round" ? campaigns.find((item) => item.status === "LIVE") : undefined);
+  const campaign = campaigns.find((item) => item.id === campaignId);
   if (!campaign) return <div className="page-container"><ProductError message="This campaign is not available." onRetry={() => navigate("/explore")} /></div>;
   const campaignTitle = campaign.title;
 

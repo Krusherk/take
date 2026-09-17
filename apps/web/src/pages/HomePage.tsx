@@ -10,7 +10,7 @@ import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { activityFromHistory, personFromHistoryPerson } from "../lib/currentIdentity";
-import { campaignPath } from "../lib/productData";
+import { campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { Campaign, Person } from "../types/product";
 
 interface HomePageProps {
@@ -23,9 +23,10 @@ interface HomePageProps {
 export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, optimisticRecipient }: HomePageProps) {
   const { history, me } = useTakeMe();
   const { campaigns, status, error, refetch } = useTakeProduct();
-  const featured = campaigns.find((campaign) => campaign.status === "LIVE") ?? campaigns.find((campaign) => campaign.status === "UPCOMING") ?? campaigns[0];
-  const activeTake = campaigns.find((campaign) => campaign.viewer?.canParticipate && (campaign.viewer.availableTakes ?? 0) > 0)
-    ?? campaigns.find((campaign) => (campaign.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(campaign.id));
+  const participantCampaigns = campaigns.filter(isParticipantCampaign);
+  const featured = participantCampaigns.find((campaign) => campaign.status === "LIVE") ?? participantCampaigns.find((campaign) => campaign.status === "UPCOMING") ?? participantCampaigns[0];
+  const activeTake = participantCampaigns.find((campaign) => campaign.viewer?.canParticipate && (campaign.viewer.availableTakes ?? 0) > 0)
+    ?? participantCampaigns.find((campaign) => (campaign.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(campaign.id));
   const isGiven = activeTake ? (activeTake.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(activeTake.id) : false;
   const givenEntry = activeTake ? history?.given.find((entry) => entry.campaignId === activeTake.id) : undefined;
   const givenPerson = givenEntry?.person ? personFromHistoryPerson(givenEntry.person, `${givenEntry.id}:recipient`) : optimisticRecipient;
@@ -78,7 +79,9 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
             <section className="section-block" id="campaigns">
               <header className="section-heading"><div><span className="eyebrow">OPPORTUNITIES</span><h2>Open now</h2></div><TextAction onClick={() => navigate("/explore")}>EXPLORE ALL</TextAction></header>
               <div className="campaign-list">
-                {campaigns.filter((campaign) => campaign.status !== "CLOSED").slice(0, 3).map((campaign) => <CampaignRow key={campaign.id} campaign={campaign} navigate={navigate} />)}
+                {participantCampaigns.some((campaign) => campaign.status !== "CLOSED")
+                  ? participantCampaigns.filter((campaign) => campaign.status !== "CLOSED").slice(0, 3).map((campaign) => <CampaignRow key={campaign.id} campaign={campaign} navigate={navigate} />)
+                  : <SocialEmpty title="No participant campaigns yet." action="ORGANIZE A CAMPAIGN" onAction={() => navigate("/organize")}>Drafts stay in Organize until TAKE publishes them to Monad.</SocialEmpty>}
               </div>
             </section>
 
