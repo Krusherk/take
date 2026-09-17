@@ -107,6 +107,13 @@ export function App() {
 
   useEffect(() => {
     if (!campaignRoute || !routeCampaign) return;
+    if (
+      (campaignRoute.step === "give" || campaignRoute.step === "confirm")
+      && (routeCampaign.status !== "LIVE" || routeCampaign.sourceStatus !== "ACTIVE")
+    ) {
+      navigate(campaignPath(routeCampaign), { replace: true });
+      return;
+    }
     if ((campaignRoute.step === "confirm" || campaignRoute.step === "pending" || campaignRoute.step === "success") && !selectedRecipient) {
       navigate(campaignPath(routeCampaign, "/give"), { replace: true });
     }
@@ -145,6 +152,13 @@ export function App() {
   }
 
   async function submitTake(campaignId: string, recipient: Person) {
+    const activeCampaign = campaigns.find((item) => item.id === campaignId);
+    if (!activeCampaign || activeCampaign.status !== "LIVE" || activeCampaign.sourceStatus !== "ACTIVE") {
+      setSubmissionError("This campaign is not active yet. Return after TAKE publishes and activates it on Monad.");
+      setSubmitting(false);
+      if (activeCampaign) navigate(campaignPath(activeCampaign), { replace: true });
+      return;
+    }
     setSubmitting(true);
     setSubmissionError(null);
     try {

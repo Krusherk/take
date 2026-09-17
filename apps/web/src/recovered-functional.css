@@ -62,10 +62,95 @@
 }
 
 .app-shell :is(code, .mechanism-hash code, .snapshot-row code, .operator-authority dd, .campaign-onchain-audit dd, .operator-wallet-panel strong),
-.campaign-page .campaign-onchain-audit dd {
+.campaign-page .campaign-onchain-audit dd,
+.confirmation-page .pilot-gas-notice code {
   font-family: var(--take-mono);
   font-size: 12px;
   letter-spacing: 0;
+}
+
+/* The funding warning is a full-width transaction prerequisite, not loose
+   text inside the two-column confirmation grid. */
+.pilot-gas-notice {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 0 38px 24px;
+  padding: 16px 18px;
+  border: 1.5px solid #11110f;
+  border-radius: 7px;
+  background: #fff4bd;
+  color: #11110f;
+}
+
+.pilot-gas-notice__icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1.5px solid #11110f;
+  border-radius: 50%;
+  background: var(--take-accent);
+}
+
+.pilot-gas-notice__copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pilot-gas-notice__copy strong {
+  font-family: var(--take-heading);
+  font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.015em;
+}
+
+.pilot-gas-notice__copy > span {
+  color: #555149;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pilot-gas-notice__copy code {
+  display: block;
+  max-width: 100%;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  color: #28271f;
+}
+
+.pilot-gas-notice__copy small {
+  color: #a42f27;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pilot-gas-notice__button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1.5px solid #11110f;
+  border-radius: 6px;
+  background: #11110f;
+  color: #fffef8;
+  font-family: var(--take-font);
+  font-size: 13px;
+  font-weight: 720;
+  transition: transform var(--take-fast) ease-out, background var(--take-fast) ease-out;
+}
+
+.pilot-gas-notice__button:hover {
+  background: #282820;
+}
+
+.pilot-gas-notice__button:active {
+  transform: translateY(1px);
 }
 
 .app-shell :is(.page-container, section, article, header, footer, form, fieldset, div),
@@ -1179,6 +1264,16 @@
   .organize-preview-link .action,
   .organize-create-panel form > .action,
   .eligibility-form > footer .action {
+    width: 100%;
+  }
+
+  .pilot-gas-notice {
+    grid-template-columns: auto minmax(0, 1fr);
+    margin: 0 18px 20px;
+  }
+
+  .pilot-gas-notice__button {
+    grid-column: 1 / -1;
     width: 100%;
   }
 }

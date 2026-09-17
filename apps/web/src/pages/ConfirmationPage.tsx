@@ -24,8 +24,22 @@ interface ConfirmationPageProps {
 export function ConfirmationPage({ campaignId, recipient, navigate, onConfirm, submitting, error, currentPerson, walletAddress }: ConfirmationPageProps) {
   const { campaigns } = useTakeProduct();
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   const campaign = campaigns.find((item) => item.id === campaignId) ?? (campaignId === "monad-creator-round" ? campaigns.find((item) => item.status === "LIVE") : undefined);
   if (!campaign) return <div className="page-container"><ProductError message="This campaign is not available." onRetry={() => navigate("/explore")} /></div>;
+
+  async function copyWalletAddress() {
+    if (!walletAddress) return;
+    try {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopyError(false);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1_500);
+    } catch {
+      setCopied(false);
+      setCopyError(true);
+    }
+  }
 
   return (
     <div className="page-container confirmation-page">
@@ -41,7 +55,7 @@ export function ConfirmationPage({ campaignId, recipient, navigate, onConfirm, s
         <div className="commitment__handoff"><TakeMascotAccent character="handoff" className="mascot-confirmation" /><HandoffPair from={currentPerson} to={recipient} /></div>
         <dl className="commitment__facts"><div><dt>CAMPAIGN</dt><dd>{campaign.title}</dd></div><div><dt>OPPORTUNITY</dt><dd>{campaign.resource}</dd></div><div><dt>RECIPIENT</dt><dd>{recipient.name}{recipient.handle ? ` · ${recipient.handle}` : ""}</dd></div></dl>
         <div className="commitment__notice"><LockKeyhole size={19} strokeWidth={1.7} /><div><strong>This choice can’t be changed.</strong><span>You won’t have another TAKE in this campaign.</span></div></div>
-        {import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS !== "true" ? <div className="pilot-gas-notice"><Wallet size={19} /><div><strong>Your TAKE wallet needs Monad testnet MON.</strong><span>This pilot does not currently sponsor gas. Fund this embedded wallet before confirming.</span><code>{walletAddress ?? "Wallet unavailable"}</code></div>{walletAddress ? <button type="button" onClick={() => { void navigator.clipboard.writeText(walletAddress); setCopied(true); window.setTimeout(() => setCopied(false), 1_500); }}>{copied ? <Check size={15} /> : <Copy size={15} />}{copied ? "COPIED" : "COPY WALLET"}</button> : null}</div> : null}
+        {import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS !== "true" ? <div className="pilot-gas-notice"><div className="pilot-gas-notice__icon"><Wallet size={20} /></div><div className="pilot-gas-notice__copy"><strong>Your TAKE wallet needs Monad testnet MON.</strong><span>This pilot does not currently sponsor gas. Fund this embedded wallet before confirming.</span><code title={walletAddress ?? undefined}>{walletAddress ?? "Wallet unavailable"}</code>{copyError ? <small role="alert">Could not copy automatically. Select the address above and copy it manually.</small> : null}</div>{walletAddress ? <button className="pilot-gas-notice__button" type="button" onClick={() => void copyWalletAddress()} aria-label="Copy embedded wallet address">{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? "Copied" : "Copy wallet"}</span></button> : null}</div> : null}
         {error ? <p className="form-error" role="alert">{error}</p> : null}
         <div className="commitment__actions"><PrimaryAction full onClick={onConfirm} disabled={submitting}>{submitting ? "PREPARING…" : `GIVE TO ${recipient.name.toUpperCase()}`}</PrimaryAction><SecondaryAction full arrow="back" onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GO BACK</SecondaryAction></div>
       </section>
