@@ -13,6 +13,7 @@
     "dev:web": "pnpm --filter @take/web dev",
     "db:generate": "pnpm --filter @take/database generate",
     "db:migrate": "pnpm --filter @take/database migrate",
+    "db:migrate:pilot-data": "pnpm --filter @take/database migrate:pilot-data",
     "db:seed": "pnpm --filter @take/database seed",
     "contracts:test": "forge test --root packages/contracts",
     "contracts:build": "forge build --root packages/contracts",

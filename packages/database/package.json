@@ -11,6 +11,7 @@
     "test": "vitest run",
     "generate": "drizzle-kit generate",
     "migrate": "tsx src/migrate.ts",
+    "migrate:pilot-data": "tsx src/migratePilotData.ts",
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
