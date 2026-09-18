@@ -4,6 +4,7 @@ import { CampaignService } from "../services/campaign.js";
 import { NominationService } from "../services/nomination.js";
 import { AllocationService } from "../services/allocation.js";
 import { createMonadPublicClient, loadChainConfig } from "@take/chain";
+import { assertTakeOperator, isTakeOperator } from "../services/authorization.js";
 
 export const campaignRoutes: FastifyPluginAsync = async (app) => {
   const campaigns = new CampaignService(app.db);
@@ -11,15 +12,29 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
   const allocations = new AllocationService(app.db, app.env);
 
   app.get("/campaigns", async (request) =>
-    campaigns.listCampaigns(request.takeIdentity?.takeIdentityId)
+    campaigns.listCampaigns(
+      request.takeIdentity?.takeIdentityId,
+      app.env.NODE_ENV === "development" && app.env.ENABLE_DEV_FIXTURES
+    )
   );
 
   app.get<{ Params: { id: string } }>("/campaigns/:id", async (request, reply) => {
     const campaign = await campaigns.getCampaignView(
       request.params.id,
-      request.takeIdentity?.takeIdentityId
+      request.takeIdentity?.takeIdentityId,
+      app.env.NODE_ENV === "development" && app.env.ENABLE_DEV_FIXTURES
     );
     if (!campaign) {
+      return reply.code(404).send({ error: "NOT_FOUND" });
+    }
+    if (
+      campaign.status === "DRAFT"
+      && (
+        !request.takeIdentity
+        || (!isTakeOperator(app.env, request.takeIdentity)
+          && !(await campaigns.canManageCampaign(request.params.id, request.takeIdentity.takeIdentityId)))
+      )
+    ) {
       return reply.code(404).send({ error: "NOT_FOUND" });
     }
     return campaign;
@@ -34,24 +49,20 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post("/campaigns", async (request, reply) => {
-    if (!request.takeIdentity) {
-      return reply.code(401).send({ error: "UNAUTHORIZED" });
-    }
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
     const input = createCampaignSchema.parse(request.body);
-    const campaign = await campaigns.createDraft(input, request.takeIdentity.takeIdentityId);
+    const campaign = await campaigns.createDraft(input, operator.takeIdentityId);
     return reply.code(201).send(campaign);
   });
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/publish/prepare", async (request, reply) => {
-    if (!request.takeIdentity) {
-      return reply.code(401).send({ error: "UNAUTHORIZED" });
-    }
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
     if (!app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS) {
       return reply.code(503).send({ error: "CHAIN_NOT_CONFIGURED" });
     }
     const prepared = await campaigns.preparePublish(
       request.params.id,
-      request.takeIdentity.takeIdentityId,
+      operator.takeIdentityId,
       app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS,
       app.env.MONAD_NETWORK === "mainnet" ? 143 : 10143
     );
@@ -59,19 +70,28 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/close/prepare", async (request, reply) => {
-    if (!request.takeIdentity) {
-      return reply.code(401).send({ error: "UNAUTHORIZED" });
-    }
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
     if (!app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS) {
       return reply.code(503).send({ error: "CHAIN_NOT_CONFIGURED" });
     }
     const prepared = await campaigns.prepareClose(
       request.params.id,
-      request.takeIdentity.takeIdentityId,
+      operator.takeIdentityId,
       app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS,
       app.env.MONAD_NETWORK === "mainnet" ? 143 : 10143
     );
     return reply.send(prepared);
+  });
+
+  app.post<{ Params: { id: string } }>("/campaigns/:id/activate/prepare", async (request, reply) => {
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
+    if (!app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS) return reply.code(503).send({ error: "CHAIN_NOT_CONFIGURED" });
+    return campaigns.prepareActivate(
+      request.params.id,
+      operator.takeIdentityId,
+      app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS,
+      app.env.MONAD_NETWORK === "mainnet" ? 143 : 10143
+    );
   });
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/nominations/prepare", async (request, reply) => {
@@ -130,15 +150,25 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
     }
   );
 
+  app.get<{ Params: { id: string; nominationId: string } }>(
+    "/campaigns/:id/nominations/:nominationId",
+    async (request, reply) => {
+      if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+      return nominations.getStatus(
+        request.params.id,
+        request.params.nominationId,
+        request.takeIdentity.takeIdentityId
+      );
+    }
+  );
+
   app.post<{ Params: { id: string } }>(
     "/campaigns/:id/allocation-runs",
     async (request, reply) => {
-      if (!request.takeIdentity) {
-        return reply.code(401).send({ error: "UNAUTHORIZED" });
-      }
+      const operator = assertTakeOperator(app.env, request.takeIdentity);
       const run = await allocations.run(
         request.params.id,
-        request.takeIdentity.takeIdentityId
+        operator.takeIdentityId
       );
       return reply.code(201).send(run);
     }
@@ -147,13 +177,11 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { id: string; runId: string } }>(
     "/campaigns/:id/allocation-runs/:runId/finalize/prepare",
     async (request, reply) => {
-      if (!request.takeIdentity) {
-        return reply.code(401).send({ error: "UNAUTHORIZED" });
-      }
+      const operator = assertTakeOperator(app.env, request.takeIdentity);
       return allocations.prepareFinalize(
         request.params.id,
         request.params.runId,
-        request.takeIdentity.takeIdentityId
+        operator.takeIdentityId
       );
     }
   );

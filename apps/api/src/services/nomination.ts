@@ -23,6 +23,45 @@ export class NominationService {
     this.snapshots = new EligibilitySnapshotService(db, env);
   }
 
+  async getStatus(campaignId: string, nominationId: string, actorIdentityId: string) {
+    const [record] = await this.db
+      .select({
+        nomination: schema.nominations,
+        edgeId: schema.nominationEdges.id,
+        edgeValidity: schema.nominationEdges.validity,
+        edgeFinality: schema.nominationEdges.finalityStatus,
+        canonicalRecipientKey: schema.nominationEdges.canonicalRecipientKey
+      })
+      .from(schema.nominations)
+      .leftJoin(schema.nominationEdges, eq(schema.nominationEdges.nominationId, schema.nominations.id))
+      .where(and(
+        eq(schema.nominations.id, nominationId),
+        eq(schema.nominations.campaignId, campaignId),
+        eq(schema.nominations.giverIdentityId, actorIdentityId)
+      ))
+      .limit(1);
+    if (!record) throw new ServiceError("NOMINATION_NOT_FOUND", "Nomination not found", 404);
+    const canonical = Boolean(
+      record.edgeId
+      && record.edgeValidity === "VALID"
+      && record.edgeFinality === "FINALIZED"
+    );
+    return {
+      id: record.nomination.id,
+      status: record.nomination.status,
+      transactionHash: record.nomination.transactionHash,
+      failureReason: record.nomination.failureReason,
+      chainConfirmed: ["CHAIN_CONFIRMED", "INDEXING_DELAYED", "CONFIRMED"].includes(record.nomination.status),
+      canonical,
+      edge: record.edgeId ? {
+        id: record.edgeId,
+        validity: record.edgeValidity,
+        finality: record.edgeFinality,
+        canonicalRecipientKey: record.canonicalRecipientKey
+      } : null
+    };
+  }
+
   async prepare(
     campaignId: string,
     giverIdentityId: string,

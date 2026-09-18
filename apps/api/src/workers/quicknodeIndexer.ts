@@ -393,18 +393,49 @@ async function applyKnownProjection(
   transactionIndex: number
 ) {
   if (item.eventName === "CampaignCreated") {
-    const args = item.log.args as { campaignId: bigint; rulesHash: Hex };
-    await tx
-      .update(schema.campaigns)
-      .set({
-        onchainCampaignId: args.campaignId,
-        chainId,
-        managerContractAddress: contractAddress,
-        status: "CREATED",
-        rulesHash: args.rulesHash,
+    const args = item.log.args as { campaignId: bigint; organizer: Address; rulesHash: Hex };
+    const [intent] = await tx
+      .select()
+      .from(schema.campaignLifecycleIntents)
+      .where(and(
+        eq(schema.campaignLifecycleIntents.chainId, chainId),
+        eq(schema.campaignLifecycleIntents.transactionHash, item.log.transactionHash),
+        eq(schema.campaignLifecycleIntents.action, "PUBLISH")
+      ))
+      .limit(1);
+    if (!intent) return;
+    if (
+      intent.contractAddress.toLowerCase() !== contractAddress.toLowerCase()
+      || intent.expectedRulesHash?.toLowerCase() !== args.rulesHash.toLowerCase()
+      || intent.requiredFromAddress?.toLowerCase() !== args.organizer.toLowerCase()
+    ) {
+      await tx.update(schema.campaignLifecycleIntents).set({
+        status: "FAILED",
+        errorCode: "INDEXED_CAMPAIGN_CREATED_MISMATCH",
+        errorMessage: "Indexed CampaignCreated event did not match the prepared locked campaign",
         updatedAt: new Date()
-      })
-      .where(eq(schema.campaigns.rulesHash, args.rulesHash));
+      }).where(eq(schema.campaignLifecycleIntents.id, intent.id));
+      return;
+    }
+    await tx.update(schema.campaigns).set({
+      onchainCampaignId: args.campaignId,
+      chainId,
+      managerContractAddress: contractAddress,
+      onchainOrganizerAddress: args.organizer.toLowerCase(),
+      onchainOperatorWalletAddress: args.organizer.toLowerCase(),
+      status: "CREATED",
+      updatedAt: new Date()
+    }).where(eq(schema.campaigns.id, intent.campaignId));
+    await tx.update(schema.campaignLifecycleIntents).set({
+      status: "COMPLETED",
+      eventLogIndex: item.log.logIndex,
+      eventBlockNumber: item.log.blockNumber,
+      emittedOnchainCampaignId: args.campaignId,
+      emittedOrganizerAddress: args.organizer.toLowerCase(),
+      confirmedAt: new Date(),
+      indexedAt: new Date(),
+      updatedAt: new Date()
+    }).where(eq(schema.campaignLifecycleIntents.id, intent.id));
   }
   if (item.eventName === "CampaignActivated") {
     const args = item.log.args as { campaignId: bigint };

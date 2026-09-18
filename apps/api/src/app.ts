@@ -11,6 +11,9 @@ import { indexerRoutes } from "./routes/indexer.js";
 import { reconciliationRoutes } from "./routes/reconciliation.js";
 import { socialRoutes } from "./routes/social.js";
 import { mechanismRoutes } from "./routes/mechanism.js";
+import { selectorEligibilityRoutes } from "./routes/selectorEligibility.js";
+import { operatorRoutes } from "./routes/operator.js";
+import { campaignLifecycleRoutes } from "./routes/campaignLifecycle.js";
 import { ServiceError } from "./services/errors.js";
 import { ZodError } from "zod";
 
@@ -22,7 +25,7 @@ export async function buildApp() {
   await app.register(contextPlugin);
   await app.register(cors, {
     origin: app.env.WEB_ORIGIN ?? (app.env.NODE_ENV === "development" ? true : false),
-    methods: ["GET", "POST", "PUT", "OPTIONS"]
+    methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"]
   });
   await app.register(rateLimit, {
     global: false,
@@ -56,6 +59,9 @@ export async function buildApp() {
   await app.register(reconciliationRoutes);
   await app.register(socialRoutes);
   await app.register(mechanismRoutes);
+  await app.register(selectorEligibilityRoutes);
+  await app.register(operatorRoutes);
+  await app.register(campaignLifecycleRoutes);
 
   return app;
 }

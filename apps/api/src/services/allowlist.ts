@@ -65,9 +65,9 @@ export class AllowlistService {
     return created;
   }
 
-  async lock(allowlistId: string, actorIdentityId: string) {
+  async lock(allowlistId: string, actorIdentityId: string, operatorManaged = false) {
     const allowlist = await this.allowlist(allowlistId);
-    await assertOrganizationRole(this.db, allowlist.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, allowlist.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (allowlist.status !== "DRAFT") {
       throw new ServiceError("ALLOWLIST_ALREADY_LOCKED", "The allowlist is already locked", 409);
     }

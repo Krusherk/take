@@ -90,6 +90,33 @@ export class DiscordIntegrationService {
     return serializeIntegration(integration);
   }
 
+  async listRoles(organizationId: string, actorIdentityId: string, guildId: string) {
+    await assertOrganizationRole(this.db, organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    const [integration] = await this.db
+      .select()
+      .from(schema.discordGuildIntegrations)
+      .where(and(
+        eq(schema.discordGuildIntegrations.organizationId, organizationId),
+        eq(schema.discordGuildIntegrations.guildId, guildId),
+        eq(schema.discordGuildIntegrations.status, "ACTIVE")
+      ))
+      .limit(1);
+    if (!integration) {
+      throw new ServiceError("DISCORD_GUILD_NOT_CONNECTED", "This Discord guild is not connected to the organization", 404);
+    }
+    const result = await this.provider.getGuildRoles(guildId);
+    if (result.status === "UNAVAILABLE") {
+      throw new ServiceError(result.errorCode, "TAKE could not retrieve roles from the connected Discord guild", 409);
+    }
+    return {
+      guildId,
+      roles: result.value
+        .filter((role) => role.id !== guildId && !role.managed)
+        .sort((left, right) => right.position - left.position)
+        .map(({ id, name }) => ({ id, name }))
+    };
+  }
+
   async completeInstall(state: string, guildId: string) {
     const payload = this.verifySignedState(state);
     return this.confirmInstall(payload.organizationId, payload.actorIdentityId, guildId);

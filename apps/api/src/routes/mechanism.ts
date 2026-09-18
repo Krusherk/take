@@ -10,6 +10,7 @@ import { RandomnessService } from "../services/randomness.js";
 import { ReviewService } from "../services/review.js";
 import { OrganizationService } from "../services/organization.js";
 import { ExperimentService } from "../services/experiment.js";
+import { assertTakeOperator } from "../services/authorization.js";
 
 const uuid = z.string().uuid();
 const allowlistMemberSchema = z.union([
@@ -34,6 +35,12 @@ export const mechanismRoutes: FastifyPluginAsync = async (app) => {
     return organizations.listForIdentity(request.takeIdentity.takeIdentityId);
   });
 
+  app.post("/organizations", async (request, reply) => {
+    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    const body = z.object({ name: z.string().trim().min(2).max(160) }).parse(request.body);
+    return reply.code(201).send(await organizations.create(request.takeIdentity.takeIdentityId, body.name));
+  });
+
   app.get<{ Params: { id: string } }>("/campaigns/:id/mechanism", async (request) =>
     mechanisms.getMechanism(request.params.id)
   );
@@ -53,8 +60,8 @@ export const mechanismRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/experiment-v0/lock", async (request, reply) => {
-    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
-    return experiments.lock(request.params.id, request.takeIdentity.takeIdentityId);
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
+    return experiments.lock(request.params.id, operator.takeIdentityId, true);
   });
 
   app.get<{ Params: { id: string }; Querystring: { query?: string } }>(
@@ -106,9 +113,9 @@ export const mechanismRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/evidence-snapshots", async (request, reply) => {
-    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
     return reply.code(201).send(
-      await snapshots.createForCurrentDraft(request.params.id, request.takeIdentity.takeIdentityId)
+      await snapshots.createForCurrentDraft(request.params.id, operator.takeIdentityId, true)
     );
   });
 
@@ -125,8 +132,8 @@ export const mechanismRoutes: FastifyPluginAsync = async (app) => {
   );
 
   app.post<{ Params: { id: string } }>("/campaigns/:id/mechanism/lock", async (request, reply) => {
-    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
-    return mechanisms.lock(request.params.id, request.takeIdentity.takeIdentityId);
+    const operator = assertTakeOperator(app.env, request.takeIdentity);
+    return mechanisms.lock(request.params.id, operator.takeIdentityId, true);
   });
 
   app.get<{ Params: { id: string } }>("/campaigns/:id/graph-snapshot", async (request) =>
@@ -221,6 +228,15 @@ export const mechanismRoutes: FastifyPluginAsync = async (app) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
     return discord.list(request.params.id, request.takeIdentity.takeIdentityId);
   });
+
+  app.get<{ Params: { id: string; guildId: string } }>(
+    "/organizations/:id/integrations/discord/:guildId/roles",
+    async (request, reply) => {
+      if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+      const guildId = z.string().regex(/^\d{1,20}$/).parse(request.params.guildId);
+      return discord.listRoles(request.params.id, request.takeIdentity.takeIdentityId, guildId);
+    }
+  );
 
   app.post<{ Params: { id: string } }>("/organizations/:id/integrations/discord/install", async (request, reply) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });

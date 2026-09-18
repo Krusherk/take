@@ -37,14 +37,14 @@ export class EligibilitySnapshotService {
 
   private readonly concurrency: number;
 
-  async createForCurrentDraft(campaignId: string, actorIdentityId: string) {
+  async createForCurrentDraft(campaignId: string, actorIdentityId: string, operatorManaged = false) {
     const [campaign] = await this.db
       .select()
       .from(schema.campaigns)
       .where(eq(schema.campaigns.id, campaignId))
       .limit(1);
     if (!campaign) notFound("Campaign not found");
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (campaign.status !== "DRAFT") {
       throw new ServiceError("CAMPAIGN_NOT_DRAFT", "Eligibility snapshots can only be built for draft campaigns", 409);
     }

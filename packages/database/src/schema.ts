@@ -272,6 +272,7 @@ export const campaigns = pgTable("campaigns", {
   id: uuid("id").primaryKey().defaultRandom(),
   organizationId: uuid("organization_id").notNull().references(() => organizations.id),
   createdByIdentityId: uuid("created_by_identity_id").notNull().references(() => takeIdentities.id),
+  campaignRequestId: uuid("campaign_request_id"),
   onchainCampaignId: bigint("onchain_campaign_id", { mode: "bigint" }),
   chainId: integer("chain_id"),
   managerContractAddress: varchar("manager_contract_address", { length: 42 }),
@@ -293,6 +294,12 @@ export const campaigns = pgTable("campaigns", {
   nominatorEligibilityRoot: varchar("nominator_eligibility_root", { length: 66 }),
   recipientEligibilityRoot: varchar("recipient_eligibility_root", { length: 66 }),
   finalResultHash: varchar("final_result_hash", { length: 66 }),
+  eligibilityDescription: text("eligibility_description"),
+  imageUrl: text("image_url"),
+  launchApprovedByIdentityId: uuid("launch_approved_by_identity_id").references(() => takeIdentities.id),
+  launchApprovedAt: timestamp("launch_approved_at", { withTimezone: true }),
+  onchainOperatorWalletAddress: varchar("onchain_operator_wallet_address", { length: 42 }),
+  onchainOrganizerAddress: varchar("onchain_organizer_address", { length: 42 }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
@@ -303,6 +310,60 @@ export const campaigns = pgTable("campaigns", {
   ),
   statusIdx: index("campaigns_status_idx").on(table.status),
   organizationIdx: index("campaigns_organization_id_idx").on(table.organizationId)
+}));
+
+export const campaignRequests = pgTable("campaign_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  requestedByIdentityId: uuid("requested_by_identity_id").notNull().references(() => takeIdentities.id),
+  status: varchar("status", { length: 32 }).notNull().default("DRAFT"),
+  title: varchar("title", { length: 160 }).notNull(),
+  description: text("description").notNull(),
+  resourceName: varchar("resource_name", { length: 160 }).notNull(),
+  resourceDescription: text("resource_description"),
+  seatCount: integer("seat_count").notNull(),
+  startTime: timestamp("start_time", { withTimezone: true }).notNull(),
+  endTime: timestamp("end_time", { withTimezone: true }).notNull(),
+  selectorMode: varchar("selector_mode", { length: 32 }).notNull().default("DISJOINT"),
+  eligibilityDescription: text("eligibility_description"),
+  operatorNote: text("operator_note"),
+  provisionedCampaignId: uuid("provisioned_campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({
+  organizationIdx: index("campaign_requests_organization_idx").on(table.organizationId, table.status),
+  requesterIdx: index("campaign_requests_requester_idx").on(table.requestedByIdentityId, table.createdAt)
+}));
+
+export const campaignLifecycleIntents = pgTable("campaign_lifecycle_intents", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  action: varchar("action", { length: 24 }).notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("PREPARING"),
+  chainId: integer("chain_id").notNull(),
+  contractAddress: varchar("contract_address", { length: 42 }).notNull(),
+  requiredFromAddress: varchar("required_from_address", { length: 42 }),
+  expectedCalldata: text("expected_calldata").notNull(),
+  expectedRulesHash: varchar("expected_rules_hash", { length: 66 }),
+  transactionHash: varchar("transaction_hash", { length: 66 }).unique(),
+  eventName: varchar("event_name", { length: 96 }).notNull(),
+  eventLogIndex: integer("event_log_index"),
+  eventBlockNumber: bigint("event_block_number", { mode: "bigint" }),
+  emittedOnchainCampaignId: bigint("emitted_onchain_campaign_id", { mode: "bigint" }),
+  emittedOrganizerAddress: varchar("emitted_organizer_address", { length: 42 }),
+  errorCode: varchar("error_code", { length: 96 }),
+  errorMessage: text("error_message"),
+  createdByIdentityId: uuid("created_by_identity_id").notNull().references(() => takeIdentities.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  indexedAt: timestamp("indexed_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({
+  actionIdx: uniqueIndex("campaign_lifecycle_intents_action_idx").on(table.campaignId, table.action),
+  transactionIdx: index("campaign_lifecycle_intents_transaction_idx").on(table.chainId, table.transactionHash)
 }));
 
 export const campaignMechanismConfigs = pgTable("campaign_mechanism_configs", {
@@ -448,6 +509,84 @@ export const eligibilityEvaluations = pgTable("eligibility_evaluations", {
   )
 }));
 
+export const campaignEligibilityPolicies = pgTable("campaign_eligibility_policies", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  revision: integer("revision").notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("DRAFT"),
+  candidateAllowlistId: uuid("candidate_allowlist_id").notNull().references(() => identityAllowlists.id, {
+    onDelete: "restrict"
+  }),
+  finalAllowlistId: uuid("final_allowlist_id").references(() => identityAllowlists.id, {
+    onDelete: "restrict"
+  }),
+  preset: varchar("preset", { length: 64 }).notNull(),
+  canonicalPolicy: jsonb("canonical_policy").notNull(),
+  policyHash: varchar("policy_hash", { length: 66 }).notNull(),
+  createdByIdentityId: uuid("created_by_identity_id").notNull().references(() => takeIdentities.id),
+  lockedByIdentityId: uuid("locked_by_identity_id").references(() => takeIdentities.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedAt: timestamp("locked_at", { withTimezone: true })
+}, (table) => ({
+  revisionIdx: uniqueIndex("campaign_eligibility_policies_revision_idx").on(table.campaignId, table.revision),
+  hashIdx: uniqueIndex("campaign_eligibility_policies_hash_idx").on(table.policyHash),
+  campaignStatusIdx: index("campaign_eligibility_policies_campaign_status_idx").on(table.campaignId, table.status)
+}));
+
+export const selectorEligibilityAssessments = pgTable("selector_eligibility_assessments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  policyId: uuid("policy_id").notNull().references(() => campaignEligibilityPolicies.id, { onDelete: "cascade" }),
+  takeIdentityId: uuid("take_identity_id").notNull().references(() => takeIdentities.id, { onDelete: "restrict" }),
+  automaticStatus: varchar("automatic_status", { length: 32 }).notNull(),
+  finalStatus: varchar("final_status", { length: 32 }).notNull(),
+  qualificationPath: varchar("qualification_path", { length: 32 }),
+  totalPoints: integer("total_points").notNull().default(0),
+  categoryScores: jsonb("category_scores").notNull().default(sql`'[]'::jsonb`),
+  missingRuleIds: jsonb("missing_rule_ids").notNull().default(sql`'[]'::jsonb`),
+  integrityStatus: varchar("integrity_status", { length: 32 }).notNull().default("NO_DATA"),
+  integrityReasons: jsonb("integrity_reasons").notNull().default(sql`'[]'::jsonb`),
+  assessmentArtifact: jsonb("assessment_artifact").notNull(),
+  assessmentHash: varchar("assessment_hash", { length: 66 }).notNull(),
+  evaluatedAt: timestamp("evaluated_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedAt: timestamp("locked_at", { withTimezone: true })
+}, (table) => ({
+  policyIdentityIdx: uniqueIndex("selector_eligibility_assessments_policy_identity_idx").on(
+    table.policyId,
+    table.takeIdentityId
+  ),
+  campaignStatusIdx: index("selector_eligibility_assessments_campaign_status_idx").on(
+    table.campaignId,
+    table.finalStatus
+  ),
+  hashIdx: uniqueIndex("selector_eligibility_assessments_hash_idx").on(table.assessmentHash)
+}));
+
+export const selectorIntegrityObservations = pgTable("selector_integrity_observations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  policyId: uuid("policy_id").notNull().references(() => campaignEligibilityPolicies.id, { onDelete: "cascade" }),
+  takeIdentityId: uuid("take_identity_id").notNull().references(() => takeIdentities.id, { onDelete: "restrict" }),
+  signalType: varchar("signal_type", { length: 96 }).notNull(),
+  evidenceFamily: varchar("evidence_family", { length: 64 }).notNull(),
+  strength: varchar("strength", { length: 16 }).notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("OBSERVED"),
+  publicExplanation: text("public_explanation").notNull(),
+  restrictedEvidence: jsonb("restricted_evidence").notNull().default(sql`'{}'::jsonb`),
+  provenance: jsonb("provenance").notNull().default(sql`'{}'::jsonb`),
+  observedAt: timestamp("observed_at", { withTimezone: true }).notNull(),
+  collectedAt: timestamp("collected_at", { withTimezone: true }).notNull().defaultNow(),
+  observationHash: varchar("observation_hash", { length: 66 }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({
+  hashIdx: uniqueIndex("selector_integrity_observations_hash_idx").on(table.observationHash),
+  identityIdx: index("selector_integrity_observations_identity_idx").on(
+    table.policyId,
+    table.takeIdentityId
+  )
+}));
+
 export const campaignExperiments = pgTable("campaign_experiments", {
   id: uuid("id").primaryKey().defaultRandom(),
   campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
@@ -550,6 +689,10 @@ export const chainTransactions = pgTable("chain_transactions", {
   id: uuid("id").primaryKey().defaultRandom(),
   chainId: integer("chain_id").notNull(),
   transactionHash: varchar("transaction_hash", { length: 66 }).notNull().unique(),
+  campaignId: uuid("campaign_id").references(() => campaigns.id, { onDelete: "cascade" }),
+  lifecycleIntentId: uuid("lifecycle_intent_id").references(() => campaignLifecycleIntents.id, { onDelete: "set null" }),
+  action: varchar("action", { length: 32 }),
+  submittedByIdentityId: uuid("submitted_by_identity_id").references(() => takeIdentities.id),
   fromAddress: varchar("from_address", { length: 42 }),
   toAddress: varchar("to_address", { length: 42 }),
   status: varchar("status", { length: 32 }).notNull().default("SUBMITTED"),
@@ -754,6 +897,15 @@ export const reviewCases = pgTable("review_cases", {
   graphSignalId: uuid("graph_signal_id").references(() => graphSignalObservations.id, {
     onDelete: "set null"
   }),
+  eligibilityPolicyId: uuid("eligibility_policy_id").references(() => campaignEligibilityPolicies.id, {
+    onDelete: "cascade"
+  }),
+  eligibilityAssessmentId: uuid("eligibility_assessment_id").references(() => selectorEligibilityAssessments.id, {
+    onDelete: "cascade"
+  }),
+  subjectIdentityId: uuid("subject_identity_id").references(() => takeIdentities.id, {
+    onDelete: "restrict"
+  }),
   caseType: varchar("case_type", { length: 96 }).notNull(),
   status: reviewCaseStatusEnum("status").notNull().default("OPEN"),
   publicSummary: text("public_summary"),
@@ -793,6 +945,28 @@ export const reviewDecisions = pgTable("review_decisions", {
   decidedAt: timestamp("decided_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({
   revisionIdx: uniqueIndex("review_decisions_revision_idx").on(table.reviewCaseId, table.revision)
+}));
+
+export const selectorEvidenceSubmissions = pgTable("selector_evidence_submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  policyId: uuid("policy_id").notNull().references(() => campaignEligibilityPolicies.id, { onDelete: "cascade" }),
+  assessmentId: uuid("assessment_id").notNull().references(() => selectorEligibilityAssessments.id, {
+    onDelete: "cascade"
+  }),
+  reviewCaseId: uuid("review_case_id").notNull().references(() => reviewCases.id, { onDelete: "cascade" }),
+  submittedByIdentityId: uuid("submitted_by_identity_id").notNull().references(() => takeIdentities.id),
+  submissionType: varchar("submission_type", { length: 40 }).notNull(),
+  targetRuleId: varchar("target_rule_id", { length: 96 }),
+  evidenceType: varchar("evidence_type", { length: 64 }),
+  explanation: text("explanation").notNull(),
+  links: jsonb("links").notNull().default(sql`'[]'::jsonb`),
+  status: varchar("status", { length: 32 }).notNull().default("PENDING"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({
+  reviewCaseIdx: uniqueIndex("selector_evidence_submissions_review_case_idx").on(table.reviewCaseId),
+  assessmentIdx: index("selector_evidence_submissions_assessment_idx").on(table.assessmentId, table.status)
 }));
 
 export const randomnessArtifacts = pgTable("randomness_artifacts", {

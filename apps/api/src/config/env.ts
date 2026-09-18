@@ -30,6 +30,14 @@ const urlList = z.string().default(
   }
   return entries;
 });
+const commaSeparatedList = z.preprocess(
+  (value) => value ?? "",
+  z.string().transform((value) => [...new Set(value.split(",").map((entry) => entry.trim()).filter(Boolean))])
+);
+const booleanFlag = z.preprocess(
+  (value) => value === true || value === "true" || value === "1",
+  z.boolean().default(false)
+);
 
 export const apiEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -46,6 +54,8 @@ export const apiEnvSchema = z.object({
   DISCORD_BOT_TOKEN: optionalNonEmptyString,
   DISCORD_INSTALL_REDIRECT_URI: optionalUrl,
   DISCORD_INSTALL_STATE_SECRET: optionalNonEmptyString,
+  TAKE_OPERATOR_PRIVY_USER_IDS: commaSeparatedList,
+  ENABLE_DEV_FIXTURES: booleanFlag,
   MONAD_NETWORK: z.enum(["testnet", "mainnet"]).default("testnet"),
   MONAD_TESTNET_RPC_URL: optionalUrl,
   MONAD_MAINNET_RPC_URL: optionalUrl,

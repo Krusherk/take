@@ -38,6 +38,13 @@ const discordGuildSchema = z.object({
   owner_id: z.string().optional()
 });
 
+const discordRolesSchema = z.array(z.object({
+  id: z.string(),
+  name: z.string(),
+  position: z.number().int(),
+  managed: z.boolean().optional()
+}));
+
 export class XEvidenceProvider {
   constructor(private readonly env: ApiEnv) {}
 
@@ -145,6 +152,47 @@ export class DiscordEvidenceProvider {
       providerObservedAt: new Date(),
       provenance: { provider: "discord", endpoint: "GET /guilds/:guildId", apiVersion: "10" },
       value: { id: parsed.data.id, name: parsed.data.name }
+    };
+  }
+
+  async getGuildRoles(guildId: string): Promise<ProviderEvidence<Array<{
+    id: string;
+    name: string;
+    position: number;
+    managed: boolean;
+  }>>> {
+    if (!this.env.DISCORD_BOT_TOKEN) {
+      return unavailable("DISCORD_BOT_NOT_CONFIGURED", { provider: "discord", endpoint: "guild-roles" });
+    }
+    const response = await requestJson(
+      new URL(`https://discord.com/api/v10/guilds/${encodeURIComponent(guildId)}/roles`),
+      {
+        headers: { authorization: `Bot ${this.env.DISCORD_BOT_TOKEN}` },
+        timeoutMs: this.env.DRAND_REQUEST_TIMEOUT_MS,
+        retryServerErrors: true
+      }
+    );
+    if (!response.ok) {
+      return unavailable(providerError("DISCORD_ROLES", response.status), {
+        provider: "discord",
+        endpoint: "guild-roles",
+        guildId,
+        status: response.status
+      });
+    }
+    const parsed = discordRolesSchema.safeParse(response.body);
+    if (!parsed.success) {
+      return unavailable("DISCORD_ROLES_INVALID_RESPONSE", {
+        provider: "discord",
+        endpoint: "guild-roles",
+        guildId
+      });
+    }
+    return {
+      status: "OBSERVED",
+      providerObservedAt: new Date(),
+      provenance: { provider: "discord", endpoint: "GET /guilds/:guildId/roles", apiVersion: "10" },
+      value: parsed.data.map((role) => ({ ...role, managed: role.managed ?? false }))
     };
   }
 

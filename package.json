@@ -9,6 +9,7 @@
     "check": "pnpm --filter @take/shared build && pnpm --filter @take/mechanism build && pnpm --filter @take/chain build && pnpm --filter @take/database build && pnpm --filter @take/mechanism-simulator check && pnpm --filter @take/api check && pnpm --filter @take/web check",
     "test": "pnpm -r test",
     "dev:api": "pnpm --filter @take/api dev",
+    "dev:worker": "pnpm --filter @take/api dev:worker",
     "dev:web": "pnpm --filter @take/web dev",
     "db:generate": "pnpm --filter @take/database generate",
     "db:migrate": "pnpm --filter @take/database migrate",

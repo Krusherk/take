@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import {
   buildRegisterIdentityCall,
   createMonadPublicClient,
@@ -19,7 +19,7 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
     return app.identityService.getMe(request.takeIdentity.takeIdentityId);
   });
 
-  app.post("/me/registration/prepare", async (request, reply) => {
+  async function registrationStatus(request: FastifyRequest, reply: FastifyReply) {
     if (!request.takeIdentity) {
       return reply.code(401).send({ error: "UNAUTHORIZED" });
     }
@@ -58,9 +58,19 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
       }) as Promise<boolean>
     ]);
 
+    if (registered && !walletAuthorized) {
+      return {
+        registered,
+        walletAuthorized,
+        walletAddress,
+        transaction: null,
+        limitation: "This legacy manager cannot add another wallet to an already registered identity. Use the wallet that originally registered this TAKE identity."
+      };
+    }
     return {
       registered,
       walletAuthorized,
+      walletAddress,
       transaction:
         registered && walletAuthorized
           ? null
@@ -70,5 +80,8 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
               protocolIdentityKey
             })
     };
-  });
+  }
+
+  app.get("/me/registration/status", registrationStatus);
+  app.post("/me/registration/prepare", registrationStatus);
 };

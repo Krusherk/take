@@ -110,6 +110,23 @@ export function buildCloseCampaignCall(input: {
   };
 }
 
+export function buildActivateCampaignCall(input: {
+  contractAddress: Address;
+  chainId: number;
+  campaignId: bigint;
+}): ContractCall {
+  return {
+    to: input.contractAddress,
+    data: encodeFunctionData({
+      abi: takeCampaignManagerAbi,
+      functionName: "activateCampaign",
+      args: [input.campaignId]
+    }),
+    value: "0x0",
+    chainId: input.chainId
+  };
+}
+
 export function buildFinalizeAllocationCall(input: {
   contractAddress: Address;
   chainId: number;

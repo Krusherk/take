@@ -1,5 +1,5 @@
-import { and, count, countDistinct, desc, eq, inArray } from "drizzle-orm";
-import { buildCloseCampaignCall, buildCreateCampaignCall } from "@take/chain";
+import { and, count, countDistinct, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { buildActivateCampaignCall, buildCloseCampaignCall, buildCreateCampaignCall } from "@take/chain";
 import type { Database } from "@take/database";
 import { schema } from "@take/database";
 import { CampaignStatus, hashJson } from "@take/shared";
@@ -14,9 +14,24 @@ type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
 export class CampaignService {
   constructor(private readonly db: Database) {}
 
-  async listCampaigns(viewerIdentityId?: string) {
+  async listCampaigns(viewerIdentityId?: string, includeFixtureCampaigns = true) {
     const records = await this.db.select().from(schema.campaigns);
-    return Promise.all(records.map((campaign) => this.toView(campaign, viewerIdentityId)));
+    const fixtureCreators = includeFixtureCampaigns ? [] : await this.fixtureCreatorIds();
+    const fixtureCreatorSet = new Set(fixtureCreators);
+    const memberships = viewerIdentityId
+      ? await this.db.select({ organizationId: schema.organizationMembers.organizationId })
+          .from(schema.organizationMembers)
+          .where(eq(schema.organizationMembers.takeIdentityId, viewerIdentityId))
+      : [];
+    const managedOrganizations = new Set(memberships.map((item) => item.organizationId));
+    const visible = records.filter((campaign) =>
+      !fixtureCreatorSet.has(campaign.createdByIdentityId)
+      && (
+        campaign.status !== "DRAFT"
+        || Boolean(viewerIdentityId && (campaign.createdByIdentityId === viewerIdentityId || managedOrganizations.has(campaign.organizationId)))
+      )
+    );
+    return Promise.all(visible.map((campaign) => this.toView(campaign, viewerIdentityId)));
   }
 
   async getCampaign(id: string) {
@@ -28,9 +43,39 @@ export class CampaignService {
     return campaign;
   }
 
-  async getCampaignView(id: string, viewerIdentityId?: string) {
+  async getCampaignView(id: string, viewerIdentityId?: string, includeFixtureCampaigns = true) {
     const campaign = await this.getCampaign(id);
+    if (campaign && !includeFixtureCampaigns && (await this.fixtureCreatorIds()).includes(campaign.createdByIdentityId)) return undefined;
     return campaign ? this.toView(campaign, viewerIdentityId) : undefined;
+  }
+
+  async canManageCampaign(campaignId: string, identityId: string) {
+    const campaign = await this.getCampaign(campaignId);
+    if (!campaign) return false;
+    if (campaign.createdByIdentityId === identityId) return true;
+    const [membership] = await this.db
+      .select({ id: schema.organizationMembers.id })
+      .from(schema.organizationMembers)
+      .where(and(
+        eq(schema.organizationMembers.organizationId, campaign.organizationId),
+        eq(schema.organizationMembers.takeIdentityId, identityId),
+        inArray(schema.organizationMembers.role, ["OWNER", "ADMIN"])
+      ))
+      .limit(1);
+    return Boolean(membership);
+  }
+
+  private async fixtureCreatorIds() {
+    return this.db.select({ id: schema.takeIdentities.id })
+      .from(schema.takeIdentities)
+      .innerJoin(schema.users, eq(schema.users.id, schema.takeIdentities.userId))
+      .where(or(
+        ilike(schema.users.privyUserId, "take-dev-eligibility-%"),
+        ilike(schema.users.privyUserId, "did:privy:seed-%"),
+        ilike(schema.users.privyUserId, "did:privy:mechanism-%"),
+        ilike(schema.users.privyUserId, "did:privy:v0-%"),
+        ilike(schema.users.privyUserId, "did:privy:test-%")
+      )).then((rows) => rows.map((row) => row.id));
   }
 
   async createDraft(input: CreateCampaignInput, creatorIdentityId: string) {
@@ -83,12 +128,12 @@ export class CampaignService {
     });
   }
 
-  async preparePublish(campaignId: string, actorIdentityId: string, contractAddress: string, chainId: number) {
+  async preparePublish(campaignId: string, actorIdentityId: string, contractAddress: string, chainId: number, operatorManaged = false) {
     const campaign = await this.getCampaign(campaignId);
     if (!campaign) {
       throw new Error("Campaign not found");
     }
-    await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
+    if (!operatorManaged) await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
     if (campaign.status !== CampaignStatus.DRAFT) {
       throw new Error("Only draft campaigns can be published");
     }
@@ -191,12 +236,12 @@ export class CampaignService {
     };
   }
 
-  async prepareClose(campaignId: string, actorIdentityId: string, contractAddress: string, chainId: number) {
+  async prepareClose(campaignId: string, actorIdentityId: string, contractAddress: string, chainId: number, operatorManaged = false) {
     const campaign = await this.getCampaign(campaignId);
     if (!campaign) {
       throw new Error("Campaign not found");
     }
-    await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
+    if (!operatorManaged) await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
     if (!campaign.onchainCampaignId) {
       throw new Error("Campaign is not published onchain");
     }
@@ -213,6 +258,23 @@ export class CampaignService {
     };
   }
 
+  async prepareActivate(campaignId: string, actorIdentityId: string, contractAddress: string, chainId: number, operatorManaged = false) {
+    const campaign = await this.getCampaign(campaignId);
+    if (!campaign) throw new Error("Campaign not found");
+    if (!operatorManaged) await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
+    if (campaign.status !== CampaignStatus.CREATED || !campaign.onchainCampaignId) {
+      throw new ServiceError("CAMPAIGN_NOT_CREATED", "Wait for the published campaign to be indexed before activation", 409);
+    }
+    return {
+      campaign,
+      transaction: buildActivateCampaignCall({
+        contractAddress: (campaign.managerContractAddress ?? contractAddress) as Address,
+        chainId: campaign.chainId ?? chainId,
+        campaignId: campaign.onchainCampaignId
+      })
+    };
+  }
+
   private async assertCanManageOrganization(organizationId: string, takeIdentityId: string) {
     await assertOrganizationRole(this.db, organizationId, takeIdentityId, ["OWNER", "ADMIN"]);
   }
@@ -221,7 +283,7 @@ export class CampaignService {
     campaign: typeof schema.campaigns.$inferSelect,
     viewerIdentityId?: string
   ) {
-    const [[organization], [resource], [participantAggregate], [nominationAggregate], eligibility, [experiment]] = await Promise.all([
+    const [[organization], [resource], [participantAggregate], [nominationAggregate], eligibility, [experiment], lifecycle] = await Promise.all([
       this.db
         .select({ id: schema.organizations.id, name: schema.organizations.name, slug: schema.organizations.slug })
         .from(schema.organizations)
@@ -270,7 +332,13 @@ export class CampaignService {
             status: schema.campaignExperiments.status
           }).from(schema.campaignExperiments)
             .where(eq(schema.campaignExperiments.id, campaign.experimentId)).limit(1)
-        : Promise.resolve([])
+        : Promise.resolve([]),
+      this.db.select({
+        action: schema.campaignLifecycleIntents.action,
+        status: schema.campaignLifecycleIntents.status,
+        transactionHash: schema.campaignLifecycleIntents.transactionHash
+      }).from(schema.campaignLifecycleIntents)
+        .where(eq(schema.campaignLifecycleIntents.campaignId, campaign.id))
     ]);
 
     const usedTakes = Number(nominationAggregate?.value ?? 0);
@@ -296,6 +364,7 @@ export class CampaignService {
       metadataHash: campaign.metadataHash,
       rulesHash: campaign.rulesHash,
       finalResultHash: campaign.finalResultHash,
+      eligibilityDescription: campaign.eligibilityDescription,
       startTime: campaign.startTime.toISOString(),
       endTime: campaign.endTime.toISOString(),
       nominationLimit: campaign.nominationLimit,
@@ -324,6 +393,20 @@ export class CampaignService {
         status: experiment.status,
         activeNominationDataHidden: !["CLOSED", "ALLOCATING", "FINALIZED"].includes(campaign.status)
       } : null,
+      onchain: {
+        published: Boolean(campaign.onchainCampaignId),
+        network: campaign.chainId === 143 ? "Monad Mainnet" : "Monad Testnet",
+        chainId: campaign.chainId,
+        managerContractAddress: campaign.managerContractAddress,
+        campaignId: campaign.onchainCampaignId?.toString() ?? null,
+        authorityWalletAddress: campaign.onchainOperatorWalletAddress,
+        organizerAddress: campaign.onchainOrganizerAddress,
+        lifecycle: Object.fromEntries(lifecycle.map((item) => [item.action.toLowerCase(), {
+          status: item.status,
+          transactionHash: item.transactionHash
+        }]))
+      },
+      launchApproved: Boolean(campaign.launchApprovedAt),
       viewer: viewerIdentityId
         ? {
             usedTakes,
@@ -347,7 +430,7 @@ export class CampaignService {
         locked: false,
         reasons: [{
           reasonCode: "LEGACY_CAMPAIGN",
-          explanation: "This campaign predates evidence-backed eligibility snapshots."
+          explanation: "This campaign uses an earlier eligibility setup."
         }]
       };
     }

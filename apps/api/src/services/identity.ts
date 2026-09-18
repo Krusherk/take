@@ -30,6 +30,7 @@ interface IdentityPresentation {
 
 export interface ResolvedTakeIdentity {
   userId: string;
+  privyUserId: string;
   takeIdentityId: string;
   protocolIdentityKey: string;
   primaryWalletAddress?: string;
@@ -245,6 +246,7 @@ export class IdentityService {
 
       return {
         userId: user.id,
+        privyUserId: user.privyUserId,
         takeIdentityId: identity.id,
         protocolIdentityKey: identity.protocolIdentityKey,
         primaryWalletAddress: walletAddresses[0]

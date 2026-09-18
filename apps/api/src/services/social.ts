@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, isNull, ne, not, or } from "drizzle-orm";
 import type { Database } from "@take/database";
 import { schema } from "@take/database";
 
@@ -18,7 +18,7 @@ export interface PersonView {
 export class SocialService {
   constructor(private readonly db: Database) {}
 
-  async searchPeople(query: string, viewerIdentityId: string, limit = 12): Promise<PersonView[]> {
+  async searchPeople(query: string, viewerIdentityId: string, limit = 12, includeSelf = false, includeDevFixtures = false): Promise<PersonView[]> {
     const normalized = query.trim();
     const pattern = `%${normalized}%`;
     const takeMatches = await this.db
@@ -39,7 +39,14 @@ export class SocialService {
       )
       .where(
         and(
-          ne(schema.takeIdentities.id, viewerIdentityId),
+          includeSelf ? undefined : ne(schema.takeIdentities.id, viewerIdentityId),
+          includeDevFixtures ? undefined : and(
+            not(ilike(schema.users.privyUserId, "take-dev-eligibility-%")),
+            not(ilike(schema.users.privyUserId, "did:privy:seed-%")),
+            not(ilike(schema.users.privyUserId, "did:privy:mechanism-%")),
+            not(ilike(schema.users.privyUserId, "did:privy:v0-%")),
+            not(ilike(schema.users.privyUserId, "did:privy:test-%"))
+          ),
           normalized
             ? or(
                 ilike(schema.users.displayName, pattern),
@@ -59,6 +66,7 @@ export class SocialService {
           .where(
             and(
               isNull(schema.externalIdentities.takeIdentityId),
+              includeDevFixtures ? undefined : not(ilike(schema.externalIdentities.immutableProviderUserId, "x-seed-%")),
               normalized
                 ? or(
                     ilike(schema.externalIdentities.displayName, pattern),

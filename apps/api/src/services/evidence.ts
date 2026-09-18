@@ -27,7 +27,7 @@ export interface EvidenceSubject {
 
 interface SaveObservationInput {
   campaignId: string;
-  mechanismConfigId: string;
+  mechanismConfigId?: string;
   subject: EvidenceSubject;
   source: EvidenceSource;
   fact: EvidenceFact;
@@ -163,7 +163,7 @@ export class EvidenceService {
 
   async collectForSubject(input: {
     campaignId: string;
-    mechanismConfigId: string;
+    mechanismConfigId?: string;
     organizationId: string;
     cutoffAt: Date;
     policy: EligibilityPolicyV1;

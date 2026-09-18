@@ -78,10 +78,10 @@ export class MechanismService {
     };
   }
 
-  async createDraft(campaignId: string, actorIdentityId: string, input: unknown) {
+  async createDraft(campaignId: string, actorIdentityId: string, input: unknown, operatorManaged = false) {
     const config = campaignMechanismConfigV1Schema.parse(input);
     const campaign = await this.campaign(campaignId);
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (campaign.status !== "DRAFT") {
       throw new ServiceError("CAMPAIGN_NOT_DRAFT", "Only draft campaigns can receive a mechanism revision", 409);
     }
@@ -166,9 +166,9 @@ export class MechanismService {
     });
   }
 
-  async lock(campaignId: string, actorIdentityId: string) {
+  async lock(campaignId: string, actorIdentityId: string, operatorManaged = false) {
     const campaign = await this.campaign(campaignId);
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (campaign.status !== "DRAFT") {
       throw new ServiceError("CAMPAIGN_NOT_DRAFT", "Only a draft campaign mechanism can be locked", 409);
     }
@@ -177,6 +177,31 @@ export class MechanismService {
     const config = parsedConfig(configRecord);
     this.assertDeploymentPolicy(config);
     this.assertRandomnessCommitment(config, campaign.endTime);
+    const [selectorEligibilityPolicy] = await this.db
+      .select()
+      .from(schema.campaignEligibilityPolicies)
+      .where(eq(schema.campaignEligibilityPolicies.campaignId, campaignId))
+      .orderBy(desc(schema.campaignEligibilityPolicies.revision))
+      .limit(1);
+    if (selectorEligibilityPolicy) {
+      if (selectorEligibilityPolicy.status !== "LOCKED" || !selectorEligibilityPolicy.finalAllowlistId) {
+        throw new ServiceError(
+          "SELECTOR_ELIGIBILITY_NOT_LOCKED",
+          "Finalize every selector review and lock the selector roster before locking the campaign mechanism",
+          409
+        );
+      }
+      if (
+        config.nominatorPolicy.population.type !== "ORGANIZER_ALLOWLIST"
+        || config.nominatorPolicy.population.allowlistId !== selectorEligibilityPolicy.finalAllowlistId
+      ) {
+        throw new ServiceError(
+          "SELECTOR_ROSTER_MISMATCH",
+          "The mechanism nominator population must use the final locked selector roster",
+          409
+        );
+      }
+    }
     const experiment = campaign.experimentId
       ? await this.db.select().from(schema.campaignExperiments)
           .where(eq(schema.campaignExperiments.id, campaign.experimentId)).limit(1)
@@ -251,6 +276,7 @@ export class MechanismService {
       },
       contract: config.contract,
       randomness: config.randomness,
+      selectorEligibilityPolicyHash: selectorEligibilityPolicy?.policyHash ?? null,
       experimentProtocolHash: experiment?.protocolHash ?? null
     });
     const now = new Date();
@@ -320,6 +346,7 @@ export class MechanismService {
           nominatorSnapshotHash: nominator.snapshotHash,
           recipientSnapshotHash: recipient.snapshotHash,
           experimentProtocolHash: experiment?.protocolHash ?? null,
+          selectorEligibilityPolicyHash: selectorEligibilityPolicy?.policyHash ?? null,
           rulesHash
         }
       });

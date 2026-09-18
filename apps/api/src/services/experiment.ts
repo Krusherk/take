@@ -29,10 +29,10 @@ const FALLBACK_SCALE = {
 export class ExperimentService {
   constructor(private readonly db: Database) {}
 
-  async createDraft(campaignId: string, actorIdentityId: string, rawInput: unknown) {
+  async createDraft(campaignId: string, actorIdentityId: string, rawInput: unknown, operatorManaged = false) {
     const input = campaignExperimentDraftV0Schema.parse(rawInput);
     const campaign = await this.getCampaign(campaignId);
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (campaign.status !== "DRAFT") {
       throw new ServiceError("CAMPAIGN_NOT_DRAFT", "Only draft campaigns can receive an experiment protocol", 409);
     }
@@ -143,9 +143,9 @@ export class ExperimentService {
     });
   }
 
-  async lock(campaignId: string, actorIdentityId: string) {
+  async lock(campaignId: string, actorIdentityId: string, operatorManaged = false) {
     const campaign = await this.getCampaign(campaignId);
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    if (!operatorManaged) await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
     if (campaign.status !== "DRAFT") {
       throw new ServiceError("CAMPAIGN_NOT_DRAFT", "The experiment must lock before publication", 409);
     }
