@@ -1,5 +1,5 @@
 import { Check, CircleAlert, Copy, ExternalLink, RefreshCw, Wallet } from "lucide-react";
-import { useSendTransaction } from "@privy-io/react-auth";
+import { useSendTransaction, useUser, useWallets } from "@privy-io/react-auth";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
@@ -27,6 +27,8 @@ export function OperatorPage() {
   const { me, request } = useTakeMe();
   const { campaigns, refetch: refetchCampaigns } = useTakeProduct();
   const { sendTransaction } = useSendTransaction();
+  const { refreshUser } = useUser();
+  const { wallets: connectedWallets, ready: walletsReady } = useWallets();
   const [operator, setOperator] = useState<boolean | null>(null);
   const [requests, setRequests] = useState<OperatorRequest[]>([]);
   const [campaignId, setCampaignId] = useState("");
@@ -44,7 +46,21 @@ export function OperatorPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [refreshingWallet, setRefreshingWallet] = useState(false);
+  const [walletRefreshAttempted, setWalletRefreshAttempted] = useState(false);
+  const [walletCheckTimedOut, setWalletCheckTimedOut] = useState(false);
   const primaryWallet = me?.wallets.find((wallet) => wallet.primary && wallet.embedded)?.address ?? me?.wallets.find((wallet) => wallet.embedded)?.address ?? null;
+  const authorityWallet = campaign?.onchain?.authorityWalletAddress ?? primaryWallet;
+  const connectedAuthorityWallet = connectedWallets.find((wallet) =>
+    wallet.walletClientType === "privy" && wallet.address.toLowerCase() === authorityWallet?.toLowerCase()
+  );
+  const walletAvailable = walletsReady && Boolean(connectedAuthorityWallet);
+
+  useEffect(() => {
+    if (walletsReady) { setWalletCheckTimedOut(false); return; }
+    const timer = window.setTimeout(() => setWalletCheckTimedOut(true), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [walletsReady]);
 
   const loadRoot = useCallback(async () => {
     setError(null);
@@ -119,6 +135,9 @@ export function OperatorPage() {
   }
   async function lifecycle(action: LifecycleAction) {
     if (!campaign) return;
+    if (!walletAvailable) throw new Error(walletsReady
+      ? "Your existing TAKE wallet is linked, but Privy has not connected it in this browser. Use Retry wallet connection below. Do not create a new wallet."
+      : "Your TAKE wallet is still loading. Wait for the wallet check before continuing.");
     const intent = await request<LifecycleIntent>(`/operator/campaigns/${campaign.id}/lifecycle/${action.toLowerCase()}/prepare`, { method: "POST", body: JSON.stringify(action === "FINALIZE" ? { allocationRunId: allocation?.id } : {}) });
     if (intent.transactionHash) return;
     const signer = intent.requiredFromAddress ?? primaryWallet;
@@ -128,14 +147,23 @@ export function OperatorPage() {
     await request(`/operator/campaigns/${campaign.id}/lifecycle-intents/${intent.id}/submit`, { method: "POST", body: JSON.stringify({ transactionHash: sent.hash, fromAddress: signer }) });
   }
   async function copyWallet() {
-    const address = campaign?.onchain?.authorityWalletAddress ?? primaryWallet;
+    const address = authorityWallet;
     if (!address) return;
     await navigator.clipboard.writeText(address); setCopied(true); window.setTimeout(() => setCopied(false), 1_500);
+  }
+  async function retryWalletConnection() {
+    setRefreshingWallet(true);
+    setWalletRefreshAttempted(true);
+    setError(null);
+    try { await refreshUser(); }
+    catch (caught) { setError(errorMessage(caught)); }
+    finally { setRefreshingWallet(false); }
   }
 
   if (operator === null && !error) return <div className="page-container"><ProductLoading label="Checking TAKE operator access" /></div>;
   if (operator === false) return <div className="page-container"><ProductError message="This account is not on the TAKE operator allowlist." onRetry={() => void loadRoot()} /></div>;
   const readiness = getReadiness(campaign, eligibility, mechanism, experiment, allocation);
+  const newRequests = requests.filter((item) => item.status === "SUBMITTED");
   const next = getNextAction({ campaign, eligibility, mechanism, experiment, allocation, recipientRosterId, recipientContext, ratings, pendingIntent });
   const actions: Partial<Record<NextActionKey, () => Promise<unknown>>> = campaign ? {
     LOCK_SELECTORS: () => request(`/campaigns/${campaign.id}/selector-eligibility/lock`, { method: "POST", body: "{}" }),
@@ -152,28 +180,28 @@ export function OperatorPage() {
   if (pendingIntent?.status === "WAITING_FOR_WALLET") actions.PENDING = () => lifecycle(pendingIntent.action);
 
   return <div className="page-container operator-page">
-    <header className="page-intro"><div><span className="eyebrow">TAKE OPERATOR</span><h1>Managed campaigns.</h1></div><p>One clear next step. Locked campaign rules remain locked.</p></header>
+    <header className="page-intro"><div><span className="eyebrow">TAKE OPERATOR</span><h1>Launch and run campaigns.</h1></div><p>The organizer defines the opportunity and the real people in scope. TAKE checks which of them qualify to give one TAKE. A giver chooses a recipient; the operator does not choose a winner.</p></header>
     {error ? <div className="organize-error" role="alert"><CircleAlert size={17} />{error}</div> : null}
-    <section className="operator-requests"><header><span className="eyebrow">CAMPAIGN REQUESTS</span><h2>Awaiting TAKE</h2></header>
-      {!requests.length ? <SocialEmpty title="No campaign requests.">Organizer submissions will appear here.</SocialEmpty> : requests.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.organizationName} · {item.resourceName} · {item.seatCount} spots</p></div><span>{humanStatus(item.status)}</span>{item.status === "SUBMITTED" ? <PrimaryAction onClick={() => void provision(item.id)} disabled={busy === `provision:${item.id}`}>{busy === `provision:${item.id}` ? "PROVISIONING" : "PROVISION CAMPAIGN"}</PrimaryAction> : null}</article>)}
-    </section>
+    {newRequests.length ? <section className="operator-requests"><header><span className="eyebrow">CAMPAIGN REQUESTS</span><h2>Ready for setup</h2></header>
+      {newRequests.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.organizationName} · {item.resourceName} · {item.seatCount} spots</p></div><PrimaryAction onClick={() => void provision(item.id)} disabled={busy === `provision:${item.id}`}>{busy === `provision:${item.id}` ? "PROVISIONING" : "START SETUP"}</PrimaryAction></article>)}
+    </section> : null}
     <section className="operator-control">
       <div className="operator-control-head"><label className="field"><span>MANAGED CAMPAIGN</span><select value={campaignId} onChange={(event) => setCampaignId(event.target.value)}><option value="">Choose a campaign</option>{campaigns.map((item) => <option key={item.id} value={item.id}>{item.title} · {humanStatus(item.sourceStatus)}</option>)}</select></label><SecondaryAction onClick={() => void refresh()} disabled={busy !== null}><RefreshCw size={16} />REFRESH</SecondaryAction></div>
       {!campaignId && !campaigns.length ? <SocialEmpty title="No managed campaigns yet.">Provision a submitted organizer request to create the first offchain campaign.</SocialEmpty> : null}
       {campaignId && !campaign ? <ProductLoading label="Loading campaign readiness" /> : null}
       {campaign ? <>
-        <div className="operator-campaign-summary"><div><span className="eyebrow">{productState(campaign, mechanism)}</span><h2>{campaign.title}</h2><p>{campaign.resource} · {campaign.spots} spots · {campaign.organizer}</p></div><span className="operator-state">{productState(campaign, mechanism)}</span></div>
+        <div className="operator-campaign-summary"><div><span className="eyebrow">{productState(campaign, mechanism)}</span><h2>{campaign.title}</h2><p>{campaign.resource} · {campaign.spots} spots · {campaign.organizer}</p><p>{eligibility?.counts.eligible ?? 0} qualified to give one TAKE · {recipientContext.recipients.length} can receive it</p></div><span className="operator-state">{productState(campaign, mechanism)}</span></div>
         <section className="operator-next-action" aria-labelledby="operator-next-title">
           <div><span className="eyebrow">NEXT ACTION</span><h2 id="operator-next-title">{next.title}</h2><p>{next.detail}</p></div>
           {next.blocker ? <div className="operator-blocker"><CircleAlert size={18} /><span>{next.blocker}</span></div> : null}
           {next.key === "ORGANIZER_SETUP" ? <a className="operator-next-link" href="/organize">OPEN ORGANIZER SETUP</a> : null}
           {next.key === "CHOOSE_RECIPIENTS" || next.key === "PREPARE_MECHANISM" ? <RosterControls rosters={rosters} selectorAllowlistId={eligibility?.finalAllowlistId ?? null} recipientRosterId={recipientRosterId} mode={mode} onRosterChange={setRecipientRosterId} onModeChange={setMode} /> : null}
           {next.key === "RATE_RECIPIENTS" || next.key === "PREREGISTER" ? <RecipientRatings recipients={recipientContext.recipients} ratings={ratings} onChange={(key, score) => setRatings((current) => ({ ...current, [key]: score }))} /> : null}
-          {actions[next.key] ? <PrimaryAction onClick={() => void run(next.key, actions[next.key]!)} disabled={busy !== null || Boolean(next.blocker)}>{busy === next.key ? "WORKING…" : next.key === "PENDING" ? "OPEN WALLET AGAIN" : actionLabel(next.key)}</PrimaryAction> : null}
+          {actions[next.key] ? <PrimaryAction onClick={() => void run(next.key, actions[next.key]!)} disabled={busy !== null || Boolean(next.blocker) || (requiresWallet(next.key) && !walletAvailable)}>{busy === next.key ? "WORKING…" : next.key === "PENDING" ? "CONTINUE TO WALLET" : actionLabel(next.key)}</PrimaryAction> : null}
           {next.key === "WAIT" || next.key === "PENDING" ? <SecondaryAction onClick={() => void refresh()} disabled={busy !== null}><RefreshCw size={16} />CHECK STATUS</SecondaryAction> : null}
         </section>
-        <section className="operator-readiness"><header><div><span className="eyebrow">READINESS</span><h2>What is ready</h2></div><span>{readiness.filter((item) => item.ready).length}/{readiness.length}</span></header><div>{readiness.map((item) => <div className={item.ready ? "is-ready" : ""} key={item.label}>{item.ready ? <Check size={16} /> : <span className="readiness-dot" />}<span>{item.label}</span><small>{item.detail}</small></div>)}</div></section>
-        <section className="operator-wallet-panel"><div><Wallet size={20} /><div><span>CAMPAIGN AUTHORITY WALLET</span><strong>{campaign.onchain?.authorityWalletAddress ?? primaryWallet ?? "No embedded wallet"}</strong><p>This wallet becomes the onchain organizer when TAKE publishes the campaign.</p></div></div>{(campaign.onchain?.authorityWalletAddress ?? primaryWallet) ? <SecondaryAction onClick={() => void copyWallet()}><Copy size={15} />{copied ? "COPIED" : "COPY WALLET"}</SecondaryAction> : null}<span className="gas-status">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "GAS SPONSORSHIP CONFIGURED" : "TESTNET MON REQUIRED"}</span></section>
+        <section className="operator-wallet-panel"><div><Wallet size={20} /><div><span>CAMPAIGN AUTHORITY WALLET</span><strong>{authorityWallet ?? "No embedded wallet"}</strong><p>{walletAvailable ? "Your existing Privy wallet is connected. Continuing will open a transaction for you to review and approve." : !walletsReady && !walletCheckTimedOut ? "Checking the existing wallet in this browser…" : "Your X login is recognized, but its Privy wallet is not connected here. No transaction has been sent. Do not create a new wallet; this campaign must use the address above."}</p></div></div>{authorityWallet ? <SecondaryAction onClick={() => void copyWallet()}><Copy size={15} />{copied ? "COPIED" : "COPY WALLET"}</SecondaryAction> : null}{!walletAvailable && (walletsReady || walletCheckTimedOut) ? <SecondaryAction onClick={() => void retryWalletConnection()} disabled={refreshingWallet}>{refreshingWallet ? "CHECKING WALLET…" : "RETRY WALLET CONNECTION"}</SecondaryAction> : null}{walletRefreshAttempted && !walletAvailable && !refreshingWallet ? <p role="alert">Still unavailable? Sign out and sign back in with the same X account. If the embedded wallet still fails to load here, open TAKE in a regular browser. Do not create another wallet.</p> : null}<span className="gas-status">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "GAS SPONSORSHIP CONFIGURED" : "TESTNET MON REQUIRED"}</span></section>
+        <details className="operator-advanced"><summary>Launch checklist · {readiness.filter((item) => item.ready).length}/{readiness.length} complete</summary><section className="operator-readiness"><header><div><span className="eyebrow">READINESS</span><h2>What is ready</h2></div><span>{readiness.filter((item) => item.ready).length}/{readiness.length}</span></header><div>{readiness.map((item) => <div className={item.ready ? "is-ready" : ""} key={item.label}>{item.ready ? <Check size={16} /> : <span className="readiness-dot" />}<span>{item.label}</span><small>{item.detail}</small></div>)}</div></section></details>
         <details className="operator-advanced"><summary>Advanced workflow and Monad audit</summary><div className="operator-steps">
           <OperatorStep title="Selector eligibility" state={eligibility?.status ?? "NOT CONFIGURED"}>Eligible selectors: {eligibility?.counts.eligible ?? 0}</OperatorStep>
           <OperatorStep title="Campaign mechanism" state={mechanism?.status ?? "NOT PREPARED"}>Snapshots: {mechanism?.snapshots?.length ?? 0}/2</OperatorStep>
@@ -197,7 +225,7 @@ function OperatorStep({ title, state, children }: { title: string; state: string
 function getNextAction(input: { campaign: Campaign | null; eligibility: SelectorEligibilityView | null; mechanism: CampaignMechanismView | null; experiment: ExperimentView | null; allocation: AllocationRun | null; recipientRosterId: string; recipientContext: RecipientContext; ratings: Record<string, number | undefined>; pendingIntent?: LifecycleIntent }): NextAction {
   const { campaign, eligibility, mechanism, experiment, allocation, recipientRosterId, recipientContext, ratings, pendingIntent } = input;
   if (!campaign) return { key: "WAIT", state: "WAITING", title: "Choose a campaign", detail: "Select a managed campaign to inspect its readiness." };
-  if (pendingIntent) return { key: "PENDING", state: pendingIntent.status, title: `${humanStatus(pendingIntent.action)} is in progress`, detail: lifecycleProgress(pendingIntent), blocker: pendingIntent.errorMessage ?? undefined };
+  if (pendingIntent) return { key: "PENDING", state: pendingIntent.status, title: pendingIntent.status === "WAITING_FOR_WALLET" ? `${humanStatus(pendingIntent.action)} is ready for wallet approval` : `${humanStatus(pendingIntent.action)} is in progress`, detail: lifecycleProgress(pendingIntent), blocker: pendingIntent.errorMessage ?? undefined };
   if (!eligibility || ["DRAFT", "EVALUATING"].includes(eligibility.status)) return { key: "ORGANIZER_SETUP", state: "ORGANIZER ACTION", title: "Finish selector eligibility", detail: "The organizer must configure the policy, evaluate real selectors, and resolve reviews before TAKE can lock the roster." };
   if (eligibility.status === "REVIEW") return { key: "LOCK_SELECTORS", state: "READY", title: "Lock the selector roster", detail: `${eligibility.counts.eligible} eligible selectors will each receive exactly one TAKE.`, blocker: eligibility.counts.needsReview > 0 ? `${eligibility.counts.needsReview} selector review${eligibility.counts.needsReview === 1 ? " is" : "s are"} still unresolved.` : undefined };
   if (!mechanism?.config) return { key: recipientRosterId ? "PREPARE_MECHANISM" : "CHOOSE_RECIPIENTS", state: "NEEDS RECIPIENTS", title: recipientRosterId ? "Prepare campaign rules" : "Choose the recipient roster", detail: "Select the real people who may receive this opportunity. For serious pilots, keep selectors and recipients disjoint.", blocker: recipientRosterId ? undefined : "Choose a recipient roster to continue." };
@@ -223,8 +251,8 @@ function getNextAction(input: { campaign: Campaign | null; eligibility: Selector
 function getReadiness(campaign: Campaign | null, eligibility: SelectorEligibilityView | null, mechanism: CampaignMechanismView | null, experiment: ExperimentView | null, allocation: AllocationRun | null) {
   const snapshots = mechanism?.snapshots ?? [];
   return [
-    { label: "Selector roster locked", ready: eligibility?.status === "LOCKED", detail: eligibility ? `${eligibility.counts.eligible} eligible` : "Not configured" },
-    { label: "Recipient roster prepared", ready: Boolean(mechanism?.config), detail: mechanism?.config ? "Campaign rules prepared" : "Organizer action needed" },
+    { label: "Givers checked and locked", ready: eligibility?.status === "LOCKED", detail: eligibility ? `${eligibility.counts.eligible} qualified` : "Not configured" },
+    { label: "Recipients prepared", ready: Boolean(mechanism?.config), detail: mechanism?.config ? "Campaign rules prepared" : "Organizer action needed" },
     { label: "Eligibility snapshots ready", ready: snapshots.length === 2 && snapshots.every((item) => item.status === "READY" || item.status === "LOCKED"), detail: `${snapshots.length}/2 snapshots` },
     { label: "Campaign rules locked", ready: mechanism?.status === "LOCKED", detail: humanStatus(mechanism?.status ?? "Not locked") },
     { label: "Experiment protocol locked", ready: experiment?.status === "LOCKED", detail: humanStatus(experiment?.status ?? "Not prepared") },
@@ -234,11 +262,14 @@ function getReadiness(campaign: Campaign | null, eligibility: SelectorEligibilit
   ];
 }
 function lifecycleProgress(intent: LifecycleIntent) {
-  if (intent.status === "WAITING_FOR_WALLET") return "Confirm the prepared action in the campaign authority wallet. A second click reuses this intent.";
+  if (intent.status === "WAITING_FOR_WALLET") return "No transaction has been sent. Continue to open the prepared Monad transaction for your approval; TAKE will reuse this same request.";
   if (intent.status === "SUBMITTED") return "Transaction submitted. TAKE is waiting for Monad confirmation.";
   if (intent.status === "CONFIRMING") return "Monad is confirming the transaction.";
   if (intent.status === "INDEXING") return "Transaction confirmed. TAKE is recording the matching contract event.";
   return humanStatus(intent.status);
+}
+function requiresWallet(key: NextActionKey) {
+  return ["PUBLISH", "ACTIVATE", "CLOSE", "FINALIZE", "PENDING"].includes(key);
 }
 function actionLabel(key: NextActionKey) {
   const labels: Partial<Record<NextActionKey, string>> = { LOCK_SELECTORS: "LOCK SELECTOR ROSTER", PREPARE_MECHANISM: "PREPARE CAMPAIGN RULES", BUILD_SNAPSHOTS: "PREPARE SNAPSHOTS", PREREGISTER: "PREREGISTER PROTOCOL", LOCK_MECHANISM: "LOCK CAMPAIGN RULES", LOCK_PROTOCOL: "LOCK PROTOCOL", APPROVE: "APPROVE LAUNCH", PUBLISH: "PUBLISH TO MONAD", ACTIVATE: "ACTIVATE CAMPAIGN", CLOSE: "CLOSE CAMPAIGN", ALLOCATE: "RUN ALLOCATION", FINALIZE: "FINALIZE RESULT" };

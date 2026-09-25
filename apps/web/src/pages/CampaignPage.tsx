@@ -92,8 +92,6 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
 
       <CampaignFacts campaign={campaign} takeGiven={given} />
 
-      {hasTakeIdentity ? <ParticipantEligibilityPanel campaignId={campaign.id} request={request} /> : null}
-
       <div className="campaign-body">
         <section className="campaign-about">
           <div><span className="eyebrow">THE OPPORTUNITY</span><h2>{campaign.resource}</h2><p>{campaign.description}</p><small>Final recipients are published when the campaign closes.</small></div>
@@ -110,7 +108,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
           {given && givenPerson ? (
             <div className="campaign-take-panel__recipient"><Avatar person={givenPerson} size="lg" /><span>GIVEN TO</span><strong>{givenPerson.name}</strong>{givenPerson.handle ? <small>{givenPerson.handle}</small> : null}</div>
           ) : (
-            <div className="campaign-take-panel__number"><strong>{available ? "01" : "—"}</strong><p>{available ? "Choose one person. You cannot choose yourself." : campaign.status === "UPCOMING" ? `This campaign opens ${campaign.starts}.` : "You do not have an available TAKE in this campaign."}</p></div>
+            <div className="campaign-take-panel__number"><strong>{available ? "01" : "—"}</strong><p>{available ? "Choose one person. You cannot choose yourself." : campaign.sourceStatus === "CREATED" ? "Published on Monad, but not active yet. You can give your TAKE only after TAKE activates this campaign onchain." : campaign.status === "UPCOMING" ? `This campaign opens ${campaign.starts}.` : "You do not have an available TAKE in this campaign."}</p></div>
           )}
           {!given && campaign.viewer?.eligibility?.reasons.length ? (
             <div className="campaign-eligibility" aria-live="polite">
@@ -120,10 +118,12 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
             </div>
           ) : null}
           {peoplePreview.length && available ? <div className="campaign-take-panel__people"><span>PEOPLE ON TAKE</span><div>{peoplePreview.slice(0, 3).map((person) => <span key={person.id} className="mini-person"><Avatar person={person} size="xs" />{person.name}</span>)}</div></div> : null}
-          {given ? <SecondaryAction full onClick={() => navigate("/takes")}>VIEW YOUR CHOICE</SecondaryAction> : available ? <PrimaryAction full onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GIVE YOUR TAKE</PrimaryAction> : !hasTakeIdentity ? <PrimaryAction full onClick={() => { rememberPostAuthDestination(campaignPath(campaign) as TakePath); login(); }}>SIGN IN TO CHECK ELIGIBILITY</PrimaryAction> : <SecondaryAction full onClick={() => navigate("/explore")}>EXPLORE OTHERS</SecondaryAction>}
+          {given ? <SecondaryAction full onClick={() => navigate("/takes")}>VIEW YOUR CHOICE</SecondaryAction> : available ? <PrimaryAction full onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GIVE YOUR TAKE</PrimaryAction> : !hasTakeIdentity ? <PrimaryAction full onClick={() => { rememberPostAuthDestination(campaignPath(campaign) as TakePath); login(); }}>SIGN IN TO CHECK ELIGIBILITY</PrimaryAction> : campaign.sourceStatus === "CREATED" ? <SecondaryAction full onClick={() => void refetch()}>CHECK ACTIVATION STATUS</SecondaryAction> : <SecondaryAction full onClick={() => navigate("/explore")}>EXPLORE OTHERS</SecondaryAction>}
           <span className="campaign-take-panel__assurance"><ShieldCheck size={16} />{given ? "Your choice is recorded." : "Blockchain details stay underneath."}</span>
         </aside>
       </div>
+
+      {hasTakeIdentity ? <ParticipantEligibilityPanel campaignId={campaign.id} request={request} /> : null}
 
       <details className="campaign-onchain-audit">
         <summary>ONCHAIN / AUDIT</summary>

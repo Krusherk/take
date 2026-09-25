@@ -7,19 +7,16 @@ export async function getTakeCampaignManagerLogs(
   fromBlock: bigint,
   toBlock: bigint
 ) {
-  const entries = await Promise.all(
-    Object.entries(takeCampaignManagerEvents).map(async ([eventName, event]) => {
-      const logs = await client.getLogs({
-        address,
-        event,
-        fromBlock,
-        toBlock
-      });
-      return logs.map((log) => ({ eventName, log }));
-    })
-  );
+  // One topic-OR request preserves the full event set and range ordering while
+  // avoiding a separate RPC round trip for every manager event signature.
+  const logs = await client.getLogs({
+    address,
+    events: Object.values(takeCampaignManagerEvents),
+    fromBlock,
+    toBlock
+  });
 
-  return entries.flat().sort((a, b) => {
+  return logs.map((log) => ({ eventName: log.eventName, log })).sort((a, b) => {
     if (a.log.blockNumber === b.log.blockNumber) {
       return Number(a.log.logIndex - b.log.logIndex);
     }

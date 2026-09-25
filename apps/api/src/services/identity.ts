@@ -87,9 +87,52 @@ export interface TakeMeResponse {
 }
 
 export class IdentityService {
+  private readonly recentResolutions = new Map<string, {
+    fingerprint: string;
+    identity: ResolvedTakeIdentity;
+    expiresAt: number;
+  }>();
+  private readonly pendingResolutions = new Map<string, Promise<ResolvedTakeIdentity>>();
+
   constructor(private readonly db: Database) {}
 
   async resolvePrivyUser(privyUser: PrivyUser): Promise<ResolvedTakeIdentity> {
+    // Every authenticated request verifies Privy, but parallel page requests do
+    // not need to rewrite the same identity rows. Those writes otherwise queue
+    // on one PostgreSQL user row and make the entire app appear stuck.
+    const fingerprint = JSON.stringify(privyUser.linked_accounts);
+    while (true) {
+      const recent = this.recentResolutions.get(privyUser.id);
+      if (recent?.fingerprint === fingerprint && recent.expiresAt > Date.now()) {
+        return recent.identity;
+      }
+      const pending = this.pendingResolutions.get(privyUser.id);
+      if (pending) {
+        await pending;
+        continue;
+      }
+      const resolution = this.syncPrivyUser(privyUser);
+      this.pendingResolutions.set(privyUser.id, resolution);
+      try {
+        const identity = await resolution;
+        this.recentResolutions.set(privyUser.id, {
+          fingerprint,
+          identity,
+          expiresAt: Date.now() + 60_000
+        });
+        if (this.recentResolutions.size > 1_000) {
+          this.recentResolutions.delete(this.recentResolutions.keys().next().value!);
+        }
+        return identity;
+      } finally {
+        if (this.pendingResolutions.get(privyUser.id) === resolution) {
+          this.pendingResolutions.delete(privyUser.id);
+        }
+      }
+    }
+  }
+
+  private async syncPrivyUser(privyUser: PrivyUser): Promise<ResolvedTakeIdentity> {
     const socialAccounts = observedSocialAccounts(privyUser.linked_accounts);
     const wallets = ethereumWallets(privyUser.linked_accounts);
     const presentation = identityPresentation(privyUser.linked_accounts);

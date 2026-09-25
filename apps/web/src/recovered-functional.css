@@ -859,6 +859,17 @@
   align-items: flex-start;
 }
 
+.participant-eligibility__evidence {
+  margin-top: 18px;
+  border-top: 1px solid var(--take-line-medium);
+  padding-top: 14px;
+}
+
+.participant-eligibility__evidence > summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .eligibility-category,
 .eligibility-rule-list li,
 .eligibility-evidence-list li {

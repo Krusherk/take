@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePrivy, useSendTransaction } from "@privy-io/react-auth";
+import { usePrivy, useSendTransaction, useWallets } from "@privy-io/react-auth";
 import { AppShell } from "./components/AppShell";
 import { IdentityGate } from "./components/IdentityGate";
 import { ProductLoading } from "./components/ProductState";
@@ -72,6 +72,7 @@ export function App() {
   const { status: identityStatus, me, history, error: identityError, request, refetch, clear } = useTakeMe();
   const { campaigns, refetch: refetchProducts } = useTakeProduct();
   const { sendTransaction } = useSendTransaction();
+  const { wallets: connectedWallets, ready: walletsReady } = useWallets();
   const [selection, setSelection] = useState<StoredSelection | null>(readStoredSelection);
   const [optimisticGivenCampaigns, setOptimisticGivenCampaigns] = useState<string[]>([]);
   const [notificationsRead, setNotificationsRead] = useState(() => window.sessionStorage.getItem(NOTIFICATIONS_READ_KEY) === "true");
@@ -161,6 +162,10 @@ export function App() {
     setSubmitting(true);
     setSubmissionError(null);
     try {
+      if (!walletsReady) throw new Error("Your Privy wallet is still connecting. Wait a moment and try again. No TAKE was sent.");
+      if (!participantWallet || !connectedWallets.some((wallet) => wallet.walletClientType === "privy" && wallet.address.toLowerCase() === participantWallet.toLowerCase())) {
+        throw new Error("Your X account is signed in, but its existing Privy wallet is not connected in this browser. Sign out and back in with the same X account, then try again. Do not create a new wallet. No TAKE was sent.");
+      }
       setSubmissionPhase("PREPARING");
       let registration = await request<RegistrationStatus>("/me/registration/status");
       if (!registration.walletAuthorized) {
