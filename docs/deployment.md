@@ -2,7 +2,7 @@
 
 ## Vercel frontend (existing Fastify API + worker)
 
-Import `Krusherk/take`, select the `master` production branch, and leave the
+Import `Krusherk/take`, select the `main` production branch, and leave the
 project Root Directory at the repository root. The root `vercel.json` builds
 only `@take/web`, serves `apps/web/dist`, supports direct SPA links such as
 `/operator`, and caches fingerprinted JS/CSS/fonts. Home's design is unchanged.
