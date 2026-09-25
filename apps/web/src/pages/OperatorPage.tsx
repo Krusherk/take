@@ -103,11 +103,28 @@ export function OperatorPage() {
   useEffect(() => { if (!campaignId && campaigns.length) setCampaignId(campaigns[0]!.id); }, [campaignId, campaigns]);
   useEffect(() => { setCampaign(null); setRecipientRosterId(""); if (campaignId) void loadCampaign(campaignId); }, [campaignId, loadCampaign]);
   const pendingIntent = intents.find((intent) => ["WAITING_FOR_WALLET", "SUBMITTED", "CONFIRMING", "INDEXING"].includes(intent.status));
+  const intentsSignature = JSON.stringify(intents);
   useEffect(() => {
     if (!campaignId || !pendingIntent) return;
-    const timer = window.setInterval(() => void loadCampaign(campaignId), 3_000);
-    return () => window.clearInterval(timer);
-  }, [campaignId, loadCampaign, pendingIntent]);
+    let cancelled = false;
+    let timer: number;
+    // Poll only lifecycle progress. Reload the eight setup panels on change,
+    // and wait for each request to finish before scheduling another.
+    async function poll() {
+      try {
+        if (document.visibilityState !== "hidden") {
+          const latest = await request<LifecycleIntent[]>(`/operator/campaigns/${campaignId}/lifecycle-intents`);
+          if (!cancelled && JSON.stringify(latest) !== intentsSignature) await loadCampaign(campaignId);
+        }
+      } catch (caught) {
+        if (!cancelled) setError(errorMessage(caught));
+      } finally {
+        if (!cancelled) timer = window.setTimeout(() => void poll(), 3_000);
+      }
+    }
+    timer = window.setTimeout(() => void poll(), 3_000);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, [campaignId, intentsSignature, loadCampaign, pendingIntent?.id, request]);
 
   async function refresh() { await Promise.all([loadRoot(), campaignId ? loadCampaign(campaignId) : Promise.resolve()]); }
   async function run(label: string, operation: () => Promise<unknown>) {

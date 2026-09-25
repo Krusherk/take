@@ -25,6 +25,8 @@ export async function buildApp() {
   await app.register(contextPlugin);
   await app.register(cors, {
     origin: app.env.WEB_ORIGIN ?? (app.env.NODE_ENV === "development" ? true : false),
+    // Reuse successful browser preflights; authenticated responses are not cached.
+    maxAge: 600,
     methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"]
   });
   await app.register(rateLimit, {

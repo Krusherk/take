@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePrivy, useSendTransaction, useWallets } from "@privy-io/react-auth";
 import { AppShell } from "./components/AppShell";
 import { IdentityGate } from "./components/IdentityGate";
@@ -8,23 +8,25 @@ import { useTakeProduct } from "./context/TakeProductContext";
 import { usePathRouter } from "./hooks/usePathRouter";
 import { personFromMe } from "./lib/currentIdentity";
 import { campaignPath, parseCampaignPath, parseInvitePath } from "./lib/productData";
-import { ActivityPage } from "./pages/ActivityPage";
-import { CampaignPage } from "./pages/CampaignPage";
-import { ConfirmationPage } from "./pages/ConfirmationPage";
-import { ExplorePage } from "./pages/ExplorePage";
-import { GivePage } from "./pages/GivePage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
-import { NotificationsPage } from "./pages/NotificationsPage";
-import { OrganizePage } from "./pages/OrganizePage";
-import { OperatorPage } from "./pages/OperatorPage";
-import { PendingPage } from "./pages/PendingPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { ProfileSetupPage } from "./pages/ProfileSetupPage";
-import { RecipientViewPage } from "./pages/RecipientViewPage";
-import { SuccessPage } from "./pages/SuccessPage";
-import { TakesPage } from "./pages/TakesPage";
 import type { Person } from "./types/product";
+
+// Keep entry/Home immediate; load other screens only when their route is visited.
+const ActivityPage = lazy(() => import("./pages/ActivityPage").then((m) => ({ default: m.ActivityPage })));
+const CampaignPage = lazy(() => import("./pages/CampaignPage").then((m) => ({ default: m.CampaignPage })));
+const ConfirmationPage = lazy(() => import("./pages/ConfirmationPage").then((m) => ({ default: m.ConfirmationPage })));
+const ExplorePage = lazy(() => import("./pages/ExplorePage").then((m) => ({ default: m.ExplorePage })));
+const GivePage = lazy(() => import("./pages/GivePage").then((m) => ({ default: m.GivePage })));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage").then((m) => ({ default: m.NotificationsPage })));
+const OrganizePage = lazy(() => import("./pages/OrganizePage").then((m) => ({ default: m.OrganizePage })));
+const OperatorPage = lazy(() => import("./pages/OperatorPage").then((m) => ({ default: m.OperatorPage })));
+const PendingPage = lazy(() => import("./pages/PendingPage").then((m) => ({ default: m.PendingPage })));
+const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
+const ProfileSetupPage = lazy(() => import("./pages/ProfileSetupPage").then((m) => ({ default: m.ProfileSetupPage })));
+const RecipientViewPage = lazy(() => import("./pages/RecipientViewPage").then((m) => ({ default: m.RecipientViewPage })));
+const SuccessPage = lazy(() => import("./pages/SuccessPage").then((m) => ({ default: m.SuccessPage })));
+const TakesPage = lazy(() => import("./pages/TakesPage").then((m) => ({ default: m.TakesPage })));
 
 const SELECTION_KEY = "take-selected-recipient";
 const NOTIFICATIONS_READ_KEY = "take-notifications-read";
@@ -234,7 +236,7 @@ export function App() {
   } else if (campaignRoute) page = <div className="page-container"><ProductLoading label="Loading campaign" /></div>;
   else page = <ExplorePage navigate={navigate} />;
 
-  const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}>{page}</div>;
+  const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}><Suspense fallback={<ProductLoading label="Loading page" />}>{page}</Suspense></div>;
 
   if (path === "/" || path === "/onboarding" || inviteId || (publicCampaignDetail && !currentPerson)) {
     if (path === "/onboarding" && (!ready || !authenticated || !currentPerson)) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
