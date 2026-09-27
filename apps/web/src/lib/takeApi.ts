@@ -25,7 +25,9 @@ interface TakeApiClientOptions {
 export function createTakeApiClient(getAccessToken: GetAccessToken, options: TakeApiClientOptions = {}): TakeApiClient {
   return {
     async request<T>(path: string, init: RequestInit = {}): Promise<T> {
+      init.signal?.throwIfAborted();
       const accessToken = await getAccessToken();
+      init.signal?.throwIfAborted();
       if (!accessToken) {
         options.onUnauthorized?.();
         throw new TakeApiError("Your TAKE session has ended. Sign in again to continue.", 401, "UNAUTHORIZED");

@@ -31,6 +31,7 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const requestVersion = useRef(0);
+  const identityRequest = useRef<AbortController | null>(null);
   const handleUnauthorized = useCallback(() => {
     requestVersion.current += 1;
     setSnapshot(null);
@@ -47,6 +48,15 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
 
   const loadIdentity = useCallback(async (privyUserId: string, preserveExisting: boolean) => {
     const version = ++requestVersion.current;
+    identityRequest.current?.abort();
+    const controller = new AbortController();
+    identityRequest.current = controller;
+    const timeout = window.setTimeout(() => controller.abort(new Error(
+      "TAKE’s server is taking too long to respond. Please try again shortly."
+    )), 10_000);
+    const cancelled = new Promise<never>((_resolve, reject) => {
+      controller.signal.addEventListener("abort", () => reject(controller.signal.reason), { once: true });
+    });
     if (!preserveExisting) {
       setStatus("profile-loading");
       setError(null);
@@ -55,9 +65,12 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const [me, history] = await Promise.all([
-        client.request<TakeMe>("/me"),
-        client.request<TakeHistory>("/me/history"),
+      const [me, history] = await Promise.race([
+        Promise.all([
+          client.request<TakeMe>("/me", { signal: controller.signal }),
+          client.request<TakeHistory>("/me/history", { signal: controller.signal }),
+        ]),
+        cancelled,
       ]);
       if (version !== requestVersion.current) return;
       setSnapshot({ privyUserId, me, history });
@@ -69,8 +82,13 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
         setSnapshot(null);
         setStatus("profile-error");
       }
-      setError(caught instanceof Error ? caught.message : "TAKE could not load your profile.");
+      setError(caught instanceof TypeError
+        ? "TAKE couldn’t reach its server. Please try again shortly."
+        : caught instanceof Error ? caught.message : "TAKE could not load your profile.");
     } finally {
+      window.clearTimeout(timeout);
+      controller.abort();
+      if (identityRequest.current === controller) identityRequest.current = null;
       if (version === requestVersion.current) {
         setRefreshing(false);
       }
@@ -79,6 +97,7 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     requestVersion.current += 1;
+    identityRequest.current?.abort();
     setRefreshing(false);
 
     if (!ready) {
@@ -96,6 +115,10 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
 
     setSnapshot(null);
     void loadIdentity(currentPrivyUserId, false);
+    return () => {
+      requestVersion.current += 1;
+      identityRequest.current?.abort();
+    };
   }, [authenticated, currentPrivyUserId, loadIdentity, ready]);
 
   const refetch = useCallback(async () => {
@@ -105,6 +128,7 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => {
     requestVersion.current += 1;
+    identityRequest.current?.abort();
     setSnapshot(null);
     setError(null);
     setRefreshing(false);

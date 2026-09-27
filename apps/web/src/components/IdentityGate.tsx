@@ -19,7 +19,7 @@ export function IdentityGate({ status, error, onRetry, onSignOut }: IdentityGate
       <section>
         <span className="eyebrow">{isError ? "PROFILE ERROR" : label}</span>
         <h1>{isError ? "We couldn’t load your TAKE identity." : "Finding your TAKE identity."}</h1>
-        <p>{isError ? error ?? "The profile service did not respond." : "Your connected identity is being synchronized securely."}</p>
+        <p>{isError ? error ?? "The profile service did not respond." : "Connecting to TAKE. This should only take a moment."}</p>
         {isError ? (
           <div className="identity-gate__actions">
             <PrimaryAction onClick={onRetry}>TRY AGAIN</PrimaryAction>
