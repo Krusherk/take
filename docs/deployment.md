@@ -22,8 +22,9 @@ Set frontend environment variables in Vercel before building:
 - `VITE_PRIVY_SPONSOR_TRANSACTIONS=false`: sponsorship is not available.
 - `VITE_ENABLE_DEV_FIXTURES=false`.
 
-Keep the existing Fastify API and continuous indexer/reconcilers on an
-always-running Node host. This is not a backend rewrite: Vercel's static
+Deploy the Fastify API as a separate Vercel project (settings below), or keep it
+on an always-running Node host. The continuous indexer/reconcilers still need
+an always-running Node host. This is not a backend rewrite: Vercel's static
 frontend deployment does not start `apps/api/src/worker.ts`. Do not wrap its
 infinite polling loop in a Vercel Function or replace it with an unverified cron.
 The API and worker must both use the same Supabase `DATABASE_URL`, manager
@@ -43,6 +44,33 @@ Before sharing the deployment, verify direct-route refreshes, X login, API CORS,
 the authority wallet connection, and advancing worker/canonical event state.
 Private authenticated responses must not be CDN-cached. An exposed QuickNode
 token is revoked in QuickNode, not by changing a Vercel environment variable.
+
+### Separate API project on Vercel
+
+- Branch: `main`.
+- Root Directory: `apps/api` (not the repository root).
+- Enable **Include source files outside of the Root Directory** for the shared
+  workspace packages.
+- Framework: **Fastify**; remove any dashboard Vite build/output overrides.
+- Build Command: `pnpm -r --filter '@take/api...' build` (also set in
+  `apps/api/vercel.json`). This builds only the API and its shared dependencies.
+- Output Directory: leave unset; do not set `apps/web/dist` or `dist`.
+- `server.mjs` starts the existing compiled server; it prevents detection of
+  `src/app.ts`, which only exports the application factory.
+- Use the same Node/Corepack settings as the frontend project.
+
+Configure server-only `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`,
+`INTERNAL_API_TOKEN`, `WEB_ORIGIN`, `TAKE_OPERATOR_PRIVY_USER_IDS`,
+`MONAD_NETWORK`, `MONAD_TESTNET_RPC_URL`, and `TAKE_CAMPAIGN_MANAGER_ADDRESS`
+in the API project. Keep `ENABLE_DEV_FIXTURES=false` and `NODE_ENV=production`.
+Use the existing Supabase Session pooler URL and existing API credentials, not
+new identities or seed data. The worker uses the same database and chain config
+on its own host; a successful API deployment does not mean the worker is running.
+
+Deploy the API first. Then put its HTTPS URL in the frontend's
+`VITE_API_BASE_URL` and redeploy the frontend. `WEB_ORIGIN` and Privy's allowed
+origins must match the frontend domain. Preview-domain access requires its own
+matching configuration; do not disable authentication or broadly allow origins.
 
 ## External Dashboard Setup
 

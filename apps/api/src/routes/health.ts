@@ -15,9 +15,10 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     });
     const rpc =
       chainConfig.rpcUrl && app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS
-        ? await checkRpcHealth(chainConfig).catch((error: unknown) => ({
+        ? await checkRpcHealth(chainConfig).catch(() => ({
             ok: false,
-            error: error instanceof Error ? error.message : "unknown rpc error"
+            // Provider errors can contain the credential-bearing RPC URL.
+            error: "Monad RPC health check failed"
           }))
         : { ok: false, skipped: "Monad RPC URL or contract address not configured" };
 

@@ -19,7 +19,8 @@ pgdata/
 out/
 cache/
 broadcast/
-lib/
+# Foundry dependencies only; application src/lib directories are source code.
+/packages/contracts/lib/
 indexer/envio/generated/
 indexer/envio/.env
 *.log
