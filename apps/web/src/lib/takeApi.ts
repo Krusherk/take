@@ -1,4 +1,5 @@
-export const TAKE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+// Vercel redirects double-slash paths before API CORS headers can be applied.
+export const TAKE_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000").trim().replace(/\/+$/, "");
 
 export class TakeApiError extends Error {
   constructor(
