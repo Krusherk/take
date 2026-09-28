@@ -1,10 +1,11 @@
-import { and, asc, eq, gt, inArray, lte, or } from "drizzle-orm";
-import type { Address, Hex, PublicClient } from "viem";
+import { and, asc, desc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
+import { decodeEventLog, type Address, type Hex, type PublicClient } from "viem";
 import {
   createMonadPublicClient,
   getTakeCampaignManagerLogs,
   loadChainConfig,
-  takeCampaignManagerAbi
+  takeCampaignManagerAbi,
+  takeCampaignManagerEvents
 } from "@take/chain";
 import { normalizeAddress } from "@take/shared";
 import type { Database } from "@take/database";
@@ -34,6 +35,18 @@ export class QuickNodeIndexer {
   ) {}
 
   async runOnce(): Promise<RunOnceResult> {
+    // Serialise cursor advancement across concurrent serverless invocations.
+    // Events and the cursor commit together; a killed invocation cannot skip logs.
+    return this.db.transaction(async (tx) => {
+      const [lock] = await tx.execute<{ acquired: boolean }>(sql`
+        select pg_try_advisory_xact_lock(hashtext(${`take-scan:${this.env.MONAD_NETWORK}:${this.env.TAKE_CAMPAIGN_MANAGER_ADDRESS?.toLowerCase()}`})) as acquired
+      `);
+      if (!lock?.acquired) return { skipped: "Another indexer pass is running" };
+      return new QuickNodeIndexer(tx as unknown as Database, this.env).scanOnce();
+    });
+  }
+
+  private async scanOnce(): Promise<RunOnceResult> {
     const chainConfig = loadChainConfig({
       MONAD_NETWORK: this.env.MONAD_NETWORK,
       MONAD_TESTNET_RPC_URL: this.env.MONAD_TESTNET_RPC_URL,
@@ -44,7 +57,7 @@ export class QuickNodeIndexer {
       return { skipped: "TAKE_CAMPAIGN_MANAGER_ADDRESS not configured" };
     }
 
-    const client = createMonadPublicClient(chainConfig);
+    const client = createMonadPublicClient(chainConfig, { timeout: 8_000, retryCount: 0 });
     const latest = await client.getBlockNumber();
     const safeHead = latest > BigInt(this.env.CHAIN_INDEXER_CONFIRMATIONS)
       ? latest - BigInt(this.env.CHAIN_INDEXER_CONFIRMATIONS)
@@ -73,6 +86,8 @@ export class QuickNodeIndexer {
       : startBlock;
 
     if (fromBlock > safeHead) {
+      await this.db.update(schema.chainIndexerCursors).set({ updatedAt: new Date() })
+        .where(eq(schema.chainIndexerCursors.id, cursor.id));
       return {
         scanned: 0,
         backfilled,
@@ -123,12 +138,14 @@ export class QuickNodeIndexer {
     };
   }
 
-  async runUntilCaughtUp(maxIterations = 25) {
+  async runUntilCaughtUp(maxIterations = 25, maxDurationMs = 35_000) {
+    const deadline = Date.now() + Math.max(1_000, Math.min(maxDurationMs, 35_000));
     const iterations = Math.max(1, Math.min(maxIterations, 100));
     const runs: RunOnceResult[] = [];
     let scanned = 0;
     let backfilled = 0;
     for (let index = 0; index < iterations; index += 1) {
+      if (Date.now() >= deadline) break;
       const result = await this.runOnce();
       runs.push(result);
       if ("skipped" in result) {
@@ -143,6 +160,52 @@ export class QuickNodeIndexer {
     return { iterations: runs.length, scanned, backfilled, caughtUp: false, lastRun: runs.at(-1) };
   }
 
+  // Fast path for a known, server-validated transaction. Never advances the
+  // historical cursor or derives success from the browser's receipt claim.
+  async reconcileReceipt(transactionHash: Hex, expected: {
+    eventName: string;
+    args: Record<string, string>;
+  }) {
+    const config = loadChainConfig({
+      MONAD_NETWORK: this.env.MONAD_NETWORK,
+      MONAD_TESTNET_RPC_URL: this.env.MONAD_TESTNET_RPC_URL,
+      MONAD_MAINNET_RPC_URL: this.env.MONAD_MAINNET_RPC_URL,
+      TAKE_CAMPAIGN_MANAGER_ADDRESS: this.env.TAKE_CAMPAIGN_MANAGER_ADDRESS
+    });
+    if (!config.takeCampaignManagerAddress) throw new Error("TAKE manager is not configured");
+    const address = normalizeAddress(config.takeCampaignManagerAddress) as Address;
+    const client = createMonadPublicClient(config, { timeout: 8_000, retryCount: 0 });
+    const receipt = await client.getTransactionReceipt({ hash: transactionHash });
+    if (receipt.status !== "success") return { indexed: false, reason: "REVERTED" };
+    const [head, chainId, block] = await Promise.all([
+      client.getBlockNumber({ cacheTime: 0 }),
+      client.getChainId(),
+      client.getBlock({ blockNumber: receipt.blockNumber })
+    ]);
+    if (chainId !== config.chainId) throw new Error("RPC chain does not match TAKE network");
+    if (head < receipt.blockNumber + BigInt(this.env.CHAIN_INDEXER_CONFIRMATIONS)) {
+      return { indexed: false, reason: "AWAITING_FINALITY" };
+    }
+    if (!block.hash || block.hash.toLowerCase() !== receipt.blockHash.toLowerCase()) {
+      return { indexed: false, reason: "NON_CANONICAL_RECEIPT" };
+    }
+    const logs: TakeLog[] = receipt.logs.flatMap((log) => {
+      if (normalizeAddress(log.address) !== address || log.removed) return [];
+      try {
+        const decoded = decodeEventLog({ abi: Object.values(takeCampaignManagerEvents), data: log.data, topics: log.topics, strict: true });
+        return [{ eventName: decoded.eventName, log: { ...log, args: decoded.args, eventName: decoded.eventName } } as TakeLog];
+      } catch { return []; }
+    });
+    const matches = logs.filter((item) => item.eventName === expected.eventName);
+    if (matches.length !== 1 || !Object.entries(expected.args).every(([key, value]) =>
+      String((matches[0]!.log.args as Record<string, unknown>)[key]).toLowerCase() === value.toLowerCase()
+    )) throw new Error("Receipt event does not match the prepared TAKE transaction");
+    await this.persistRange(client, config.chainId, address, logs, new Map([[
+      receipt.blockNumber.toString(), { hash: block.hash, timestamp: new Date(Number(block.timestamp) * 1_000) }
+    ]]));
+    return { indexed: true, blockNumber: receipt.blockNumber.toString() };
+  }
+
   private async persistRange(
     client: PublicClient,
     chainId: number,
@@ -151,6 +214,7 @@ export class QuickNodeIndexer {
     metadata: Map<string, BlockMetadata>
   ) {
     await this.db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`take-projection:${chainId}:${contractAddress}`}))`);
       for (const item of logs) {
         const block = metadata.get(item.log.blockNumber.toString());
         if (!block) throw new Error(`Missing metadata for block ${item.log.blockNumber}`);
@@ -423,7 +487,7 @@ async function applyKnownProjection(
       managerContractAddress: contractAddress,
       onchainOrganizerAddress: args.organizer.toLowerCase(),
       onchainOperatorWalletAddress: args.organizer.toLowerCase(),
-      status: "CREATED",
+      ...(await latestCampaignState(tx, chainId, contractAddress, args.campaignId)),
       updatedAt: new Date()
     }).where(eq(schema.campaigns.id, intent.campaignId));
     await tx.update(schema.campaignLifecycleIntents).set({
@@ -704,7 +768,7 @@ async function updateCampaignStatus(
 ) {
   await tx
     .update(schema.campaigns)
-    .set({ status, finalResultHash, updatedAt: new Date() })
+    .set({ ...(await latestCampaignState(tx, chainId, contractAddress, onchainCampaignId)), updatedAt: new Date() })
     .where(
       and(
         eq(schema.campaigns.chainId, chainId),
@@ -712,6 +776,28 @@ async function updateCampaignStatus(
         eq(schema.campaigns.onchainCampaignId, onchainCampaignId)
       )
     );
+}
+
+async function latestCampaignState(tx: DbExecutor, chainId: number, address: Address, campaignId: bigint) {
+  // Exact-receipt projections can be ahead of the sequential cursor. Replaying
+  // an older event must never turn an ACTIVE/FINALIZED campaign back to CREATED.
+  const states = {
+    CampaignCreated: "CREATED", CampaignActivated: "ACTIVE", CampaignClosed: "CLOSED",
+    CampaignFinalized: "FINALIZED", CampaignCancelled: "CANCELLED"
+  } as const;
+  const [latest] = await tx.select().from(schema.chainEvents).where(and(
+    eq(schema.chainEvents.chainId, chainId),
+    eq(schema.chainEvents.contractAddress, address),
+    eq(schema.chainEvents.finalityStatus, "FINALIZED"),
+    inArray(schema.chainEvents.eventName, Object.keys(states)),
+    sql`${schema.chainEvents.payload}->>'campaignId' = ${campaignId.toString()}`
+  )).orderBy(desc(schema.chainEvents.blockNumber), desc(schema.chainEvents.transactionIndex), desc(schema.chainEvents.logIndex)).limit(1);
+  if (!latest) throw new Error("Canonical campaign lifecycle event is missing");
+  return {
+    status: states[latest.eventName as keyof typeof states],
+    finalResultHash: latest.eventName === "CampaignFinalized"
+      ? String((latest.payload as Record<string, unknown>).resultHash) : null
+  };
 }
 
 async function loadBlockMetadata(client: PublicClient, blockNumbers: bigint[]) {

@@ -49,7 +49,8 @@ export async function buildApp() {
         details: error.issues
       });
     }
-    app.log.error(error);
+    // RPC/client exceptions may embed credentials in URLs or request headers.
+    app.log.error({ name: error instanceof Error ? error.name : "UnknownError" }, "TAKE request failed");
     return reply.code(500).send({ error: "INTERNAL_ERROR", message: "Internal server error" });
   });
   await app.register(authPlugin);

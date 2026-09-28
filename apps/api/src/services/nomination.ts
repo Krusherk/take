@@ -9,6 +9,7 @@ import { ServiceError } from "./errors.js";
 import type { ApiEnv } from "../config/env.js";
 import { EligibilitySnapshotService } from "./eligibilitySnapshots.js";
 import type { NominationValidityReasonV0 } from "@take/mechanism";
+import { ReceiptReconciler } from "../workers/receiptReconciler.js";
 
 type PrepareNominationInput = z.infer<typeof prepareNominationSchema>;
 type SubmitNominationTransactionInput = z.infer<typeof submitNominationTransactionSchema>;
@@ -18,12 +19,16 @@ export class NominationService {
 
   constructor(
     private readonly db: Database,
-    env: ApiEnv
+    private readonly env: ApiEnv
   ) {
     this.snapshots = new EligibilitySnapshotService(db, env);
   }
 
-  async getStatus(campaignId: string, nominationId: string, actorIdentityId: string) {
+  async getStatus(campaignId: string, nominationId: string, actorIdentityId: string, reconcile = true): Promise<{
+    id: string; status: string; transactionHash: string | null; failureReason: string | null;
+    chainConfirmed: boolean; canonical: boolean;
+    edge: { id: string; validity: string | null; finality: string | null; canonicalRecipientKey: string | null } | null;
+  }> {
     const [record] = await this.db
       .select({
         nomination: schema.nominations,
@@ -41,6 +46,11 @@ export class NominationService {
       ))
       .limit(1);
     if (!record) throw new ServiceError("NOMINATION_NOT_FOUND", "Nomination not found", 404);
+    if (reconcile && record.nomination.transactionHash
+      && ["SUBMITTED", "CHAIN_CONFIRMED", "INDEXING_DELAYED"].includes(record.nomination.status)) {
+      await new ReceiptReconciler(this.db, this.env).runOnce(1, record.nomination.transactionHash);
+      return this.getStatus(campaignId, nominationId, actorIdentityId, false);
+    }
     const canonical = Boolean(
       record.edgeId
       && record.edgeValidity === "VALID"

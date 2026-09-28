@@ -1,11 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import { checkRpcHealth, loadChainConfig } from "@take/chain";
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
+import { schema } from "@take/database";
 
 export const healthRoutes: FastifyPluginAsync = async (app) => {
   app.get("/health", async () => {
     const dbStartedAt = Date.now();
     await app.db.execute(sql`select 1`);
+    const databaseLatencyMs = Date.now() - dbStartedAt;
 
     const chainConfig = loadChainConfig({
       MONAD_NETWORK: app.env.MONAD_NETWORK,
@@ -22,14 +24,29 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
           }))
         : { ok: false, skipped: "Monad RPC URL or contract address not configured" };
 
+    const [cursor] = app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS
+      ? await app.db.select().from(schema.chainIndexerCursors).where(and(
+          eq(schema.chainIndexerCursors.chainId, chainConfig.chainId),
+          eq(schema.chainIndexerCursors.contractAddress, app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS.toLowerCase())
+        )).limit(1) : [];
+    const head = "blockNumber" in rpc ? BigInt(rpc.blockNumber) : null;
+    const lag = head !== null && cursor
+      ? (head > cursor.lastFinalizedBlock ? head - cursor.lastFinalizedBlock : 0n) : null;
+    const fresh = lag !== null && lag <= BigInt(app.env.CHAIN_INDEXER_CONFIRMATIONS + app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE)
+      && Boolean(cursor && Date.now() - cursor.updatedAt.getTime() < 120_000);
     return {
       ok: true,
       api: { ok: true },
-      database: { ok: true, latencyMs: Date.now() - dbStartedAt },
+      database: { ok: true, latencyMs: databaseLatencyMs },
       monad: rpc,
       indexer: {
-        ok: true,
-        mode: "quicknode_rpc",
+        ok: fresh,
+        mode: "bounded_rpc_with_receipt_fast_path",
+        chainHead: head?.toString() ?? null,
+        cursor: cursor?.lastFinalizedBlock.toString() ?? null,
+        lagBlocks: lag?.toString() ?? null,
+        lastSuccessfulSync: cursor?.updatedAt.toISOString() ?? null,
+        fresh,
         confirmations: app.env.CHAIN_INDEXER_CONFIRMATIONS,
         maxBlockRange: app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE
       }

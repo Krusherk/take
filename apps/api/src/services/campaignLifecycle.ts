@@ -7,6 +7,7 @@ import type { ApiEnv } from "../config/env.js";
 import { normalizeAddress } from "@take/shared";
 import { CampaignService } from "./campaign.js";
 import { ServiceError, notFound } from "./errors.js";
+import { QuickNodeIndexer } from "../workers/quicknodeIndexer.js";
 
 type LifecycleAction = "PUBLISH" | "ACTIVATE" | "CLOSE" | "FINALIZE";
 
@@ -251,18 +252,13 @@ export class CampaignLifecycleService {
         if (!intent.expectedRulesHash || rulesHash !== intent.expectedRulesHash.toLowerCase()) {
           throw new ServiceError("EMITTED_RULES_MISMATCH", "CampaignCreated rulesHash does not match the locked offchain campaign", 409);
         }
-        await this.db.update(schema.campaigns).set({
-          onchainCampaignId: emittedCampaignId,
-          chainId: intent.chainId,
-          managerContractAddress: intent.contractAddress,
-          onchainOrganizerAddress: organizer,
-          onchainOperatorWalletAddress: organizer,
-          status: "CREATED",
-          updatedAt: new Date()
-        }).where(eq(schema.campaigns.id, campaign.id));
       } else if (!campaign.onchainCampaignId || emittedCampaignId !== campaign.onchainCampaignId) {
         throw new ServiceError("EMITTED_CAMPAIGN_MISMATCH", "Lifecycle event belongs to another onchain campaign", 409);
       }
+      await new QuickNodeIndexer(this.db, this.env).reconcileReceipt(hash, {
+        eventName: intent.eventName,
+        args: Object.fromEntries(Object.entries(args).map(([key, value]) => [key, String(value)]))
+      });
       const [indexed] = await this.db.select({ id: schema.chainEvents.id })
         .from(schema.chainEvents).where(and(
           eq(schema.chainEvents.chainId, intent.chainId),
@@ -288,9 +284,10 @@ export class CampaignLifecycleService {
       }).where(eq(schema.chainTransactions.transactionHash, intent.transactionHash));
       return updated!;
     } catch (error) {
-      const code = error instanceof ServiceError ? error.code : "LIFECYCLE_RECONCILIATION_FAILED";
-      const message = error instanceof Error ? error.message : "Lifecycle reconciliation failed";
-      return this.fail(intent.id, code, message);
+      if (error instanceof ServiceError) return this.fail(intent.id, error.code, error.message);
+      // RPC/database outages are retryable, not a failed campaign. Never store
+      // provider exception messages: they can contain credential-bearing URLs.
+      return intent;
     }
   }
 

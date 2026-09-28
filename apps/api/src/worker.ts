@@ -18,7 +18,7 @@ async function run() {
       await reconciler.runOnce(50);
       await lifecycle.reconcilePending(25);
     } catch (error) {
-      console.error("TAKE worker cycle failed", error);
+      console.error("TAKE worker cycle failed", { name: error instanceof Error ? error.name : "UnknownError" });
     }
     await new Promise((resolve) => setTimeout(resolve, 8_000));
   }
