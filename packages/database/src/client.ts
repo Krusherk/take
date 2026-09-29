@@ -9,7 +9,11 @@ export function usesTransactionPooler(databaseUrl: string) {
 
 export function createDatabaseClient(databaseUrl: string) {
   const client = postgres(databaseUrl, {
-    max: 10,
+    // Each serverless instance owns a pool. Release idle sessions promptly so
+    // scaled instances do not exhaust the shared Supabase session pooler.
+    ...(process.env.VERCEL
+      ? { max: 2, idle_timeout: 10, max_lifetime: 60 }
+      : { max: 10 }),
     ...(usesTransactionPooler(databaseUrl) ? { prepare: false } : {})
   });
   return {
