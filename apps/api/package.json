@@ -21,6 +21,7 @@
     "@take/database": "workspace:*",
     "@take/mechanism": "workspace:*",
     "@take/shared": "workspace:*",
+    "@vercel/functions": "^3.9.9",
     "drand-client": "^1.4.2",
     "drizzle-orm": "^0.45.2",
     "fastify": "^5.6.2",
