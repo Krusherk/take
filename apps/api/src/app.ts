@@ -16,6 +16,7 @@ import { operatorRoutes } from "./routes/operator.js";
 import { campaignLifecycleRoutes } from "./routes/campaignLifecycle.js";
 import { ServiceError } from "./services/errors.js";
 import { ZodError } from "zod";
+import { signalRoutes } from "./routes/signal.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -65,6 +66,7 @@ export async function buildApp() {
   await app.register(selectorEligibilityRoutes);
   await app.register(operatorRoutes);
   await app.register(campaignLifecycleRoutes);
+  await app.register(signalRoutes);
 
   return app;
 }

@@ -2,6 +2,7 @@ import { Check, Copy, Link2, LockKeyhole, RefreshCw, ShieldAlert } from "lucide-
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { OrganizerEligibilityWorkspace } from "../components/eligibility/OrganizerEligibilityWorkspace";
+import { EvaluationPlanEditor } from "../components/SignalControls";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
@@ -263,6 +264,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
             <SocialEmpty title="No campaign assigned yet.">Submit a campaign request above. TAKE will review it and provision the offchain campaign for setup.</SocialEmpty>
           ) : <>
             <div className="organize-preview-link"><SecondaryAction onClick={() => navigate(`/campaign/${selectedCampaign.id}`)}>{selectedCampaign.onchain?.published ? "OPEN PARTICIPANT VIEW" : "PREVIEW OFFCHAIN DRAFT"}</SecondaryAction></div>
+            <EvaluationPlanEditor key={selectedCampaign.id} campaignId={selectedCampaign.id} status={selectedCampaign.sourceStatus} request={request} />
             {organizationId ? <OrganizerEligibilityWorkspace campaign={selectedCampaign} organizationId={organizationId} request={request} managed discordGuildId={discord?.integrations.find((item) => item.status === "ACTIVE")?.guildId} onMechanismChanged={() => void loadMechanism(selectedCampaign.id)} /> : null}
             {mechanism ? <details className="advanced-mechanism"><summary>Advanced mechanism and snapshot controls</summary><MechanismWorkspace
               campaign={selectedCampaign}

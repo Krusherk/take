@@ -11,6 +11,7 @@ export type TakePath =
   | "/operator"
   | "/takes"
   | "/profile"
+  | "/signal"
   | `/campaign/${string}`
   | `/invite/${string}`;
 
@@ -27,6 +28,7 @@ const validPaths = new Set<TakePath>([
   "/operator",
   "/takes",
   "/profile",
+  "/signal",
 ]);
 
 const legacyPaths: Record<string, TakePath> = {

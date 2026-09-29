@@ -17,17 +17,15 @@ interface AppShellProps {
 const desktopItems: Array<{ label: string; path: TakePath }> = [
   { label: "Home", path: "/home" },
   { label: "Explore", path: "/explore" },
-  { label: "Activity", path: "/activity" },
-  { label: "Your takes", path: "/takes" },
+  { label: "Signal", path: "/signal" },
   { label: "Organize", path: "/organize" },
 ];
 
 const mobileItems: Array<{ label: string; path: TakePath; icon: typeof Home }> = [
   { label: "Home", path: "/home", icon: Home },
   { label: "Explore", path: "/explore", icon: Compass },
-  { label: "Takes", path: "/takes", icon: Send },
-  { label: "Activity", path: "/activity", icon: Activity },
-  { label: "Profile", path: "/profile", icon: UserRound },
+  { label: "Signal", path: "/signal", icon: Activity },
+  { label: "Organize", path: "/organize", icon: PanelsTopLeft },
 ];
 
 function NavLink({ label, destination, path, navigate }: { label: string; destination: TakePath; path: TakePath; navigate: (path: TakePath) => void }) {
@@ -137,6 +135,9 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
                   </span>
                 </div>
                 <div className="account-menu__rule" />
+                <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); navigate("/signal"); }}><Activity size={16} aria-hidden="true" />YOUR SIGNAL</button>
+                <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); navigate("/takes"); }}><Send size={16} aria-hidden="true" />YOUR TAKES</button>
+                <button type="button" role="menuitem" onClick={() => { setAccountOpen(false); navigate("/activity"); }}><Activity size={16} aria-hidden="true" />ACTIVITY</button>
                 <button type="button" role="menuitem" onClick={() => openProfile()}>
                   <UserRound size={16} aria-hidden="true" />
                   VIEW PROFILE
@@ -169,7 +170,7 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
         </div>
       </header>
       <main className="app-main">{children}</main>
-      <nav className="mobile-nav" aria-label="Mobile navigation">
+      <nav className="mobile-nav" aria-label="Mobile navigation" style={{ gridTemplateColumns: `repeat(${mobileItems.length}, 1fr)` }}>
         {mobileItems.map((item) => {
           const Icon = item.icon;
           const active = path === item.path;

@@ -7,6 +7,7 @@ import { CampaignArtwork, CampaignFacts, CampaignStatus, eligibilityLabel } from
 import { ProductError, ProductLoading } from "../components/ProductState";
 import { TakeMascotAccent } from "../components/TakeMascotAccent";
 import { ParticipantEligibilityPanel } from "../components/eligibility/ParticipantEligibilityPanel";
+import { CampaignAfterSection } from "../components/Signal";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import { TAKE_API_BASE_URL } from "../lib/takeApi";
@@ -91,6 +92,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
       </header>
 
       <CampaignFacts campaign={campaign} takeGiven={given} />
+      {campaign.sourceStatus === "FINALIZED" ? <CampaignAfterSection campaignId={campaign.id} /> : null}
 
       <div className="campaign-body">
         <section className="campaign-about">

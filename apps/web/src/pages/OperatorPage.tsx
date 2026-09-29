@@ -2,6 +2,7 @@ import { Check, CircleAlert, Copy, ExternalLink, RefreshCw, Wallet } from "lucid
 import { useSendTransaction, useUser, useWallets } from "@privy-io/react-auth";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
+import { EvaluationPlanEditor, IntegrityObservations, OperatorEvaluations } from "../components/SignalControls";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
@@ -199,6 +200,7 @@ export function OperatorPage() {
   return <div className="page-container operator-page">
     <header className="page-intro"><div><span className="eyebrow">TAKE OPERATOR</span><h1>Launch and run campaigns.</h1></div><p>The organizer defines the opportunity and the real people in scope. TAKE checks which of them qualify to give one TAKE. A giver chooses a recipient; the operator does not choose a winner.</p></header>
     {error ? <div className="organize-error" role="alert"><CircleAlert size={17} />{error}</div> : null}
+    <OperatorEvaluations request={request} />
     {newRequests.length ? <section className="operator-requests"><header><span className="eyebrow">CAMPAIGN REQUESTS</span><h2>Ready for setup</h2></header>
       {newRequests.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.organizationName} · {item.resourceName} · {item.seatCount} spots</p></div><PrimaryAction onClick={() => void provision(item.id)} disabled={busy === `provision:${item.id}`}>{busy === `provision:${item.id}` ? "PROVISIONING" : "START SETUP"}</PrimaryAction></article>)}
     </section> : null}
@@ -219,6 +221,8 @@ export function OperatorPage() {
         </section>
         <section className="operator-wallet-panel"><div><Wallet size={20} /><div><span>CAMPAIGN AUTHORITY WALLET</span><strong>{authorityWallet ?? "No embedded wallet"}</strong><p>{walletAvailable ? "Your existing Privy wallet is connected. Continuing will open a transaction for you to review and approve." : !walletsReady && !walletCheckTimedOut ? "Checking the existing wallet in this browser…" : "Your X login is recognized, but its Privy wallet is not connected here. No transaction has been sent. Do not create a new wallet; this campaign must use the address above."}</p></div></div>{authorityWallet ? <SecondaryAction onClick={() => void copyWallet()}><Copy size={15} />{copied ? "COPIED" : "COPY WALLET"}</SecondaryAction> : null}{!walletAvailable && (walletsReady || walletCheckTimedOut) ? <SecondaryAction onClick={() => void retryWalletConnection()} disabled={refreshingWallet}>{refreshingWallet ? "CHECKING WALLET…" : "RETRY WALLET CONNECTION"}</SecondaryAction> : null}{walletRefreshAttempted && !walletAvailable && !refreshingWallet ? <p role="alert">Still unavailable? Sign out and sign back in with the same X account. If the embedded wallet still fails to load here, open TAKE in a regular browser. Do not create another wallet.</p> : null}<span className="gas-status">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "GAS SPONSORSHIP CONFIGURED" : "TESTNET MON REQUIRED"}</span></section>
         <details className="operator-advanced"><summary>Launch checklist · {readiness.filter((item) => item.ready).length}/{readiness.length} complete</summary><section className="operator-readiness"><header><div><span className="eyebrow">READINESS</span><h2>What is ready</h2></div><span>{readiness.filter((item) => item.ready).length}/{readiness.length}</span></header><div>{readiness.map((item) => <div className={item.ready ? "is-ready" : ""} key={item.label}>{item.ready ? <Check size={16} /> : <span className="readiness-dot" />}<span>{item.label}</span><small>{item.detail}</small></div>)}</div></section></details>
+        <EvaluationPlanEditor key={`plan:${campaign.id}`} campaignId={campaign.id} status={campaign.sourceStatus} request={request} />
+        <IntegrityObservations key={`integrity:${campaign.id}`} campaignId={campaign.id} request={request} />
         <details className="operator-advanced"><summary>Advanced workflow and Monad audit</summary><div className="operator-steps">
           <OperatorStep title="Selector eligibility" state={eligibility?.status ?? "NOT CONFIGURED"}>Eligible selectors: {eligibility?.counts.eligible ?? 0}</OperatorStep>
           <OperatorStep title="Campaign mechanism" state={mechanism?.status ?? "NOT PREPARED"}>Snapshots: {mechanism?.snapshots?.length ?? 0}/2</OperatorStep>

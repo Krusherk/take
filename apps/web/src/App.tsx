@@ -27,6 +27,7 @@ const ProfileSetupPage = lazy(() => import("./pages/ProfileSetupPage").then((m) 
 const RecipientViewPage = lazy(() => import("./pages/RecipientViewPage").then((m) => ({ default: m.RecipientViewPage })));
 const SuccessPage = lazy(() => import("./pages/SuccessPage").then((m) => ({ default: m.SuccessPage })));
 const TakesPage = lazy(() => import("./pages/TakesPage").then((m) => ({ default: m.TakesPage })));
+const SignalPage = lazy(() => import("./pages/SignalPage").then((m) => ({ default: m.SignalPage })));
 
 const SELECTION_KEY = "take-selected-recipient";
 const NOTIFICATIONS_READ_KEY = "take-notifications-read";
@@ -223,6 +224,7 @@ export function App() {
   else if (path === "/notifications") page = <NotificationsPage navigate={navigate} read={notificationsRead} onMarkRead={() => { setNotificationsRead(true); window.sessionStorage.setItem(NOTIFICATIONS_READ_KEY, "true"); }} />;
   else if (path === "/organize") page = <OrganizePage navigate={navigate} />;
   else if (path === "/operator") page = <OperatorPage />;
+  else if (path === "/signal") page = <SignalPage navigate={navigate} />;
   else if (path === "/takes") page = <TakesPage navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
   else if (path === "/profile") page = <ProfilePage navigate={navigate} onLogout={signOut} />;
   else if (inviteId) page = <RecipientViewPage nominationId={inviteId} navigate={navigate} />;

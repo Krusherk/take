@@ -1,8 +1,22 @@
 # TAKE
 
-TAKE is a social allocation system for scarce opportunities. A campaign gives each eligible participant a limited number of nominations, called TAKEs, and the community helps decide who should receive the resource.
+TAKE is a social allocation system for scarce opportunities. Each eligible participant gets one TAKE to give to somebody else. The organization decides the rules; the community nominates who they believe should receive the opportunity.
 
 The repository includes the protocol, API, and indexer.
+
+## Post-campaign Signal
+
+Every canonical TAKE creates a historical recommendation: **person → person → opportunity**.
+
+`/signal` shows your real recommendation history, outcomes, and category breakdown—not a reputation score. Failed attempts do not count. Recommendations without an evaluation plan are labeled separately from evaluations that are still pending.
+
+Organizers can optionally define and lock an evaluation question, criteria, category, date, and evidence requirement before preparing publication. Locked criteria cannot be rewritten. After finalization and the evaluation date, a TAKE operator can record a positive, negative, or inconclusive outcome for a recipient of the committed allocation. Evidence and notes are public only when the operator explicitly marks them public. No outcomes are generated automatically.
+
+Profile links to Signal; finalized campaigns show recipients, canonical recommendations, and their evaluation plan where enabled. Operator integrity observations are context only, not a fraud score or an allocation input.
+
+Signal does **not** change eligibility, voting power, or `RAW_UNIQUE_SUPPORT@2`. One eligible participant still gets one TAKE. Portable curation signals for other protocols are a future possibility; universal reputation scoring, popularity bias, and complete Sybil resistance are not solved.
+
+The feature uses additive migration `0013_post_campaign_signal.sql`. Apply pending migrations with the existing migration command and server-only `DATABASE_MIGRATION_URL` before running this version. Never run seed scripts against the real pilot database.
 
 ## Stack
 

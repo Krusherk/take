@@ -13,6 +13,7 @@ import { TakeProductProvider } from "./context/TakeProductContext";
 import "./styles.css";
 import "./home-preserved.css";
 import "./recovered-functional.css";
+import "./signal.css";
 
 const root = document.getElementById("root");
 

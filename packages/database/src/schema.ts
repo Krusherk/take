@@ -1079,6 +1079,34 @@ export const simulationRuns = pgTable("simulation_runs", {
   campaignIdx: index("simulation_runs_campaign_idx").on(table.campaignId, table.startedAt)
 }));
 
+// Post-campaign outcomes are separate from eligibility and allocation inputs.
+export const campaignEvaluationPlans = pgTable("campaign_evaluation_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").notNull().unique().references(() => campaigns.id),
+  domain: varchar("domain", { length: 24 }).notNull(),
+  question: text("question").notNull(),
+  criteria: text("criteria").notNull(),
+  evaluateAfter: timestamp("evaluate_after", { withTimezone: true }).notNull(),
+  evidenceExpected: boolean("evidence_expected").notNull().default(true),
+  createdByIdentityId: uuid("created_by_identity_id").notNull().references(() => takeIdentities.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedAt: timestamp("locked_at", { withTimezone: true })
+});
+
+export const recipientEvaluations = pgTable("recipient_evaluations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  planId: uuid("plan_id").notNull().references(() => campaignEvaluationPlans.id),
+  recipientKey: varchar("recipient_key", { length: 66 }).notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("PENDING"),
+  evidenceUrls: jsonb("evidence_urls").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  note: text("note").notNull(),
+  isPublic: boolean("is_public").notNull().default(false),
+  evaluatorIdentityId: uuid("evaluator_identity_id").notNull().references(() => takeIdentities.id),
+  evaluatedAt: timestamp("evaluated_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({ recipientIdx: uniqueIndex("recipient_evaluations_plan_recipient_idx").on(table.planId, table.recipientKey) }));
+
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   recipientTakeIdentityId: uuid("recipient_take_identity_id").references(() => takeIdentities.id),

@@ -1,0 +1,63 @@
+/* Signal and evaluation surfaces only. Home styles are deliberately untouched. */
+.signal-intro { max-width: 760px; padding-block: 24px 32px; }
+.signal-intro h1 { font-size: clamp(28px, 4vw, 48px); letter-spacing: -.045em; line-height: 1.08; margin: 16px 0; }
+.signal-intro p, .signal-context { color: #595a50; }
+.signal-counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; border-block: 1px solid #c9c8bc; padding: 24px 0; margin: 0 0 20px; }
+.signal-counts dt { font-size: 13px; color: #595a50; }
+.signal-counts dd { margin: 8px 0 0; font-size: 32px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+.signal-history { margin-top: 44px; }
+.signal-history > header, .signal-operator > header, .profile-signal { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.signal-history h2, .signal-operator h2, .profile-signal h2, .campaign-after h2 { font-size: 26px; letter-spacing: -.025em; margin: 8px 0 12px; }
+.signal-history select { padding: 10px 14px; margin-left: 8px; border: 1px solid #c9c8bc; background: transparent; border-radius: 6px; }
+.signal-history ol, .signal-recipients, .signal-edges ul, .integrity-observation-list { list-style: none; padding: 0; }
+.signal-history__row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; padding: 28px 0; border-top: 1px solid #c9c8bc; }
+.signal-history__row p { margin: 8px 0; }
+.signal-history__row small, .signal-plan small, .campaign-after small { color: #65665c; line-height: 1.6; }
+.signal-edge { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.signal-person { display: inline-flex; align-items: center; gap: 10px; overflow-wrap: anywhere; }
+.signal-person img, .signal-person__initial { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.signal-person__initial { display: grid; place-items: center; background: #d8e0c5; font-weight: 600; }
+.signal-campaign-link { text-underline-offset: 4px; font-weight: 600; }
+.signal-outcome { display: grid; justify-items: start; gap: 9px; margin: 12px 0; }
+.signal-outcome p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.signal-outcome a, .profile-signal > a { text-underline-offset: 4px; font-weight: 600; }
+.signal-status { display: inline-block; font-size: 13px; padding: 5px 10px; border-radius: 4px; background: #e8e6da; text-transform: capitalize; }
+.signal-status--positive { background: #d8edc0; color: #294a16; }
+.signal-status--negative { background: #f0d8d3; color: #65372e; }
+.signal-status--inconclusive { background: #e4def0; color: #4b395d; }
+.signal-received { color: #46662e; font-size: 13px; }
+.signal-history details, .signal-edges { margin-top: 18px; font-size: 14px; }
+.signal-history summary, .signal-edges summary, .signal-control summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
+.profile-signal { padding-block: 26px; margin-block: 30px; border-block: 1px solid #c9c8bc; }
+.profile-signal p { margin-bottom: 0; }
+.campaign-after { margin: 28px 0 40px; padding: 28px 0; border-block: 1px solid #c9c8bc; }
+.signal-recipients li { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; padding: 16px 0; }
+.campaign-evaluation { margin-top: 30px; max-width: 760px; }
+.campaign-evaluation h3, .signal-plan h3 { font-size: 20px; margin: 12px 0; }
+.campaign-evaluation article { margin-block: 20px; }
+.signal-edges li, .integrity-observation-list li { display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid #deddd3; }
+.signal-edges time { color: #65665c; font-size: 12px; white-space: nowrap; }
+.signal-control, .signal-operator { margin-block: 24px; padding-block: 18px; border-top: 1px solid #c9c8bc; }
+.signal-control > p, .signal-plan > p { max-width: 760px; line-height: 1.6; white-space: pre-wrap; }
+.signal-form { display: grid; gap: 18px; max-width: 700px; margin-top: 24px; }
+.signal-form .field { display: grid; gap: 8px; }
+.signal-form input:not([type=checkbox]), .signal-form textarea, .signal-form select, .signal-operator select { width: 100%; padding: 12px; color: inherit; background: #fffef8; border: 1px solid #a9aa9d; border-radius: 6px; font: inherit; }
+.signal-form textarea { min-height: 100px; resize: vertical; }
+.signal-checkbox { display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+.signal-checkbox input { width: 17px; height: 17px; margin-top: 3px; accent-color: #426721; flex-shrink: 0; }
+.signal-form__actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.signal-evaluation-editor { border-top: 1px solid #d4d3c7; padding-top: 24px; margin-top: 24px; }
+.integrity-observations pre { max-width: 100%; overflow: auto; padding: 16px; background: #eae8dc; font-size: 12px; }
+.eligibility-verified { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 12px 22px; }
+.eligibility-verified li { display: flex; gap: 7px; align-items: center; }
+.eligibility-verified svg { color: #49712b; flex-shrink: 0; }
+.eligibility-path-copy { max-width: 700px; line-height: 1.5; }
+.eligibility-submission-history { list-style: none; padding: 0; }
+.eligibility-submission-history li { padding-block: 8px; }
+@media (max-width: 640px) {
+  .signal-counts { grid-template-columns: repeat(2, 1fr); gap: 22px; }
+  .signal-history__row { grid-template-columns: 1fr; gap: 12px; }
+  .signal-history > header { align-items: flex-start; }
+  .signal-edges li, .integrity-observation-list li { flex-direction: column; gap: 6px; }
+  .signal-form__actions > button { flex: 1; }
+}

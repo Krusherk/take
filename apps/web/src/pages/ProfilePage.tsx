@@ -8,6 +8,7 @@ import { TakeMascotAccent } from "../components/TakeMascotAccent";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { activityFromHistory, personFromMe } from "../lib/currentIdentity";
+import { ProfileSignal } from "../components/Signal";
 
 type HistoryFilter = "ALL" | "GIVEN" | "RECEIVED";
 
@@ -52,6 +53,7 @@ export function ProfilePage({ navigate, onLogout }: { navigate: (path: TakePath)
       </header>
 
       <IdentityConnections me={me} />
+      <ProfileSignal navigate={navigate} />
 
       <section className="profile-history">
         <header className="section-heading profile-history__heading">
