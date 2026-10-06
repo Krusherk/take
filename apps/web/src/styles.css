@@ -2765,7 +2765,7 @@ dd {
 
 @keyframes confirmation-progress {
   0% { transform: translateX(-105%); }
-  70%, 100% { transform: translateX(245%); }
+  100% { transform: translateX(245%); }
 }
 
 .success-state {

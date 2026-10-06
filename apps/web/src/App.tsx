@@ -7,6 +7,7 @@ import { useTakeMe } from "./context/TakeIdentityContext";
 import { useTakeProduct } from "./context/TakeProductContext";
 import { usePathRouter } from "./hooks/usePathRouter";
 import { personFromMe } from "./lib/currentIdentity";
+import { TakeApiError } from "./lib/takeApi";
 import { campaignPath, parseCampaignPath, parseInvitePath } from "./lib/productData";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -31,6 +32,7 @@ const SignalPage = lazy(() => import("./pages/SignalPage").then((m) => ({ defaul
 
 const SELECTION_KEY = "take-selected-recipient";
 const NOTIFICATIONS_READ_KEY = "take-notifications-read";
+const PENDING_GIVE_KEY = "take-pending-give";
 
 interface StoredSelection { campaignId: string; person: Person }
 
@@ -84,6 +86,7 @@ export function App() {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submissionPhase, setSubmissionPhase] = useState<TakeSubmissionPhase>("PREPARING");
   const [nominationId, setNominationId] = useState<string | null>(null);
+  const submissionActive = useRef(false);
   const routeRef = useRef<HTMLDivElement>(null);
   const currentPerson = useMemo(() => me ? personFromMe(me) : null, [me]);
   const participantWallet = me?.wallets.find((wallet) => wallet.primary && wallet.embedded)?.address
@@ -164,6 +167,7 @@ export function App() {
     }
     setSubmitting(true);
     setSubmissionError(null);
+    submissionActive.current = true;
     try {
       if (!walletsReady) throw new Error("Your Privy wallet is still connecting. Wait a moment and try again. No TAKE was sent.");
       if (!participantWallet || !connectedWallets.some((wallet) => wallet.walletClientType === "privy" && wallet.address.toLowerCase() === participantWallet.toLowerCase())) {
@@ -187,6 +191,7 @@ export function App() {
         body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), recipient: recipient.recipient }),
       });
       setNominationId(prepared.nomination.id);
+      rememberPendingGive(campaignId, prepared.nomination.id, null);
       setSubmissionPhase("WAITING_FOR_WALLET");
       const result = await sendTransaction({
         to: prepared.transaction.to,
@@ -195,25 +200,65 @@ export function App() {
         chainId: prepared.transaction.chainId,
       }, { address: registration.walletAddress, sponsor: import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" });
       setTransactionHash(result.hash);
+      rememberPendingGive(campaignId, prepared.nomination.id, result.hash);
       setSubmissionPhase("SUBMITTED");
       const campaign = campaigns.find((item) => item.id === campaignId);
       if (campaign) navigate(campaignPath(campaign, "/pending"));
-      await submitNominationWithRetry(request, campaignId, prepared.nomination.id, result.hash, registration.walletAddress);
-      const final = await pollNomination(request, campaignId, prepared.nomination.id, (status) => {
-        setSubmissionPhase(status.chainConfirmed ? "CONFIRMED_ON_MONAD" : "SUBMITTED");
-      });
-      if (!final.canonical) throw new Error(final.failureReason ?? "TAKE could not finalize the canonical nomination edge.");
-      setSubmissionPhase("RECORDING");
-      setOptimisticGivenCampaigns((current) => current.includes(campaignId) ? current : [...current, campaignId]);
-      await Promise.all([refetch(), refetchProducts()]);
-      if (campaign) navigate(campaignPath(campaign, "/success"), { replace: true });
+      const submitted = await submitNominationWithRetry(request, campaignId, prepared.nomination.id, result.hash, registration.walletAddress);
+      if (submitted && ["CHAIN_CONFIRMED", "INDEXING_DELAYED", "CONFIRMED"].includes(submitted.status)) {
+        setSubmissionPhase("CONFIRMED_ON_MONAD");
+      }
+      await finishRecordedTake(campaignId, prepared.nomination.id);
     } catch (error) {
       setSubmissionError(submissionErrorMessage(error, participantWallet));
       setSubmitting(false);
+      const broadcast = Boolean(readPendingGive()?.transactionHash);
+      if (!broadcast) window.sessionStorage.removeItem(PENDING_GIVE_KEY);
       const campaign = campaigns.find((item) => item.id === campaignId);
-      if (campaign && campaignRoute?.step === "pending") navigate(campaignPath(campaign, "/confirm"), { replace: true });
+      // A signed give stays on this screen. Sending the giver back to confirm
+      // invites a second transaction for a TAKE Monad already accepted.
+      if (!broadcast && campaign && campaignRoute?.step === "pending") {
+        navigate(campaignPath(campaign, "/confirm"), { replace: true });
+      }
+    } finally {
+      submissionActive.current = false;
     }
   }
+
+  async function finishRecordedTake(campaignId: string, pendingNominationId: string) {
+    const final = await pollNomination(request, campaignId, pendingNominationId, (status) => {
+      setSubmissionPhase(status.chainConfirmed ? "CONFIRMED_ON_MONAD" : "SUBMITTED");
+      if (status.transactionHash) setTransactionHash(status.transactionHash);
+    });
+    if (!final.canonical) throw new Error(final.failureReason ?? "TAKE could not finalize the canonical nomination edge.");
+    window.sessionStorage.removeItem(PENDING_GIVE_KEY);
+    setSubmissionPhase("RECORDING");
+    setOptimisticGivenCampaigns((current) => current.includes(campaignId) ? current : [...current, campaignId]);
+    await Promise.all([refetch(), refetchProducts()]);
+    const campaign = campaigns.find((item) => item.id === campaignId);
+    if (campaign) navigate(campaignPath(campaign, "/success"), { replace: true });
+    setSubmitting(false);
+  }
+
+  useEffect(() => {
+    if (submissionActive.current || submitting) return;
+    if (campaignRoute?.step !== "pending" || !routeCampaign) return;
+    const pending = readPendingGive();
+    if (!pending?.transactionHash || pending.campaignId !== routeCampaign.id) return;
+    submissionActive.current = true;
+    setSubmitting(true);
+    setNominationId(pending.nominationId);
+    if (pending.transactionHash) setTransactionHash(pending.transactionHash);
+    setSubmissionPhase("CONFIRMED_ON_MONAD");
+    void finishRecordedTake(routeCampaign.id, pending.nominationId)
+      .catch((error) => {
+        setSubmissionError(submissionErrorMessage(error, participantWallet));
+        setSubmitting(false);
+      })
+      .finally(() => {
+        submissionActive.current = false;
+      });
+  }, [campaignRoute?.step, routeCampaign?.id]);
 
   let page;
   if (path === "/") page = <LoginPage navigate={navigate} />;
@@ -232,7 +277,7 @@ export function App() {
   else if (campaignRoute && routeCampaign) {
     if (campaignRoute.step === "give") page = <GivePage campaignId={routeCampaign.id} selected={selectedRecipient} onSelect={(person) => selectRecipient(person, routeCampaign.id)} navigate={navigate} currentPerson={currentPerson!} />;
     else if (campaignRoute.step === "confirm" && selectedRecipient) page = <ConfirmationPage campaignId={routeCampaign.id} recipient={selectedRecipient} navigate={navigate} onConfirm={() => void submitTake(routeCampaign.id, selectedRecipient)} submitting={submitting} error={submissionError} currentPerson={currentPerson!} walletAddress={participantWallet} />;
-    else if (campaignRoute.step === "pending" && selectedRecipient) page = <PendingPage recipient={selectedRecipient} currentPerson={currentPerson!} phase={submissionPhase} transactionHash={transactionHash} nominationId={nominationId} />;
+    else if (campaignRoute.step === "pending" && selectedRecipient) page = <PendingPage recipient={selectedRecipient} currentPerson={currentPerson!} phase={submissionPhase} transactionHash={transactionHash} nominationId={nominationId} error={submissionError} />;
     else if (campaignRoute.step === "success" && selectedRecipient) page = <SuccessPage campaignId={routeCampaign.id} recipient={selectedRecipient} navigate={navigate} transactionHash={transactionHash} currentPerson={currentPerson!} />;
     else page = <CampaignPage campaignId={routeCampaign.id} navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
   } else if (campaignRoute) page = <div className="page-container"><ProductLoading label="Loading campaign" /></div>;
@@ -267,14 +312,23 @@ async function pollNomination(
   onStatus: (status: NominationStatus) => void,
 ): Promise<NominationStatus> {
   let latest: NominationStatus | null = null;
-  for (let attempt = 0; attempt < 90; attempt += 1) {
-    latest = await request<NominationStatus>(`/campaigns/${campaignId}/nominations/${nominationId}`);
-    onStatus(latest);
-    if (latest.canonical) return latest;
-    if (latest.status === "FAILED") throw new Error(latest.failureReason ?? "The TAKE transaction could not be recorded.");
+  let confirmed = false;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      latest = await request<NominationStatus>(`/campaigns/${campaignId}/nominations/${nominationId}`);
+      onStatus(latest);
+      if (latest.canonical) return latest;
+      if (latest.status === "FAILED") throw new Error(latest.failureReason ?? "The TAKE transaction could not be recorded.");
+      if (latest.chainConfirmed) confirmed = true;
+    } catch (error) {
+      if (error instanceof Error && error.message !== "Failed to fetch" && !(error instanceof TakeApiError)) throw error;
+      if (attempt === 39) throw error;
+    }
     await delay(2_000);
   }
-  if (latest?.chainConfirmed) throw new Error("Transaction confirmed on Monad, but indexing is delayed. Your TAKE is not lost; check this campaign again shortly.");
+  if (latest?.chainConfirmed || confirmed) {
+    throw new TakeStillRecording("Monad confirmed this TAKE. TAKE is still saving the record, and it is not lost.");
+  }
   throw new Error("Monad confirmation is taking longer than expected. Check the transaction before trying again.");
 }
 
@@ -289,7 +343,7 @@ async function submitNominationWithRetry(
 ) {
   for (let attempt = 0; attempt < 15; attempt += 1) {
     try {
-      return await request(`/campaigns/${campaignId}/nominations/${nominationId}/submit`, {
+      return await request<{ status: string }>(`/campaigns/${campaignId}/nominations/${nominationId}/submit`, {
         method: "POST",
         body: JSON.stringify({ transactionHash, fromAddress }),
       });
@@ -298,6 +352,24 @@ async function submitNominationWithRetry(
       if (code !== "TRANSACTION_NOT_FOUND" || attempt === 14) throw caught;
       await delay(2_000);
     }
+  }
+}
+
+class TakeStillRecording extends Error {}
+
+function rememberPendingGive(campaignId: string, nominationId: string, transactionHash: string | null) {
+  window.sessionStorage.setItem(PENDING_GIVE_KEY, JSON.stringify({ campaignId, nominationId, transactionHash }));
+}
+
+function readPendingGive(): { campaignId: string; nominationId: string; transactionHash: string | null } | null {
+  const raw = window.sessionStorage.getItem(PENDING_GIVE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as { campaignId?: string; nominationId?: string; transactionHash?: string | null };
+    if (!parsed.campaignId || !parsed.nominationId) return null;
+    return { campaignId: parsed.campaignId, nominationId: parsed.nominationId, transactionHash: parsed.transactionHash ?? null };
+  } catch {
+    return null;
   }
 }
 

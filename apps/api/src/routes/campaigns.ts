@@ -129,7 +129,7 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
         MONAD_MAINNET_RPC_URL: app.env.MONAD_MAINNET_RPC_URL,
         TAKE_CAMPAIGN_MANAGER_ADDRESS: app.env.TAKE_CAMPAIGN_MANAGER_ADDRESS
       });
-      const publicClient = createMonadPublicClient(chainConfig);
+      const publicClient = createMonadPublicClient(chainConfig, { timeout: 15_000, retryCount: 0 });
       const nomination = await nominations.recordSubmitted({
         campaignId: request.params.id,
         nominationId: request.params.nominationId,

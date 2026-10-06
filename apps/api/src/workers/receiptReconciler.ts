@@ -20,7 +20,7 @@ export class ReceiptReconciler {
       MONAD_MAINNET_RPC_URL: this.env.MONAD_MAINNET_RPC_URL,
       TAKE_CAMPAIGN_MANAGER_ADDRESS: this.env.TAKE_CAMPAIGN_MANAGER_ADDRESS
     });
-    const client = createMonadPublicClient(chainConfig);
+    const client = createMonadPublicClient(chainConfig, { timeout: 15_000, retryCount: 0 });
 
     const pending = await this.db
       .select()

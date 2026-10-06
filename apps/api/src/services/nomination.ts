@@ -48,7 +48,8 @@ export class NominationService {
     if (!record) throw new ServiceError("NOMINATION_NOT_FOUND", "Nomination not found", 404);
     if (reconcile && record.nomination.transactionHash
       && ["SUBMITTED", "CHAIN_CONFIRMED", "INDEXING_DELAYED"].includes(record.nomination.status)) {
-      await new ReceiptReconciler(this.db, this.env).runOnce(1, record.nomination.transactionHash);
+      // A slow or failed index must not hide the receipt the giver is waiting on.
+      await new ReceiptReconciler(this.db, this.env).runOnce(1, record.nomination.transactionHash).catch(() => undefined);
       return this.getStatus(campaignId, nominationId, actorIdentityId, false);
     }
     const canonical = Boolean(
