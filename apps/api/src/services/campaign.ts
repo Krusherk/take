@@ -15,7 +15,7 @@ export class CampaignService {
   constructor(private readonly db: Database) {}
 
   async listCampaigns(viewerIdentityId?: string, includeFixtureCampaigns = true) {
-    const records = await this.db.select().from(schema.campaigns);
+    const records = await this.db.select().from(schema.campaigns).orderBy(desc(schema.campaigns.createdAt));
     const fixtureCreators = includeFixtureCampaigns ? [] : await this.fixtureCreatorIds();
     const fixtureCreatorSet = new Set(fixtureCreators);
     const memberships = viewerIdentityId
@@ -136,6 +136,13 @@ export class CampaignService {
     if (!operatorManaged) await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
     if (campaign.status !== CampaignStatus.DRAFT) {
       throw new Error("Only draft campaigns can be published");
+    }
+    if (campaign.endTime.getTime() <= Date.now()) {
+      throw new ServiceError(
+        "INVALID_CAMPAIGN_TIME",
+        "This campaign window has already ended, so Monad would reject publication. Create a campaign whose end time is still in the future.",
+        409
+      );
     }
 
     const managerAddress = campaign.managerContractAddress ?? contractAddress;
@@ -264,6 +271,21 @@ export class CampaignService {
     if (!operatorManaged) await this.assertCanManageOrganization(campaign.organizationId, actorIdentityId);
     if (campaign.status !== CampaignStatus.CREATED || !campaign.onchainCampaignId) {
       throw new ServiceError("CAMPAIGN_NOT_CREATED", "Wait for the published campaign to be indexed before activation", 409);
+    }
+    const now = new Date();
+    if (now < campaign.startTime) {
+      throw new ServiceError(
+        "INVALID_CAMPAIGN_TIME",
+        "Nominations cannot be activated before the campaign start time.",
+        409
+      );
+    }
+    if (now >= campaign.endTime) {
+      throw new ServiceError(
+        "INVALID_CAMPAIGN_TIME",
+        "This campaign window has ended, so Monad would reject activation. Publish a new campaign with a current window.",
+        409
+      );
     }
     return {
       campaign,
