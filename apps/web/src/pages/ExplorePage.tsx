@@ -58,7 +58,7 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
                 recipient={historyRecipient(history?.given.find((entry) => entry.campaignId === campaign.id))}
               />
             </div>
-          )) : <SocialEmpty title="No opportunities found.">Try another name or campaign state.</SocialEmpty>}
+          )) : <SocialEmpty title={emptyTitle(filter, query)} action={query ? undefined : "Create a campaign"} onAction={query ? undefined : () => navigate("/organize")}>{emptyBody(filter, query)}</SocialEmpty>}
         </section>
       ) : null}
     </div>
@@ -67,4 +67,18 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
 
 function historyRecipient(entry: TakeHistoryEntry | undefined): Person | null {
   return entry?.person ? personFromHistoryPerson(entry.person, `${entry.id}:recipient`) : null;
+}
+
+function emptyTitle(filter: Filter, query: string) {
+  if (query.trim()) return "No opportunities found.";
+  if (filter === "LIVE") return "No live campaign yet.";
+  if (filter === "UPCOMING") return "Nothing is scheduled.";
+  if (filter === "CLOSED") return "No closed campaigns.";
+  return "No opportunities yet.";
+}
+
+function emptyBody(filter: Filter, query: string) {
+  if (query.trim()) return "Try another name or campaign state.";
+  if (filter === "LIVE" || filter === "ALL") return "A campaign shows up here after you publish it on Monad and open nominations.";
+  return "Create a campaign from Organize when you are ready.";
 }

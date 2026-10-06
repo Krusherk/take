@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { CampaignRequestService } from "../services/campaignRequests.js";
+import { OrganizerCampaignService } from "../services/organizerCampaign.js";
 import { assertTakeOperator, isTakeOperator } from "../services/authorization.js";
 import { and, desc, eq } from "drizzle-orm";
 import { schema } from "@take/database";
@@ -19,9 +20,21 @@ const requestInput = z.object({
   eligibilityDescription: z.string().trim().max(2_000).optional()
 });
 
+const organizerCampaignInput = z.object({
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().min(1).max(5_000),
+  resourceName: z.string().trim().min(1).max(160),
+  seatCount: z.number().int().positive().max(10_000),
+  startTime: z.coerce.date(),
+  endTime: z.coerce.date(),
+  giverIdentityIds: z.array(z.string().uuid()).min(1).max(100),
+  recipientIdentityIds: z.array(z.string().uuid()).min(1).max(100)
+});
+
 export const operatorRoutes: FastifyPluginAsync = async (app) => {
   const requests = new CampaignRequestService(app.db);
   const experiments = new ExperimentService(app.db);
+  const organizerCampaigns = new OrganizerCampaignService(app.db, app.env);
 
   app.get("/operator/me", async (request) => ({ operator: isTakeOperator(app.env, request.takeIdentity) }));
 
@@ -40,6 +53,17 @@ export const operatorRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { id: string } }>("/campaign-requests/:id/submit", async (request, reply) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
     return requests.submit(request.params.id, request.takeIdentity.takeIdentityId);
+  });
+  app.post<{ Params: { organizationId: string } }>("/organizations/:organizationId/campaigns", async (request, reply) => {
+    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    const body = organizerCampaignInput.parse(request.body);
+    return reply.code(201).send(await organizerCampaigns.create({
+      ...body,
+      organizationId: z.string().uuid().parse(request.params.organizationId)
+    }, {
+      takeIdentityId: request.takeIdentity.takeIdentityId,
+      isOperator: isTakeOperator(app.env, request.takeIdentity)
+    }));
   });
 
   app.get("/operator/campaign-requests", async (request) => {
