@@ -6,13 +6,20 @@ interface BrandProps {
   light?: boolean;
 }
 
+const LOGO = { src: "/assets/sticker/logo.webp", width: 243, height: 240 };
+
+/** The TAKE logo: a die-cut star sticker. Screen readers hear "TAKE". */
+function Logo() {
+  return <img className="brand__logo" src={LOGO.src} alt="TAKE" width={LOGO.width} height={LOGO.height} decoding="async" draggable={false} />;
+}
+
 export function Brand({ navigate, compact = false, light = false }: BrandProps) {
-  const className = `brand${compact ? " brand--compact" : ""}${light ? " brand--light" : ""}`;
+  const className = `brand brand--logo${compact ? " brand--compact" : ""}${light ? " brand--light" : ""}`;
 
   if (!navigate) {
     return (
-      <span className={className} aria-label="TAKE">
-        TAKE<span aria-hidden="true">.</span>
+      <span className={className}>
+        <Logo />
       </span>
     );
   }
@@ -27,7 +34,7 @@ export function Brand({ navigate, compact = false, light = false }: BrandProps) 
         navigate("/home");
       }}
     >
-      TAKE<span aria-hidden="true">.</span>
+      <Logo />
     </a>
   );
 }

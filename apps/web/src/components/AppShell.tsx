@@ -28,8 +28,8 @@ const mobileItems: Array<{ label: string; path: TakePath; icon: typeof Home }> =
   { label: "Organize", path: "/organize", icon: PanelsTopLeft },
 ];
 
-// Explore and Signal use the sticker-collage sky; other screens keep their own surface.
-const skyPaths = new Set<TakePath>(["/explore", "/signal"]);
+// Home, Explore and Signal use the sticker-collage sky; other screens keep their own surface.
+const skyPaths = new Set<TakePath>(["/home", "/explore", "/signal"]);
 
 function NavLink({ label, destination, path, navigate }: { label: string; destination: TakePath; path: TakePath; navigate: (path: TakePath) => void }) {
   const active = path === destination;
@@ -98,7 +98,7 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
   }
 
   return (
-    <div className={`app-shell${path === "/home" ? " app-shell--home" : ""}${skyPaths.has(path) ? " app-shell--sky" : ""}`}>
+    <div className={`app-shell${skyPaths.has(path) ? " app-shell--sky" : ""}`}>
       <div className="app-noise" aria-hidden="true" />
       <header className="app-header">
         <div className="app-header__inner">

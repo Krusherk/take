@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductError, ProductLoading } from "../components/ProductState";
+import { CampaignStickerRow } from "../components/sticker/CampaignStickerRow";
 import { CampaignSticker, EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, StatusSticker, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
@@ -113,24 +114,6 @@ function FeaturedCampaign({ campaign, currentPerson, recipient, navigate }: {
       </Sticker>
       {!available ? <p className="sticker-note">{viewerNote(campaign, given, recipient)}</p> : null}
     </article>
-  );
-}
-
-function CampaignStickerRow({ campaign, index, navigate }: { campaign: Campaign; index: number; navigate: (path: TakePath) => void }) {
-  const destination = campaignPath(campaign) as TakePath;
-  const tilt = index % 2 ? 1.2 : -1.2;
-  return (
-    <Sticker as="li" tilt={tilt} delay={Math.min(360, 300 + index * 30)} className="sticker-row">
-      <a href={destination} onClick={(event) => { event.preventDefault(); navigate(destination); }}>
-        <CampaignSticker campaign={campaign} size="sm" tilt={0} />
-        <span className="sticker-row__copy">
-          <strong>{campaign.title}</strong>
-          <em>by {campaign.organizer}</em>
-          <small>{campaign.resource} · {campaign.status === "UPCOMING" ? `Opens ${campaign.starts}` : `Ends ${campaign.ends}`}{(campaign.viewer?.usedTakes ?? 0) > 0 ? " · TAKE given" : ""}</small>
-        </span>
-        <StatusSticker status={campaign.status} tilt={4} />
-      </a>
-    </Sticker>
   );
 }
 
