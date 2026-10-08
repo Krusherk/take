@@ -1,0 +1,608 @@
+/*
+ * Sticker collage: Explore and Signal.
+ * Sky background, die-cut stickers, torn paper labels, one black pill per screen.
+ * Lime is an accent only: the LIVE sticker, the YOUR SIGNAL tag, the selected tab.
+ */
+
+.app-shell--sky {
+  --sky-top: #3f9be8;
+  --sky-mid: #74b9f2;
+  --sky-low: #b9defb;
+  --sticker-white: #ffffff;
+  --sticker-paper: #f7f5ee;
+  --sticker-ink: #11110f;
+  --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
+  --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--sky-mid);
+}
+
+.app-shell--sky::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  height: auto;
+  opacity: 1;
+  pointer-events: none;
+  background:
+    url("/assets/sticker/sky-clouds.svg") center top / max(1200px, 100%) auto repeat-y,
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 46%, var(--sky-low) 100%);
+  mask-image: none;
+  content: "";
+}
+
+.app-shell--sky::after { display: none; }
+
+.app-shell--sky .app-header {
+  border-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.app-shell--sky .app-header .brand { color: var(--sticker-ink); }
+.app-shell--sky .icon-action,
+.app-shell--sky .account-chip {
+  border: 0;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+}
+.app-shell--sky .account-chip .avatar { box-shadow: 0 0 0 2px var(--sticker-white); }
+
+.app-shell--sky .desktop-nav a { color: rgba(17, 17, 15, 0.7); }
+.app-shell--sky .desktop-nav a.is-active { color: var(--sticker-ink); }
+
+/* Mobile nav: a white rounded sticker, lime dot behind the selected icon. */
+@media (max-width: 900px) {
+  .app-shell--sky .mobile-nav {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    min-height: 68px;
+    border: 0;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 2px rgba(14, 44, 86, 0.12), 0 14px 30px rgba(14, 44, 86, 0.24);
+  }
+  .app-shell--sky .mobile-nav a {
+    gap: 4px;
+    border: 0;
+    background: transparent;
+    color: #4b4b46;
+    font-size: 12px;
+    font-weight: 560;
+  }
+  .app-shell--sky .mobile-nav a + a { border-left: 0; }
+  .app-shell--sky .mobile-nav a::after { display: none; }
+  .app-shell--sky .mobile-nav a svg {
+    box-sizing: content-box;
+    width: 20px;
+    height: 20px;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background-color 160ms ease, transform 220ms var(--sticker-spring);
+  }
+  .app-shell--sky .mobile-nav a.is-active {
+    background: transparent;
+    color: var(--sticker-ink);
+    font-weight: 760;
+  }
+  .app-shell--sky .mobile-nav a.is-active svg {
+    background: #c6ff31;
+    box-shadow: 0 0 0 1.5px var(--sticker-ink);
+    transform: rotate(-8deg);
+  }
+  .app-shell--sky .app-main { padding-bottom: 100px; }
+}
+
+/* ---------- Page frame ---------- */
+
+.sticker-page {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  width: min(calc(100% - 32px), 560px);
+  padding-top: 18px;
+  color: var(--sticker-ink);
+}
+
+.sticker-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sticker-page h1,
+.sticker-page h2 {
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* ---------- Sticker primitives ---------- */
+
+.sticker {
+  --tilt: 0deg;
+  --delay: 0ms;
+  position: relative;
+  display: inline-block;
+  transform: rotate(var(--tilt));
+  transform-origin: 50% 60%;
+  animation: sticker-settle 460ms var(--sticker-spring) var(--delay) both;
+}
+
+@keyframes sticker-settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(calc(var(--tilt) + 7deg)) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--tilt));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker,
+  .sticker-page .sticker {
+    animation: none !important;
+    opacity: 1;
+    transform: rotate(var(--tilt));
+  }
+  .app-shell--sky .mobile-nav a svg { transition: none; }
+}
+
+/* Torn paper label */
+.paper-label {
+  max-width: 100%;
+  filter: var(--sticker-drop);
+}
+
+.paper-label__paper {
+  display: block;
+  padding: 0.42em 0.8em 0.46em;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 40%),
+    var(--sticker-paper);
+  color: var(--sticker-ink);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-weight: 500;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  clip-path: polygon(
+    0% 6%, 3% 0%, 18% 3%, 34% 0%, 52% 2%, 70% 0%, 86% 3%, 100% 0%,
+    98.5% 22%, 100% 46%, 98.6% 70%, 100% 100%,
+    84% 97%, 66% 100%, 48% 97.5%, 30% 100%, 14% 97%, 1% 100%,
+    1.6% 74%, 0% 50%, 1.4% 26%
+  );
+}
+
+.paper-label--xs .paper-label__paper { padding: 0.32em 0.6em 0.36em; font-size: 11px; }
+.paper-label--sm .paper-label__paper { font-size: 13px; }
+.paper-label--md .paper-label__paper { font-size: 15px; }
+.paper-label--lg .paper-label__paper {
+  padding: 0.24em 0.5em 0.3em;
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(32px, 9vw, 46px);
+  font-weight: 860;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+
+/* Status sticker. LIVE is lime; others stay paper/ink. */
+.status-sticker {
+  filter: var(--sticker-drop);
+}
+.status-sticker > span {
+  display: inline-block;
+  padding: 0.28em 0.62em 0.32em;
+  border: 4px solid var(--sticker-white);
+  border-radius: 14px 18px 12px 20px;
+  background: var(--sticker-paper);
+  color: var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.status-sticker--live > span {
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 2px var(--sticker-ink);
+}
+.status-sticker--closed > span { background: #dedcd3; color: #4a4a44; }
+
+/* Arrow */
+.pass-arrow {
+  flex: 0 0 auto;
+  width: 78px;
+  height: 52px;
+  filter: var(--sticker-drop);
+}
+.pass-arrow--sm { width: 44px; height: 30px; }
+
+/* Faces */
+.face-sticker {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  min-width: 0;
+}
+.face-sticker > .paper-label { margin-top: -10px; position: relative; z-index: 1; max-width: 160px; }
+.face-sticker__sub { margin-top: 2px !important; }
+
+.face-sticker__cut {
+  display: grid;
+  place-items: center;
+  border: 6px solid var(--sticker-white);
+  border-radius: 50%;
+  background: var(--sticker-white);
+  filter: var(--sticker-drop);
+}
+.face-sticker__cut .avatar { border: 0; box-shadow: none; }
+.face-sticker--lg .face-sticker__cut .avatar { width: clamp(92px, 27vw, 150px); height: clamp(92px, 27vw, 150px); }
+.face-sticker--sm .face-sticker__cut { border-width: 4px; }
+.face-sticker--sm .face-sticker__cut .avatar { width: 52px; height: 52px; }
+.face-sticker--sm > .paper-label { margin-top: -6px; max-width: 110px; }
+
+.face-sticker__cut--empty {
+  width: clamp(92px, 27vw, 150px);
+  height: clamp(92px, 27vw, 150px);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--sticker-white);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 56px;
+  font-weight: 900;
+}
+.face-sticker--sm .face-sticker__cut--empty { width: 52px; height: 52px; font-size: 24px; }
+
+/* Campaign artwork */
+.campaign-sticker {
+  border: 7px solid var(--sticker-white);
+  border-radius: 20px;
+  background: var(--sticker-white);
+  filter: var(--sticker-drop);
+}
+.campaign-sticker svg { display: block; width: 100%; height: auto; border-radius: 13px; }
+.campaign-sticker--lg { width: min(100%, 340px); }
+.campaign-sticker--sm { width: 76px; border-width: 3px; border-radius: 12px; filter: none; box-shadow: 0 0 0 1px rgba(17, 17, 15, 0.08); }
+.campaign-sticker--sm svg { border-radius: 9px; }
+
+/* The one black pill */
+.sticker-cta { filter: var(--sticker-drop); }
+.sticker-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  max-width: min(88vw, 420px);
+  padding: 0 34px;
+  overflow: hidden;
+  border: 4px solid var(--sticker-white);
+  border-radius: 999px;
+  background: var(--sticker-ink);
+  color: var(--sticker-white);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 22px;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 180ms var(--sticker-spring), background-color 160ms ease;
+}
+.sticker-pill:active { transform: scale(0.96); }
+.sticker-pill:focus-visible { outline: 3px solid #c6ff31; outline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) {
+  .sticker-pill:hover { transform: translateY(-2px) rotate(-1deg); background: #22221f; }
+}
+
+.sticker-note {
+  max-width: 34ch;
+  margin: -6px 0 0;
+  color: rgba(17, 17, 15, 0.78);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- Explore ---------- */
+
+.sticker-tools {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  width: 100%;
+}
+
+.sticker-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--sticker-shadow);
+  color: #4b4b46;
+}
+.sticker-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sticker-ink);
+  font: 500 16px/1.2 Inter, "Inter Variable", sans-serif;
+  outline: none;
+}
+.sticker-search:focus-within { box-shadow: var(--sticker-shadow), 0 0 0 3px var(--sticker-ink); }
+
+.sticker-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.sticker-filters button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 3px solid var(--sticker-white);
+  border-radius: 999px;
+  background: var(--sticker-paper);
+  color: var(--sticker-ink);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 10px rgba(14, 44, 86, 0.16);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 180ms var(--sticker-spring);
+}
+.sticker-filters button:nth-child(odd) { transform: rotate(-1.5deg); }
+.sticker-filters button:nth-child(even) { transform: rotate(1.5deg); }
+.sticker-filters button.is-active { background: var(--sticker-ink); color: var(--sticker-white); }
+.sticker-filters button:active { transform: scale(0.95); }
+.sticker-filters button:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 2px; }
+
+.sticker-campaign {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.sticker-campaign__art {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  border-radius: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+.sticker-campaign__art:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 6px; }
+.sticker-campaign__status {
+  position: absolute;
+  right: max(6px, calc(50% - 190px));
+  bottom: -14px;
+  z-index: 2;
+}
+.sticker-campaign__status .status-sticker > span { font-size: clamp(22px, 6.6vw, 30px); border-width: 5px; padding: 0.22em 0.6em 0.28em; }
+
+.sticker-campaign__title {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  margin-top: 6px;
+}
+.sticker-campaign__title .paper-label--sm { margin-left: 40%; }
+
+.sticker-campaign__handoff {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sticker-campaign__meta .paper-label__paper { background: var(--sticker-white); border-radius: 2px; }
+.sticker-campaign__copy { max-width: 34ch; text-align: center; }
+.sticker-campaign__copy .paper-label__paper {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  padding: 0.6em 1em 0.7em;
+}
+
+.sticker-campaign .sticker-cta { margin-top: 8px; }
+
+.sticker-more {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 18px;
+}
+.sticker-more ul,
+.sticker-signal__more ol {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sticker-row {
+  display: block;
+  border-radius: 18px;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+}
+.sticker-row > a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 10px;
+  color: var(--sticker-ink);
+  text-decoration: none;
+  border-radius: 18px;
+}
+.sticker-row > a:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 2px; }
+.sticker-row__copy { display: grid; gap: 2px; min-width: 0; }
+.sticker-row__copy strong { overflow: hidden; font-size: 17px; font-weight: 780; letter-spacing: -0.02em; text-overflow: ellipsis; white-space: nowrap; }
+.sticker-row__copy em { color: #55554f; font-size: 13px; font-style: normal; }
+.sticker-row__copy small { color: #55554f; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; }
+.sticker-row .status-sticker > span { font-size: 11px; border-width: 3px; }
+
+.sticker-empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-top: 24px;
+  text-align: center;
+}
+.sticker-empty .paper-label--sm { max-width: 34ch; }
+
+/* ---------- Signal ---------- */
+
+.sticker-signal__stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: 100%;
+  padding-top: 26px;
+}
+
+.signal-tag {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  filter: var(--sticker-drop);
+}
+.signal-tag > span {
+  display: inline-block;
+  padding: 0.4em 0.8em;
+  border: 4px solid var(--sticker-white);
+  border-radius: 12px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 2px var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.sticker-signal__headline {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  max-width: 100%;
+  margin-top: 26px;
+  text-align: center;
+}
+.sticker-signal__headline .paper-label--sm { margin-left: 30%; }
+
+.sticker-signal__faces {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 6px;
+}
+.sticker-signal__faces .pass-arrow { width: clamp(56px, 16vw, 78px); height: auto; margin-top: -34px; }
+
+.sticker-signal__status {
+  margin: 0;
+  color: var(--sticker-ink);
+  font-size: 15px;
+  font-weight: 560;
+  text-align: center;
+}
+
+.sticker-signal__more,
+.sticker-signal__history {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.sticker-row--person {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.sticker-row--person strong { display: block; font-size: 15px; }
+.sticker-row--person .avatar { box-shadow: 0 0 0 3px var(--sticker-white); }
+
+.sticker-signal__history > header {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.sticker-signal__history > header label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+.sticker-signal__history .signal-board { width: 100%; margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.sticker-signal .signal-card {
+  border: 0;
+  border-radius: 18px;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+  animation: sticker-settle 460ms var(--sticker-spring) 320ms both;
+}
+.sticker-signal .signal-card:nth-child(odd) { --tilt: -0.8deg; transform: rotate(-0.8deg); }
+.sticker-signal .signal-card:nth-child(even) { --tilt: 0.8deg; transform: rotate(0.8deg); }
+@media (prefers-reduced-motion: reduce) {
+  .sticker-signal .signal-card { animation: none !important; opacity: 1; }
+}
+
+.sticker-page .product-state { width: 100%; border-radius: 18px; background: rgba(255, 255, 255, 0.94); box-shadow: var(--sticker-shadow); }
+
+/* ---------- Wider screens: same collage, a bit more air ---------- */
+@media (min-width: 901px) {
+  .sticker-page { gap: 22px; padding-top: 34px; }
+}
+
+/* Phones: keep the poster tight and the one action reachable above the nav. */
+@media (max-width: 900px) {
+  .sticker-page { gap: 12px; padding-top: 6px; }
+  .sticker-tools { gap: 8px; }
+  .sticker-search { min-height: 44px; }
+  .sticker-filters button { min-height: 32px; }
+  .sticker-campaign { gap: 9px; padding-top: 2px; }
+  .campaign-sticker--lg { width: min(86%, 300px); }
+  .sticker-campaign__status { right: max(4px, calc(50% - 168px)); }
+  .sticker-campaign__copy .paper-label__paper { font-size: 13px; }
+  .sticker-campaign .sticker-cta,
+  .sticker-signal__stage .sticker-cta {
+    position: sticky;
+    bottom: 96px;
+    z-index: 5;
+  }
+}
