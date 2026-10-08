@@ -1,13 +1,13 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CampaignRow } from "../components/Campaign";
+import { CampaignArtwork, CampaignStatus } from "../components/Campaign";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { TakeMascotAccent } from "../components/TakeMascotAccent";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
-import { isParticipantCampaign } from "../lib/productData";
+import { campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { TakeHistoryEntry } from "../types/identity";
 import type { Person } from "../types/product";
 import type { CampaignState } from "../types/product";
@@ -32,33 +32,42 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
 
   return (
     <div className="page-container index-page">
-      <header className="page-intro index-intro">
-        <div><span className="eyebrow">EXPLORE</span><h1>Pass an opportunity to someone who belongs there.</h1></div>
-        <label className="index-search"><Search size={20} strokeWidth={1.7} /><input aria-label="Search campaigns" placeholder="Search opportunities" value={query} onChange={(event) => setQuery(event.currentTarget.value)} /></label>
+      <header className="page-intro explore-intro">
+        <div>
+          <span className="eyebrow">EXPLORE</span>
+          <h1>Pass an opportunity to someone who belongs there.</h1>
+        </div>
         <TakeMascotAccent character="green" className="mascot-intro mascot-intro--explore" />
       </header>
 
-      <div className="index-filters" role="group" aria-label="Filter campaigns">
-        {(["ALL", "LIVE", "UPCOMING", "CLOSED"] as const).map((item) => <button key={item} className={filter === item ? "is-active" : undefined} type="button" onClick={() => setFilter(item)}>{item}</button>)}
-        <span>{visible.length} {visible.length === 1 ? "OPPORTUNITY" : "OPPORTUNITIES"}</span>
+      <div className="explore-tools">
+        <label className="index-search explore-search"><Search size={20} strokeWidth={1.7} /><input aria-label="Search campaigns" placeholder="Search opportunities" value={query} onChange={(event) => setQuery(event.currentTarget.value)} /></label>
+        <div className="index-filters" role="group" aria-label="Filter campaigns">
+          {(["ALL", "LIVE", "UPCOMING", "CLOSED"] as const).map((item) => <button key={item} className={filter === item ? "is-active" : undefined} type="button" onClick={() => setFilter(item)}>{item === "ALL" ? "ALL" : item}</button>)}
+        </div>
       </div>
 
       {status === "loading" || status === "idle" ? <ProductLoading label="Loading opportunities" /> : null}
       {status === "error" ? <ProductError message={error ?? "Campaigns are unavailable."} onRetry={() => void refetch()} /> : null}
       {status === "ready" ? (
-        <section className="campaign-index" aria-label="Campaigns">
-          {visible.length ? visible.map((campaign, index) => (
-            <div className="campaign-index__item" key={campaign.id}>
-              <span className="campaign-index__number">{String(index + 1).padStart(2, "0")}</span>
-              <CampaignRow
-                campaign={campaign}
-                navigate={navigate}
-                featured={index === 0 && filter === "ALL" && !query}
-                giver={currentPerson}
-                recipient={historyRecipient(history?.given.find((entry) => entry.campaignId === campaign.id))}
-              />
-            </div>
-          )) : <SocialEmpty title={emptyTitle(filter, query)} action={query ? undefined : "Create a campaign"} onAction={query ? undefined : () => navigate("/organize")}>{emptyBody(filter, query)}</SocialEmpty>}
+        <section className="explore-board" aria-label="Campaigns">
+          {visible.length ? visible.map((campaign) => {
+            const recipient = historyRecipient(history?.given.find((entry) => entry.campaignId === campaign.id));
+            const destination = campaignPath(campaign) as TakePath;
+            const given = (campaign.viewer?.usedTakes ?? 0) > 0;
+            return (
+              <a className="explore-card" href={destination} key={campaign.id} onClick={(event) => { event.preventDefault(); navigate(destination); }}>
+                <CampaignArtwork campaign={campaign} giver={given ? currentPerson : null} recipient={given ? recipient : null} compact />
+                <span className="explore-card__copy">
+                  <CampaignStatus status={campaign.status} />
+                  <strong>{campaign.title}</strong>
+                  <em>by {campaign.organizer}</em>
+                  <span>{campaign.description}</span>
+                  <small>{campaign.resource} · {campaign.status === "UPCOMING" ? `Opens ${campaign.starts}` : `Ends ${campaign.ends}`}{given && recipient ? ` · Given to ${recipient.name}` : given ? " · TAKE given" : ""}</small>
+                </span>
+              </a>
+            );
+          }) : <SocialEmpty title={emptyTitle(filter, query)} action={query ? undefined : "Create a campaign"} onAction={query ? undefined : () => navigate("/organize")}>{emptyBody(filter, query)}</SocialEmpty>}
         </section>
       ) : null}
     </div>

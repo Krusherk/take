@@ -1,4 +1,4 @@
-import { Check, FileQuestion, LockKeyhole, ShieldAlert } from "lucide-react";
+import { Check, LockKeyhole, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { TakeApiClient } from "../../lib/takeApi";
 import type { EligibilityCategoryScore, EligibilityStackRule, SelectorAssessment } from "../../types/mechanism";
@@ -40,10 +40,7 @@ export function ParticipantEligibilityPanel({ campaignId, request }: { campaignI
   useEffect(() => { void load(); }, [load]);
 
   const reviewedRules = useMemo(() => data?.policy.categories.flatMap((category) => category.rules).filter((rule) => rule.source === "REVIEWED_SUBMISSION") ?? [], [data]);
-  if (!data) return null;
-  if (data.status === "NOT_ASSESSED" || !data.assessment) {
-    return <section className="participant-eligibility participant-eligibility--not-assessed"><FileQuestion size={22} /><div><span>ELIGIBILITY</span><strong>You are not in this campaign's candidate group.</strong><p>The organizer defines who can qualify to give a TAKE before nominations begin.</p>{data.policy.newcomerPath.enabled ? <p>This campaign has an alternative qualification path: {data.policy.newcomerPath.title}. It is available to assessed candidates before the roster locks.</p> : null}</div></section>;
-  }
+  if (!data || data.status === "NOT_ASSESSED" || !data.assessment) return null;
 
   const assessment = data.assessment;
   const canSubmit = !data.locked;

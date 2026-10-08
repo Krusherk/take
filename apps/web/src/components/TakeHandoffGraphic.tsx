@@ -56,7 +56,7 @@ export function TakeHandoffGraphic({
         ) : (
           <span className="take-handoff__community-mark"><i /><i /><i /></span>
         )}
-        {!compact ? <span className="take-handoff__caption">{resolvedGiver ? shortIdentity(resolvedGiver) : "COMMUNITY"}</span> : null}
+        {!compact && resolvedGiver ? <span className="take-handoff__caption">{shortIdentity(resolvedGiver)}</span> : null}
       </div>
 
       <div className="take-handoff__endpoint take-handoff__endpoint--recipient" aria-hidden="true">
@@ -65,10 +65,10 @@ export function TakeHandoffGraphic({
         ) : (
           <span className={`take-handoff__open-target${state === "given" ? " is-given" : ""}`}><i /></span>
         )}
-        {!compact ? <span className="take-handoff__caption">{resolvedRecipient ? shortIdentity(resolvedRecipient) : state === "given" ? "GIVEN" : "WHO?"}</span> : null}
+        {!compact && resolvedRecipient ? <span className="take-handoff__caption">{shortIdentity(resolvedRecipient)}</span> : null}
       </div>
 
-      {!compact ? <span className="take-handoff__unit" aria-hidden="true">ONE TAKE</span> : null}
+      {!compact && (resolvedGiver || resolvedRecipient) ? <span className="take-handoff__unit" aria-hidden="true">ONE TAKE</span> : null}
     </div>
   );
 }

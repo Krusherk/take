@@ -1,11 +1,10 @@
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { useEffect, useState } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { Avatar } from "../components/Avatar";
-import { CampaignArtwork, CampaignFacts, CampaignStatus, eligibilityLabel } from "../components/Campaign";
+import { CampaignArtwork, CampaignStatus } from "../components/Campaign";
 import { ProductError, ProductLoading } from "../components/ProductState";
-import { TakeMascotAccent } from "../components/TakeMascotAccent";
 import { ParticipantEligibilityPanel } from "../components/eligibility/ParticipantEligibilityPanel";
 import { CampaignAfterSection } from "../components/Signal";
 import { useTakeMe } from "../context/TakeIdentityContext";
@@ -86,42 +85,39 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
           <div className="campaign-hero__meta"><CampaignStatus status={campaign.status} /><span>BY {campaign.organizer.toUpperCase()}</span></div>
           <h1>{campaign.title}</h1>
           <p>{campaign.description}</p>
-          <div className="campaign-community"><span className="campaign-community__mark">{campaign.organizerMark}</span><div><small>ORGANIZER</small><strong>{campaign.organizer}</strong></div><span>{campaign.participants === null ? "Participation hidden until close" : `${campaign.participants.toLocaleString("en-US")} people participating`}</span></div>
+          <p className="campaign-hero__facts">{campaignFactLine(campaign)}</p>
         </div>
-        <CampaignArtwork campaign={campaign} giver={currentPerson} recipient={givenPerson} />
+        <CampaignArtwork campaign={campaign} giver={given ? currentPerson : available ? currentPerson : null} recipient={givenPerson} />
       </header>
 
-      <CampaignFacts campaign={campaign} takeGiven={given} />
       {campaign.sourceStatus === "FINALIZED" ? <CampaignAfterSection campaignId={campaign.id} /> : null}
 
       <div className="campaign-body">
-        <section className="campaign-about">
-          <div><span className="eyebrow">THE OPPORTUNITY</span><h2>{campaign.resource}</h2><p>{campaign.description}</p><small>Final recipients are published when the campaign closes.</small></div>
-          <div className="campaign-rules">
-            <article><span>WHO CAN GIVE</span><strong>{giverRule(campaign.nominatorEligibilityMode)}</strong><p>{campaign.nominationLimit === 1 ? "Exactly one TAKE per eligible person." : `Up to ${campaign.nominationLimit} TAKEs per eligible person.`}</p></article>
-            <article><span>WHO CAN RECEIVE</span><strong>{recipientRule(campaign.recipientEligibilityMode)}</strong><p>People can be chosen whether or not they already use TAKE.</p></article>
-            <article><span>VISIBILITY</span><strong>{campaign.nominationVisibilityMode === "PUBLIC" ? "Public record" : "Private until close"}</strong><p>The confirmed result remains verifiable.</p></article>
-          </div>
+        <section className="campaign-story">
+          <span className="eyebrow">HOW A TAKE WORKS HERE</span>
+          <h2>{campaign.resource}</h2>
+          <ul className="campaign-story__points">
+            <li><strong>Who can give</strong><span>{giverRule(campaign.nominatorEligibilityMode)}. {campaign.nominationLimit === 1 ? "Each of them has one TAKE." : `Each of them has up to ${campaign.nominationLimit} TAKEs.`}</span></li>
+            <li><strong>Who can receive</strong><span>{recipientRule(campaign.recipientEligibilityMode)}. They can be chosen whether or not they already use TAKE.</span></li>
+            <li><strong>What you can see</strong><span>{campaign.nominationVisibilityMode === "PUBLIC" ? "The record is public." : "Choices stay private until the campaign closes."} The final recipients are published at the end, and the result stays verifiable.</span></li>
+          </ul>
         </section>
 
         <aside className={`campaign-take-panel${given ? " is-given" : ""}`}>
-          <TakeMascotAccent character={given ? "purple" : "green"} className="mascot-panel" />
-          <div className="campaign-take-panel__heading"><span className="eyebrow">YOUR TAKE</span><span className="live-signal"><i />{given ? "GIVEN" : available ? "AVAILABLE" : campaign.status === "UPCOMING" ? "UPCOMING" : eligibilityLabel(campaign)}</span></div>
+          <div className="campaign-take-panel__heading"><span className="eyebrow">YOUR TAKE</span><span className="live-signal"><i />{given ? "GIVEN" : available ? "READY" : campaign.status === "UPCOMING" ? "OPENS LATER" : campaign.sourceStatus === "CREATED" ? "NOT OPEN" : "NOT IN THIS ROUND"}</span></div>
           {given && givenPerson ? (
             <div className="campaign-take-panel__recipient"><Avatar person={givenPerson} size="lg" /><span>GIVEN TO</span><strong>{givenPerson.name}</strong>{givenPerson.handle ? <small>{givenPerson.handle}</small> : null}</div>
           ) : (
-            <div className="campaign-take-panel__number"><strong>{available ? "01" : "—"}</strong><p>{available ? "Choose one person. You cannot choose yourself." : campaign.sourceStatus === "CREATED" ? "Published on Monad, but not active yet. You can give your TAKE only after TAKE activates this campaign onchain." : campaign.status === "UPCOMING" ? `This campaign opens ${campaign.starts}.` : "You do not have an available TAKE in this campaign."}</p></div>
-          )}
-          {!given && campaign.viewer?.eligibility?.reasons.length ? (
-            <div className="campaign-eligibility" aria-live="polite">
-              {campaign.viewer.eligibility.reasons.map((reason) => (
+            <div className="campaign-take-panel__note">
+              <strong>{takeHeadline(campaign, available, given)}</strong>
+              <p>{takeBody(campaign, available)}</p>
+              {!given && campaign.viewer?.eligibility?.reasons.length ? campaign.viewer.eligibility.reasons.map((reason) => (
                 <p key={reason.reasonCode}>{reason.explanation}</p>
-              ))}
+              )) : null}
             </div>
-          ) : null}
-          {peoplePreview.length && available ? <div className="campaign-take-panel__people"><span>PEOPLE ON TAKE</span><div>{peoplePreview.slice(0, 3).map((person) => <span key={person.id} className="mini-person"><Avatar person={person} size="xs" />{person.name}</span>)}</div></div> : null}
-          {given ? <SecondaryAction full onClick={() => navigate("/takes")}>VIEW YOUR CHOICE</SecondaryAction> : available ? <PrimaryAction full onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GIVE YOUR TAKE</PrimaryAction> : !hasTakeIdentity ? <PrimaryAction full onClick={() => { rememberPostAuthDestination(campaignPath(campaign) as TakePath); login(); }}>SIGN IN TO CHECK ELIGIBILITY</PrimaryAction> : campaign.sourceStatus === "CREATED" ? <SecondaryAction full onClick={() => void refetch()}>CHECK ACTIVATION STATUS</SecondaryAction> : <SecondaryAction full onClick={() => navigate("/explore")}>EXPLORE OTHERS</SecondaryAction>}
-          <span className="campaign-take-panel__assurance"><ShieldCheck size={16} />{given ? "Your choice is recorded." : "Blockchain details stay underneath."}</span>
+          )}
+          {peoplePreview.length && available ? <div className="campaign-take-panel__people"><span>PEOPLE YOU CAN CHOOSE</span><div>{peoplePreview.slice(0, 3).map((person) => <span key={person.id} className="mini-person"><Avatar person={person} size="xs" />{person.name}</span>)}</div></div> : null}
+          {given ? <SecondaryAction full onClick={() => navigate("/takes")}>VIEW YOUR CHOICE</SecondaryAction> : available ? <PrimaryAction full onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GIVE YOUR TAKE</PrimaryAction> : !hasTakeIdentity ? <PrimaryAction full onClick={() => { rememberPostAuthDestination(campaignPath(campaign) as TakePath); login(); }}>SIGN IN TO SEE IF YOU CAN GIVE</PrimaryAction> : campaign.sourceStatus === "CREATED" ? <SecondaryAction full onClick={() => void refetch()}>CHECK IF NOMINATIONS ARE OPEN</SecondaryAction> : <SecondaryAction full onClick={() => navigate("/explore")}>SEE OTHER CAMPAIGNS</SecondaryAction>}
         </aside>
       </div>
 
@@ -140,6 +136,30 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
       </details>
     </div>
   );
+}
+
+function campaignFactLine(campaign: Campaign) {
+  const spots = campaign.spots === 1 ? "1 spot" : `${campaign.spots.toLocaleString("en-US")} spots`;
+  const when = campaign.status === "UPCOMING" ? `Opens ${campaign.starts}` : `Ends ${campaign.ends}`;
+  const crowd = campaign.participants === null ? "Participation hidden until close" : `${campaign.participants.toLocaleString("en-US")} participating`;
+  return `${campaign.resource} · ${spots} · ${when} · ${crowd}`;
+}
+
+function takeHeadline(campaign: Campaign, available: boolean, given: boolean) {
+  if (given) return "Your TAKE is in.";
+  if (available) return "You have one TAKE.";
+  if (campaign.sourceStatus === "CREATED") return "Nominations are not open yet.";
+  if (campaign.status === "UPCOMING") return `This opens ${campaign.starts}.`;
+  if (campaign.status === "CLOSED") return "This campaign has closed.";
+  return "You can’t give in this one.";
+}
+
+function takeBody(campaign: Campaign, available: boolean) {
+  if (available) return "Choose one person. You cannot choose yourself.";
+  if (campaign.sourceStatus === "CREATED") return "It is on Monad. You can give a TAKE after nominations open.";
+  if (campaign.status === "UPCOMING") return "Come back when it opens.";
+  if (campaign.status === "CLOSED") return "The chance to give a TAKE has passed.";
+  return "The organizer chose who could give before nominations opened.";
 }
 
 function giverRule(mode: string): string {

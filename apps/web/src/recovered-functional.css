@@ -1813,3 +1813,211 @@
     transform: none;
   }
 }
+
+/* Campaign, Explore: one poster and one action, not a stack of stat rows. */
+.campaign-page .campaign-hero h1 {
+  font-size: clamp(42px, 6vw, 68px);
+}
+
+.campaign-hero__facts {
+  max-width: 540px;
+  margin-top: 28px;
+  color: #c8c4ba;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.campaign-story {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.campaign-story h2 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 650;
+  line-height: 1.05;
+}
+
+.campaign-story__points {
+  display: grid;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--take-line-medium);
+}
+
+.campaign-story__points li {
+  display: grid;
+  gap: 6px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--take-line);
+}
+
+.campaign-story__points strong {
+  font-size: 16px;
+  font-weight: 680;
+}
+
+.campaign-story__points span {
+  color: #55544e;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.campaign-take-panel__note {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0 28px;
+}
+
+.campaign-take-panel__note strong {
+  font-size: 26px;
+  font-weight: 680;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.campaign-take-panel__note p {
+  margin: 0;
+  color: #55544e;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.explore-intro {
+  display: block;
+  position: relative;
+}
+
+.explore-intro > div {
+  max-width: 760px;
+  padding-right: 150px;
+}
+
+.mascot-intro--explore {
+  right: 0;
+  bottom: -10px;
+}
+
+.explore-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.explore-search {
+  flex: 1 1 240px;
+  max-width: 420px;
+}
+
+.index-page .index-filters {
+  flex: 1 1 auto;
+  padding: 0;
+  border: 0;
+}
+
+.explore-board {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.explore-card {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+  min-height: 210px;
+  overflow: hidden;
+  border: 2px solid #11110f;
+  border-radius: 8px;
+  background: #fffef8;
+  color: #11110f;
+  box-shadow: 5px 5px 0 #11110f;
+  text-decoration: none;
+  transition: transform 160ms ease-out;
+}
+
+.explore-card:active {
+  transform: scale(0.985);
+}
+
+.explore-card .campaign-art {
+  min-height: 210px;
+  border-right: 2px solid #11110f;
+}
+
+.explore-card__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 22px 24px;
+}
+
+.explore-card__copy strong {
+  font-family: var(--take-heading);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 680;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}
+
+.explore-card__copy em {
+  color: #55544e;
+  font-style: normal;
+  font-size: 14px;
+}
+
+.explore-card__copy > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: #3f3e38;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.explore-card__copy small {
+  margin-top: auto;
+  color: #55544e;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@media (max-width: 720px) {
+  .explore-intro > div {
+    padding-right: 0;
+  }
+
+  .mascot-intro--explore {
+    display: none;
+  }
+
+  .explore-card {
+    grid-template-columns: 1fr;
+  }
+
+  .explore-card .campaign-art {
+    min-height: 180px;
+    border-right: 0;
+    border-bottom: 2px solid #11110f;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .explore-card:hover {
+    transform: translate(-2px, -2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore-card,
+  .explore-card:hover,
+  .explore-card:active {
+    transform: none;
+  }
+}

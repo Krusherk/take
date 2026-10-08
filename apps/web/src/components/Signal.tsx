@@ -20,25 +20,37 @@ export function SignalOutcome({ evaluation, fallback = "Awaiting evaluation" }: 
   </div>;
 }
 export function RecommendationRow({ item, navigate }: { item: SignalRecommendation; navigate: (path: TakePath) => void }) {
-  const fallback = item.state === "NOT_PLANNED" ? "No evaluation planned"
-    : item.state === "NOT_SELECTED" ? "Did not receive this opportunity"
-      : item.plan ? `Evaluation from ${signalDate(item.plan.evaluateAfter)}` : "Awaiting evaluation";
-  return <li className="signal-history__row">
-    <div><div className="signal-edge"><span className="eyebrow">YOU</span><span aria-hidden="true">→</span><SignalPersonLabel person={item.recipient} /></div>
-      <a className="signal-campaign-link" href={`/campaign/${item.campaign.id}`} onClick={(event) => { event.preventDefault(); navigate(`/campaign/${item.campaign.id}`); }}>{item.campaign.title}</a>
-      <p>{item.campaign.resource}{item.domain ? ` · ${item.domain.toLowerCase()}` : ""}</p>
-      <small>You gave this TAKE <time dateTime={item.givenAt}>{signalDate(item.givenAt)}</time></small>
-      {item.receivedOpportunity ? <p className="signal-received">Received the opportunity</p> : null}
+  return <li className="signal-card">
+    <div className="signal-card__people">
+      <SignalPersonLabel person={item.giver} />
+      <span aria-hidden="true">→</span>
+      <SignalPersonLabel person={item.recipient} />
     </div>
-    <div><span className="eyebrow">AFTERWARDS</span><SignalOutcome evaluation={item.evaluation} fallback={fallback} />
-      {item.plan ? <details><summary>Original evaluation criteria</summary><strong>{item.plan.question}</strong><p>{item.plan.criteria}</p><small>Locked {signalDate(item.plan.lockedAt ?? item.plan.createdAt)}</small></details> : null}
-    </div>
+    <a className="signal-campaign-link" href={`/campaign/${item.campaign.id}`} onClick={(event) => { event.preventDefault(); navigate(`/campaign/${item.campaign.id}`); }}>{item.campaign.title}</a>
+    <p className="signal-card__story">{outcomeSentence(item)}</p>
+    <small>Given <time dateTime={item.givenAt}>{signalDate(item.givenAt)}</time>{item.domain ? ` · ${item.domain.toLowerCase()}` : ""} · {item.campaign.resource}</small>
+    {item.evaluation?.evidenceUrls.map((url, index) => <a href={url} key={url} target="_blank" rel="noopener noreferrer">Evidence{item.evaluation && item.evaluation.evidenceUrls.length > 1 ? ` ${index + 1}` : ""} ↗</a>)}
+    {item.evaluation?.evaluatedAt ? <small>Checked {signalDate(item.evaluation.evaluatedAt)} by {item.evaluation.evaluator.name}</small> : null}
+    {item.evaluation && !item.evaluation.isPublic ? <small>Supporting notes stay private.</small> : null}
+    {item.plan ? <details><summary>What will be checked</summary><strong>{item.plan.question}</strong><p>{item.plan.criteria}</p><small>Locked {signalDate(item.plan.lockedAt ?? item.plan.createdAt)}</small></details> : null}
   </li>;
+}
+
+function outcomeSentence(item: SignalRecommendation) {
+  if (item.receivedOpportunity) return "They received the spot.";
+  if (item.state === "NOT_SELECTED") return "They did not receive this one.";
+  if (item.state === "NOT_PLANNED") return "Nothing is scheduled to check what happened after.";
+  const note = item.evaluation?.note?.trim();
+  if (item.evaluation?.status === "POSITIVE") return note || "It worked out.";
+  if (item.evaluation?.status === "NEGATIVE") return note || "It did not work out.";
+  if (item.evaluation?.status === "INCONCLUSIVE") return note || "The outcome was inconclusive.";
+  if (item.plan) return `Someone checks what happened after ${signalDate(item.plan.evaluateAfter)}.`;
+  return "Waiting to see what happened.";
 }
 export function ProfileSignal({ navigate }: { navigate: (path: TakePath) => void }) {
   const { data, error, reload } = useSignal();
   return <section className="profile-signal"><div><span className="eyebrow">SIGNAL</span><h2>Who you backed.</h2>
-    {data ? <p>{data.counts.recommendations} recommendations · {data.counts.evaluated} evaluated · {data.counts.pending} awaiting evaluation</p>
+    {data ? <p>{data.counts.recommendations ? `You backed ${data.counts.recommendations} ${data.counts.recommendations === 1 ? "person" : "people"}.` : "You have not backed anyone yet."}</p>
       : error ? <button type="button" onClick={reload}>Couldn’t load Signal. Retry</button> : <p role="status">Loading your recommendation history…</p>}</div>
     <a href="/signal" onClick={(event) => { event.preventDefault(); navigate("/signal"); }}>VIEW YOUR SIGNAL →</a>
   </section>;

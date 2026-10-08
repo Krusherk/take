@@ -1,6 +1,6 @@
 /* Signal and evaluation surfaces only. Home styles are deliberately untouched. */
-.signal-intro { max-width: 760px; padding-block: 24px 32px; }
-.signal-intro h1 { font-size: clamp(28px, 4vw, 48px); letter-spacing: -.045em; line-height: 1.08; margin: 16px 0; }
+.signal-intro { max-width: 760px; padding-block: 24px 8px; }
+.signal-intro h1 { font-size: clamp(36px, 5vw, 60px); letter-spacing: -.045em; line-height: 0.98; margin: 12px 0; font-weight: 640; }
 .signal-intro p, .signal-context { color: #595a50; }
 .signal-counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; border-block: 1px solid #c9c8bc; padding: 24px 0; margin: 0 0 20px; }
 .signal-counts dt { font-size: 13px; color: #595a50; }
@@ -10,6 +10,13 @@
 .signal-history h2, .signal-operator h2, .profile-signal h2, .campaign-after h2 { font-size: 26px; letter-spacing: -.025em; margin: 8px 0 12px; }
 .signal-history select { padding: 10px 14px; margin-left: 8px; border: 1px solid #c9c8bc; background: transparent; border-radius: 6px; }
 .signal-history ol, .signal-recipients, .signal-edges ul, .integrity-observation-list { list-style: none; padding: 0; }
+.signal-board { display: grid; gap: 14px; margin-top: 8px; }
+.signal-card { display: grid; gap: 8px; justify-items: start; padding: 20px 22px 18px; border: 2px solid #11110f; border-radius: 8px; background: #fffef8; box-shadow: 4px 4px 0 #11110f; }
+.signal-card__people { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.signal-card__people > span[aria-hidden] { color: #11110f; font-size: 18px; }
+.signal-card__story { margin: 4px 0 0; font-family: var(--take-heading, "Inter Tight Variable", Inter, sans-serif); font-size: 22px; font-weight: 650; letter-spacing: -.03em; line-height: 1.2; }
+.signal-card small { color: #65665c; }
+.signal-card .signal-person img, .signal-card .signal-person__initial { width: 42px; height: 42px; }
 .signal-history__row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; padding: 28px 0; border-top: 1px solid #c9c8bc; }
 .signal-history__row p { margin: 8px 0; }
 .signal-history__row small, .signal-plan small, .campaign-after small { color: #65665c; line-height: 1.6; }
