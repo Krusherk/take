@@ -1,6 +1,7 @@
 /*
  * Sticker collage: Explore and Signal.
- * Sky background, die-cut stickers, torn paper labels, one black pill per screen.
+ * Generated sky photo, generated die-cut stickers (ticket, mascots), torn paper
+ * labels, one black pill per screen.
  * Lime is an accent only: the LIVE sticker, the YOUR SIGNAL tag, the selected tab.
  */
 
@@ -14,6 +15,9 @@
   --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
   --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
   --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Same box as background-size: cover on the viewport, so the nav fade lines up. */
+  --sky-art: url("/assets/sticker/sky-clouds.jpg");
+  --sky-size: max(100vw, 177.78vh) auto;
   background: var(--sky-mid);
 }
 
@@ -25,7 +29,7 @@
   opacity: 1;
   pointer-events: none;
   background:
-    url("/assets/sticker/sky-clouds.svg") center top / max(1200px, 100%) auto repeat-y,
+    var(--sky-art) center bottom / var(--sky-size) no-repeat,
     linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 46%, var(--sky-low) 100%);
   mask-image: none;
   content: "";
@@ -33,10 +37,48 @@
 
 .app-shell--sky::after { display: none; }
 
+/*
+ * Phones: content scrolls behind the floating tab bar. A strip of the same sky
+ * sits between them, so nothing peeks through around or under the bar.
+ */
+@media (max-width: 900px) {
+  .app-shell--sky::after {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    opacity: 1;
+    z-index: 10;
+    display: block;
+    height: calc(118px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    background:
+      var(--sky-art) center bottom / var(--sky-size) no-repeat,
+      var(--sky-low);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 38%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 38%);
+    content: "";
+  }
+}
+
 .app-shell--sky .app-header {
   border-bottom: 0;
   background: transparent;
   backdrop-filter: none;
+}
+
+/* Content scrolls under the sticky header; a strip of the same sky keeps the brand clear. */
+.app-shell--sky .app-header::before {
+  position: absolute;
+  inset: 0 0 -18px;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--sky-art) center bottom / var(--sky-size) no-repeat fixed, var(--sky-top);
+  -webkit-mask-image: linear-gradient(180deg, #000 72%, transparent);
+  mask-image: linear-gradient(180deg, #000 72%, transparent);
+  content: "";
 }
 
 .app-shell--sky .app-header .brand { color: var(--sticker-ink); }
@@ -60,7 +102,7 @@
     min-height: 68px;
     border: 0;
     border-radius: 26px;
-    background: rgba(255, 255, 255, 0.96);
+    background: #ffffff;
     box-shadow: 0 2px 2px rgba(14, 44, 86, 0.12), 0 14px 30px rgba(14, 44, 86, 0.24);
   }
   .app-shell--sky .mobile-nav a {
@@ -91,7 +133,8 @@
     box-shadow: 0 0 0 1.5px var(--sticker-ink);
     transform: rotate(-8deg);
   }
-  .app-shell--sky .app-main { padding-bottom: 100px; }
+  .app-shell--sky .mobile-nav { z-index: 20; }
+  .app-shell--sky .app-main { padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ---------- Page frame ---------- */
@@ -262,17 +305,38 @@
 }
 .face-sticker--sm .face-sticker__cut--empty { width: 52px; height: 52px; font-size: 24px; }
 
-/* Campaign artwork */
-.campaign-sticker {
-  border: 7px solid var(--sticker-white);
-  border-radius: 20px;
-  background: var(--sticker-white);
+/* Campaign artwork: a generated ticket, already cut out with its own white rim. */
+.campaign-sticker { filter: var(--sticker-drop); }
+.campaign-sticker img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.campaign-sticker--lg { width: min(100%, 360px); }
+.campaign-sticker--sm { width: 84px; filter: drop-shadow(0 2px 4px rgba(14, 44, 86, 0.18)); }
+
+/* Mascots: decorative only. Never tappable, never the only place a fact lives. */
+.mascot-sticker {
+  pointer-events: none;
   filter: var(--sticker-drop);
 }
-.campaign-sticker svg { display: block; width: 100%; height: auto; border-radius: 13px; }
-.campaign-sticker--lg { width: min(100%, 340px); }
-.campaign-sticker--sm { width: 76px; border-width: 3px; border-radius: 12px; filter: none; box-shadow: 0 0 0 1px rgba(17, 17, 15, 0.08); }
-.campaign-sticker--sm svg { border-radius: 9px; }
+.mascot-sticker img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: mascot-bob 3.4s ease-in-out 900ms infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-sticker img { animation: none; }
+}
 
 /* The one black pill */
 .sticker-cta { filter: var(--sticker-drop); }
@@ -395,6 +459,13 @@
   bottom: -14px;
   z-index: 2;
 }
+.sticker-campaign__mascot {
+  position: absolute;
+  bottom: -8px;
+  left: max(0px, calc(50% - 232px));
+  z-index: 2;
+  width: clamp(76px, 22vw, 116px);
+}
 .sticker-campaign__status .status-sticker > span { font-size: clamp(22px, 6.6vw, 30px); border-width: 5px; padding: 0.22em 0.6em 0.28em; }
 
 .sticker-campaign__title {
@@ -486,6 +557,14 @@
   padding-top: 26px;
 }
 
+.sticker-signal__mascot {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  z-index: 0;
+  width: clamp(70px, 20vw, 100px);
+}
+
 .signal-tag {
   position: absolute;
   top: 0;
@@ -509,8 +588,10 @@
   display: grid;
   justify-items: center;
   gap: 4px;
+  position: relative;
+  z-index: 1;
   max-width: 100%;
-  margin-top: 26px;
+  margin-top: 54px;
   text-align: center;
 }
 .sticker-signal__headline .paper-label--sm { margin-left: 30%; }
@@ -596,13 +677,9 @@
   .sticker-search { min-height: 44px; }
   .sticker-filters button { min-height: 32px; }
   .sticker-campaign { gap: 9px; padding-top: 2px; }
-  .campaign-sticker--lg { width: min(86%, 300px); }
+  .campaign-sticker--lg { width: min(80%, 290px); }
   .sticker-campaign__status { right: max(4px, calc(50% - 168px)); }
+  .sticker-campaign__mascot { left: max(0px, calc(50% - 186px)); bottom: -14px; }
   .sticker-campaign__copy .paper-label__paper { font-size: 13px; }
-  .sticker-campaign .sticker-cta,
-  .sticker-signal__stage .sticker-cta {
-    position: sticky;
-    bottom: 96px;
-    z-index: 5;
-  }
+  .sticker-signal__headline { margin-top: 48px; }
 }

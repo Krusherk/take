@@ -94,52 +94,45 @@ export function EmptySlotSticker({ label, tilt = 0, delay = 0, size = "lg" }: { 
   );
 }
 
-const palettes: Record<Campaign["visual"], { sky: string; ink: string; ticket: string; ray: string }> = {
-  violet: { sky: "#8f86ff", ink: "#221c5c", ticket: "#fffdf6", ray: "#b4adff" },
-  cyan: { sky: "#59c7d3", ink: "#123a3f", ticket: "#fffdf6", ray: "#8fdde5" },
-  coral: { sky: "#ff8d73", ink: "#4a2219", ticket: "#fffdf6", ray: "#ffb39f" },
-};
+const TICKET_ART = "/assets/sticker/ticket.webp";
 
 /**
- * Original campaign artwork for campaigns without an image: a ticket for the
- * opportunity, the organizer's mark, and the single TAKE token.
+ * Campaign artwork for campaigns without an image: a generated ticket sticker.
+ * The ticket is artwork only. The real spot count and dates stay in the text
+ * stickers driven by campaign data.
  */
 export function CampaignSticker({ campaign, tilt = -4, delay = 0, size = "lg" }: {
-  campaign: Pick<Campaign, "visual" | "organizerMark" | "spots" | "resourceName" | "title">;
+  campaign: Pick<Campaign, "title">;
   tilt?: number;
   delay?: number;
   size?: "sm" | "lg";
 }) {
-  const palette = palettes[campaign.visual] ?? palettes.coral;
-  const spots = campaign.spots > 0 ? campaign.spots.toLocaleString("en-US") : "?";
-  const unit = campaign.spots === 1 ? "SPOT" : "SPOTS";
   return (
     <Sticker tilt={tilt} delay={delay} className={`campaign-sticker campaign-sticker--${size}`}>
-      <svg viewBox="0 0 320 220" role="img" aria-label={`${campaign.title} artwork`} focusable="false">
-        <rect width="320" height="220" rx="16" fill={palette.sky} />
-        <g stroke={palette.ray} strokeWidth="14" strokeLinecap="round" opacity=".75">
-          <path d="M160 110 L20 -20" /><path d="M160 110 L160 -40" /><path d="M160 110 L300 -20" />
-          <path d="M160 110 L340 110" /><path d="M160 110 L300 240" /><path d="M160 110 L20 240" /><path d="M160 110 L-20 110" />
-        </g>
-        <g transform="rotate(-7 160 112)">
-          <path
-            d="M74 62h172a10 10 0 0 1 10 10v20a18 18 0 0 0 0 36v20a10 10 0 0 1-10 10H74a10 10 0 0 1-10-10v-20a18 18 0 0 0 0-36V72a10 10 0 0 1 10-10Z"
-            fill={palette.ticket}
-            stroke={palette.ink}
-            strokeWidth="4"
-          />
-          <path d="M196 70v80" stroke={palette.ink} strokeWidth="3" strokeDasharray="6 7" />
-          <text x="130" y="122" textAnchor="middle" fill={palette.ink} fontFamily="Inter Tight, Inter, sans-serif" fontSize="52" fontWeight="900" letterSpacing="-2">{spots}</text>
-          <text x="130" y="144" textAnchor="middle" fill={palette.ink} fontFamily="IBM Plex Mono, monospace" fontSize="13" fontWeight="500" letterSpacing="2">{unit}</text>
-          <circle cx="226" cy="110" r="19" fill={palette.ink} />
-          <text x="226" y="117" textAnchor="middle" fill={palette.ticket} fontFamily="Inter Tight, Inter, sans-serif" fontSize="20" fontWeight="800">{campaign.organizerMark}</text>
-        </g>
-        <g transform="translate(276 44) rotate(12)">
-          <circle r="27" fill="#c6ff31" stroke="#11110f" strokeWidth="4" />
-          <text y="-2" textAnchor="middle" fill="#11110f" fontFamily="Inter Tight, Inter, sans-serif" fontSize="17" fontWeight="900">1</text>
-          <text y="13" textAnchor="middle" fill="#11110f" fontFamily="IBM Plex Mono, monospace" fontSize="9" fontWeight="500" letterSpacing="1">TAKE</text>
-        </g>
-      </svg>
+      <img src={TICKET_ART} alt={`${campaign.title} artwork`} width={760} height={516} decoding="async" draggable={false} />
+    </Sticker>
+  );
+}
+
+const MASCOTS = {
+  lime: { src: "/assets/sticker/mascot-lime.webp", width: 420, height: 463 },
+  star: { src: "/assets/sticker/mascot-star.webp", width: 420, height: 417 },
+} as const;
+
+/**
+ * A decorative TAKE mascot. Hidden from assistive tech and never tappable,
+ * so it can never be the only place a fact is shown.
+ */
+export function MascotSticker({ kind, tilt = 0, delay = 0, className = "" }: {
+  kind: keyof typeof MASCOTS;
+  tilt?: number;
+  delay?: number;
+  className?: string;
+}) {
+  const art = MASCOTS[kind];
+  return (
+    <Sticker tilt={tilt} delay={delay} as="span" className={`mascot-sticker mascot-sticker--${kind} ${className}`.trim()}>
+      <img src={art.src} alt="" aria-hidden="true" width={art.width} height={art.height} decoding="async" draggable={false} />
     </Sticker>
   );
 }

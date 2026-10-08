@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductError, ProductLoading } from "../components/ProductState";
-import { CampaignSticker, EmptySlotSticker, FaceSticker, PaperLabel, PassArrow, StatusSticker, Sticker } from "../components/sticker/Sticker";
+import { CampaignSticker, EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, StatusSticker, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
@@ -85,6 +85,7 @@ function FeaturedCampaign({ campaign, currentPerson, recipient, navigate }: {
       <a className="sticker-campaign__art" href={detail} aria-label={`Open ${campaign.title}`} onClick={(event) => { event.preventDefault(); navigate(detail); }}>
         <CampaignSticker campaign={campaign} tilt={-4} />
         <span className="sticker-campaign__status"><StatusSticker status={campaign.status} tilt={-7} delay={140} /></span>
+        <MascotSticker kind="lime" tilt={-8} delay={200} className="sticker-campaign__mascot" />
       </a>
 
       <div className="sticker-campaign__title">

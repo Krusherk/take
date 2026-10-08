@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Avatar } from "../components/Avatar";
 import { ProductError, ProductLoading } from "../components/ProductState";
 import { RecommendationRow } from "../components/Signal";
-import { EmptySlotSticker, FaceSticker, PaperLabel, PassArrow, Sticker } from "../components/sticker/Sticker";
+import { EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useSignal } from "../hooks/useSignal";
 import type { TakePath } from "../hooks/usePathRouter";
@@ -23,6 +23,7 @@ export function SignalPage({ navigate }: { navigate: (path: TakePath) => void })
       <>
         <section className="sticker-signal__stage" aria-labelledby="signal-title">
           <Sticker tilt={4} className="signal-tag"><span>YOUR SIGNAL</span></Sticker>
+          <MascotSticker kind="star" tilt={-10} delay={240} className="sticker-signal__mascot" />
           {featured && giver ? (
             <>
               <div className="sticker-signal__headline">

@@ -97,8 +97,20 @@ describe("Explore sticker page", () => {
     expect(screen.getByRole("heading", { name: "No opportunities found." })).toBeInTheDocument();
   });
 
-  it("uses original artwork instead of a photo when a campaign has no image", () => {
+  it("uses the ticket artwork when a campaign has no image and keeps the real spot count as text", () => {
+    product.campaigns = [campaign({ spots: 5, ends: "20 OCT" })];
     render(<ExplorePage navigate={vi.fn()} />);
-    expect(screen.getByRole("img", { name: "TAKE Demo artwork" }).tagName.toLowerCase()).toBe("svg");
+    const art = screen.getByRole("img", { name: "TAKE Demo artwork" });
+    expect(art.tagName.toLowerCase()).toBe("img");
+    expect(art.getAttribute("src")).toBe("/assets/sticker/ticket.webp");
+    expect(screen.getByText("5 spots · ends Oct 20")).toBeInTheDocument();
+  });
+
+  it("keeps the mascot decorative", () => {
+    const { container } = render(<ExplorePage navigate={vi.fn()} />);
+    const mascot = container.querySelector(".mascot-sticker img");
+    expect(mascot).not.toBeNull();
+    expect(mascot?.getAttribute("alt")).toBe("");
+    expect(mascot?.getAttribute("aria-hidden")).toBe("true");
   });
 });
