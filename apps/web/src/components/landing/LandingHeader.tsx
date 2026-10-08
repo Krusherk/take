@@ -36,8 +36,8 @@ export function LandingHeader({ onSignIn }: LandingHeaderProps) {
 
   return (
     <header className="landing-header">
-      <a className="landing-brand" href="#top" aria-label="TAKE home">
-        TAKE<span aria-hidden="true">.</span>
+      <a className="landing-brand landing-brand--logo" href="#top" aria-label="TAKE home">
+        <img src="/assets/sticker/logo.webp" alt="" width="243" height="240" decoding="async" draggable={false} />
       </a>
 
       <nav className="landing-nav" aria-label="Public navigation">
