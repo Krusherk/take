@@ -68,3 +68,58 @@
   .signal-edges li, .integrity-observation-list li { flex-direction: column; gap: 6px; }
   .signal-form__actions > button { flex: 1; }
 }
+
+.signal-page { display: grid; gap: 28px; }
+.signal-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: center;
+  min-height: min(620px, calc(100dvh - 168px));
+  padding: clamp(24px, 4vw, 52px);
+  overflow: hidden;
+  border: 2px solid #11110f;
+  border-radius: 10px;
+  background: #11110f;
+  color: #f6f3ea;
+  box-shadow: 10px 10px 0 #c6ff31;
+}
+.signal-stage .eyebrow { color: #c6ff31; }
+.signal-stage h1 {
+  max-width: 11ch;
+  margin: 12px 0 16px;
+  color: #fffef8;
+  font-size: clamp(48px, 6vw, 84px);
+  font-weight: 760;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+}
+.signal-stage__copy p { max-width: 42ch; margin: 0 0 28px; color: #d8d3c7; font-size: 17px; line-height: 1.45; }
+.signal-stage .action { margin-top: 4px; }
+.signal-stage__scene {
+  display: grid;
+  place-items: center;
+  min-height: 340px;
+  padding: 22px;
+  border: 2px solid #11110f;
+  border-radius: 8px;
+  background: #c6ff31;
+  color: #11110f;
+}
+.signal-stage__art { width: min(100%, 340px); height: auto; object-fit: contain; filter: drop-shadow(0 12px 0 rgba(17,17,15,0.18)); }
+.signal-faceoff { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px 14px; justify-items: center; width: 100%; text-align: center; }
+.signal-faceoff > div { display: grid; justify-items: center; gap: 6px; }
+.signal-faceoff strong { font-size: 18px; font-weight: 760; letter-spacing: -0.03em; }
+.signal-faceoff small, .signal-faceoff > p { color: #243000; }
+.signal-faceoff > p, .signal-faceoff > small { grid-column: 1 / -1; margin: 0; }
+.signal-faceoff__pass { align-self: center; width: 54px; height: 8px; margin-top: 48px; background: #11110f; clip-path: polygon(0 0, 78% 0, 100% 50%, 78% 100%, 0 100%, 18% 50%); }
+.signal-more h2, .signal-next { margin: 0; }
+.signal-more ol { display: grid; gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+.signal-more li { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border: 2px solid #11110f; border-radius: 8px; background: #fffef8; }
+.signal-more button, .signal-card .signal-campaign-link { padding: 0; border: 0; background: transparent; color: #11110f; font: inherit; font-weight: 720; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.signal-next { color: #55544e; font-size: 16px; }
+@media (max-width: 800px) {
+  .signal-stage { grid-template-columns: 1fr; min-height: 0; }
+  .signal-faceoff { grid-template-columns: 1fr; }
+  .signal-faceoff__pass { width: 8px; height: 36px; margin: 0; clip-path: polygon(0 0, 100% 18%, 50% 100%, 0 18%); }
+}
