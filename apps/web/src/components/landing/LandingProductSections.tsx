@@ -139,7 +139,7 @@ export function LandingProductSections({ onStartCampaign, onExplore }: LandingPr
       </section>
 
       <footer className="landing-footer landing-footer--final">
-        <div className="landing-footer__wordmark" aria-hidden="true">TAKE<span>.</span></div>
+        <div className="landing-footer__wordmark landing-footer__wordmark--logo" aria-hidden="true"><img src="/assets/sticker/logo.webp" alt="" width="243" height="240" loading="lazy" decoding="async" draggable={false} /></div>
         <div className="landing-footer__copy">
           <span className="landing-section__label">One choice. Give it forward.</span>
           <h2>Who would you give your TAKE to?</h2>

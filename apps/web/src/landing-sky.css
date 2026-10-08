@@ -1,0 +1,332 @@
+/*
+ * Signed-out landing: the first view lives in the same sky-and-sticker world
+ * as Explore, Signal, and Home. Generated sky photo, die-cut stickers, torn
+ * paper headline, one black pill. The long product sections below are untouched.
+ */
+
+.landing-sky {
+  --sticker-white: #ffffff;
+  --sticker-paper: #f7f5ee;
+  --sticker-ink: #11110f;
+  --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
+  --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  isolation: isolate;
+  background:
+    url("/assets/sticker/sky-clouds.jpg") center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 46%, #b9defb 100%);
+}
+
+/* Soft hand-off from the sky into the cream product sections below. */
+.landing-sky::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  height: 90px;
+  background: linear-gradient(180deg, rgba(247, 246, 239, 0), var(--landing-cream));
+  pointer-events: none;
+  content: "";
+}
+
+/* ---------- Header on the sky ---------- */
+
+.landing-sky .landing-header { z-index: 30; }
+
+.landing-brand.landing-brand--logo {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 14px;
+  font-size: 0;
+  line-height: 0;
+}
+
+.landing-brand--logo img {
+  display: block;
+  width: auto;
+  height: 58px;
+  filter: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.18)) drop-shadow(0 6px 10px rgba(14, 44, 86, 0.18));
+  transform-origin: 50% 60%;
+  transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.landing-brand--logo:focus-visible { outline: 3px solid #c6ff31; outline-offset: 3px; }
+.landing-brand--logo:active img { transform: scale(0.92); }
+
+.landing-sky .landing-nav a { color: rgba(17, 17, 15, 0.78); font-weight: 650; }
+.landing-sky .landing-nav a::after { background: var(--sticker-ink); }
+
+.landing-sky .landing-sign-in,
+.landing-sky .landing-menu-toggle {
+  border: 3px solid var(--sticker-white);
+  background: var(--sticker-ink);
+  color: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+}
+
+.landing-sky .landing-sign-in { width: auto; min-height: 46px; font-weight: 760; }
+
+/* ---------- Hero ---------- */
+
+.landing-sky__hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: clamp(20px, 3vw, 48px);
+  width: min(calc(100% - clamp(40px, 7vw, 112px)), 1320px);
+  margin: 0 auto;
+  padding: clamp(24px, 5vh, 64px) 0 clamp(72px, 10vh, 120px);
+}
+
+.landing-sky__copy {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+}
+
+.landing-sky__kicker .paper-label__paper { letter-spacing: 0.08em; text-transform: uppercase; }
+
+.landing-sky__headline {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  margin: 0;
+  font: inherit;
+}
+
+.landing-sky__line {
+  max-width: 100%;
+  filter: var(--sticker-drop);
+}
+
+.landing-sky__line > span {
+  display: block;
+  padding: 0.12em 0.34em 0.17em;
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(52px, 5.6vw, 88px);
+  font-weight: 880;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+  clip-path: polygon(
+    0% 5%, 4% 0%, 20% 3%, 38% 0%, 56% 2.5%, 74% 0%, 90% 3%, 100% 0.5%,
+    99% 28%, 100% 55%, 98.8% 80%, 100% 100%,
+    82% 97%, 64% 100%, 46% 97%, 28% 100%, 12% 97.5%, 0.5% 100%,
+    1.2% 72%, 0% 46%, 1% 22%
+  );
+}
+
+.landing-sky__line--one > span {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 45%),
+    var(--sticker-paper);
+  color: var(--sticker-ink);
+}
+
+.landing-sky__line--two { margin-left: clamp(18px, 4vw, 64px); }
+
+.landing-sky__line--two > span {
+  background: var(--sticker-ink);
+  color: var(--sticker-white);
+}
+
+.landing-sky__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  margin-top: 18px;
+}
+
+.landing-sky__primary {
+  gap: 12px;
+  font-size: 20px;
+}
+
+.landing-sky__primary svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  transition: transform 180ms var(--sticker-spring);
+}
+
+.landing-sky__secondary-wrap { filter: var(--sticker-drop); }
+
+.landing-sky__secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 24px;
+  border: 4px solid var(--sticker-white);
+  border-radius: 999px;
+  background: var(--sticker-paper);
+  color: var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 17px;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
+  transition: transform 180ms var(--sticker-spring), background-color 160ms ease;
+}
+
+.landing-sky__secondary:active { transform: scale(0.96); }
+.landing-sky__secondary:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 3px; }
+
+/* ---------- Objects on the sky ---------- */
+
+.landing-sky__art {
+  position: relative;
+  z-index: 1;
+  height: clamp(420px, 44vw, 580px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.landing-sky__art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+}
+
+.landing-sky__ticket {
+  position: absolute;
+  top: 22%;
+  left: 4%;
+  width: 82%;
+  filter: var(--sticker-drop);
+}
+
+.landing-sky__mascot { position: absolute; }
+
+.landing-sky__mascot--lime {
+  right: -2%;
+  bottom: 0;
+  width: 40%;
+}
+
+.landing-sky__mascot--star {
+  top: 0;
+  left: -4%;
+  width: 26%;
+}
+
+.landing-sky__mascot--star img { animation-delay: 1.6s; animation-duration: 4.2s; }
+
+.landing-sky__example {
+  position: absolute;
+  bottom: 6%;
+  left: 2%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.landing-sky__arrow { width: 52px; height: 36px; filter: var(--sticker-drop); }
+
+/* ---------- Sign-in dialog: the star on top ---------- */
+
+.landing-auth-dialog__logo {
+  display: block;
+  width: 64px;
+  height: auto;
+  margin: -8px 0 14px -6px;
+  filter: drop-shadow(0 4px 8px rgba(14, 44, 86, 0.18));
+  transform: rotate(-8deg);
+}
+
+/* ---------- Footer: star instead of the text wordmark ---------- */
+
+.landing-footer__wordmark--logo { line-height: 0; }
+
+.landing-footer__wordmark--logo img {
+  display: block;
+  width: clamp(150px, 17vw, 260px);
+  height: auto;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+}
+
+/* ---------- Pointer hover ---------- */
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-brand--logo:hover img { transform: rotate(-10deg) scale(1.06); }
+  .landing-sky .landing-sign-in:hover { background: #22221f; transform: translateY(-1px) rotate(-1deg); }
+  .landing-sky__primary:hover svg { transform: translateX(5px); }
+  .landing-sky__secondary:hover { background: #ffffff; transform: translateY(-2px) rotate(1deg); }
+}
+
+/* ---------- Tablet ---------- */
+
+@media (max-width: 1100px) {
+  .landing-sky__line > span { font-size: clamp(46px, 6.2vw, 64px); }
+}
+
+@media (max-width: 940px) {
+  .landing-sky__hero {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 26px 0 64px;
+  }
+  .landing-sky__line > span { font-size: clamp(44px, 7.6vw, 66px); }
+  .landing-sky__art {
+    justify-self: center;
+    width: min(100%, 560px);
+    height: clamp(300px, 70vw, 440px);
+  }
+}
+
+/* ---------- Phone ---------- */
+
+@media (max-width: 640px) {
+  .landing-brand--logo img { height: 48px; }
+  .landing-sky__hero { width: calc(100% - 36px); padding: 18px 0 56px; }
+  .landing-sky__copy { gap: 10px; }
+  .landing-sky__line > span { font-size: clamp(34px, 10.2vw, 46px); }
+  .landing-sky__line--two { margin-left: 10px; }
+  .landing-sky__actions {
+    display: grid;
+    width: 100%;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .landing-sky__actions > .sticker { display: block; }
+  .landing-sky__primary { width: 100%; max-width: none; min-height: 58px; font-size: 19px; }
+  .landing-sky__secondary { justify-content: center; width: 100%; min-height: 52px; font-size: 16px; }
+  .landing-sky__art { height: clamp(260px, 78vw, 330px); margin-top: 8px; }
+  .landing-sky__ticket { top: 20%; left: 6%; width: 76%; }
+  .landing-sky__mascot--lime { right: -1%; width: 38%; }
+  .landing-sky__mascot--star { top: 0; left: -2%; width: 25%; }
+  .landing-sky__example { bottom: 2%; left: 0; }
+  .landing-sky__example .paper-label--sm .paper-label__paper { font-size: 12px; }
+  .landing-sky__arrow { width: 40px; height: 28px; }
+  .landing-auth-dialog__logo { width: 54px; }
+  /* The star is shorter than the old wordmark, so lift the hand-off clear of the headline. */
+  .landing-footer__wordmark--logo img { width: 96px; }
+  .landing-footer--final .landing-footer-handoff { top: 128px; height: 250px; }
+}
+
+@media (max-height: 760px) and (min-width: 941px) {
+  .landing-sky__hero { padding-top: 12px; padding-bottom: 64px; }
+  .landing-sky__line > span { font-size: clamp(46px, 5vw, 72px); }
+  .landing-sky__art { height: clamp(380px, 40vw, 500px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-brand--logo img,
+  .landing-sky__primary svg,
+  .landing-sky__secondary { transition: none; }
+  .landing-brand--logo:hover img,
+  .landing-brand--logo:active img,
+  .landing-sky__secondary:hover,
+  .landing-sky__secondary:active,
+  .landing-sky .landing-sign-in:hover { transform: none; }
+  .landing-sky__mascot img { animation: none; }
+}

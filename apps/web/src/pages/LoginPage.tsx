@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLogin, useLoginWithEmail, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
 import { LandingHeader } from "../components/landing/LandingHeader";
 import { LandingProductSections } from "../components/landing/LandingProductSections";
-import { TakeMascotScene } from "../components/landing/TakeMascotScene";
+import { LandingSkyStickers } from "../components/landing/LandingSkyStickers";
+import { PaperLabel, Sticker } from "../components/sticker/Sticker";
 import type { Navigate } from "../hooks/usePathRouter";
 import {
   clearPostAuthDestination,
@@ -15,8 +16,6 @@ import {
 interface LoginPageProps {
   navigate: Navigate;
 }
-
-const proofColors = ["coral", "mint", "blue", "lavender"] as const;
 
 export function LoginPage({ navigate }: LoginPageProps) {
   const { ready, authenticated } = usePrivy();
@@ -115,36 +114,29 @@ export function LoginPage({ navigate }: LoginPageProps) {
 
   return (
     <main id="top" className="landing-page">
-      <div className="landing-first-view">
+      <div className="landing-first-view landing-sky">
         <LandingHeader onSignIn={() => openAuthentication("/home")} />
 
-        <section className="landing-hero" aria-labelledby="landing-heading">
-          <div className="landing-hero__copy">
-            <span className="landing-eyebrow">People lift people</span>
-            <h1 id="landing-heading">Give the spot<br />to someone else.</h1>
-            <p className="landing-hero__intro">
-              TAKE helps communities allocate scarce opportunities through nominations, not self-claiming.
-            </p>
-            <div className="landing-actions">
-              <button className="landing-cta landing-cta--primary" type="button" onClick={() => openAuthentication("/organize")}>
-                <span>Start a campaign</span><ArrowRight aria-hidden="true" />
-              </button>
-              <a className="landing-cta landing-cta--secondary" href="#how-it-works">See how TAKE works</a>
-            </div>
-            <div className="landing-proof">
-              <div className="landing-proof__faces" aria-hidden="true">
-                {proofColors.map((color) => <span key={color} className={`landing-proof__face landing-proof__face--${color}`}><i /><i /></span>)}
-              </div>
-              <p>A better way for communities to decide who gets the opportunity.</p>
+        <section className="landing-sky__hero" aria-labelledby="landing-heading">
+          <div className="landing-sky__copy">
+            <PaperLabel size="sm" tilt={-3} className="landing-sky__kicker">people choose people</PaperLabel>
+            <h1 id="landing-heading" className="landing-sky__headline">
+              <Sticker tilt={-2} delay={80} as="span" className="landing-sky__line landing-sky__line--one"><span>You have one TAKE.</span></Sticker>
+              <Sticker tilt={1.5} delay={160} as="span" className="landing-sky__line landing-sky__line--two"><span>Give it to someone else.</span></Sticker>
+            </h1>
+            <div className="landing-sky__actions">
+              <Sticker tilt={-1} delay={260} className="sticker-cta">
+                <button className="sticker-pill landing-sky__primary" type="button" onClick={() => openAuthentication("/organize")}>
+                  <span>Start a campaign</span><ArrowRight aria-hidden="true" />
+                </button>
+              </Sticker>
+              <Sticker tilt={1.5} delay={320} className="landing-sky__secondary-wrap">
+                <a className="landing-sky__secondary" href="#how-it-works">See how TAKE works</a>
+              </Sticker>
             </div>
           </div>
 
-          <TakeMascotScene />
-
-          <span className="landing-crop landing-crop--top" aria-hidden="true" />
-          <span className="landing-crop landing-crop--bottom" aria-hidden="true" />
-          <small className="landing-microcopy landing-microcopy--left">GOOD PEOPLE<br />BRIGHTER OPPORTUNITIES</small>
-          <small className="landing-microcopy landing-microcopy--right">COMMUNITY<br />CREATES OPPORTUNITY</small>
+          <LandingSkyStickers />
         </section>
       </div>
 
@@ -164,6 +156,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
             <button ref={closeButtonRef} className="landing-auth-dialog__close" type="button" aria-label="Close sign in" onClick={closeAuthentication}>
               <X aria-hidden="true" />
             </button>
+            <img className="landing-auth-dialog__logo" src="/assets/sticker/logo.webp" alt="" width="243" height="240" />
             <span className="landing-eyebrow">Welcome to TAKE</span>
             <h2 id="landing-auth-heading">Join as yourself.</h2>
             <p>Your social identity comes first. Your wallet stays underneath.</p>
