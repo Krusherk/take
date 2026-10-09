@@ -1,4 +1,5 @@
 import type { TakePath } from "../../hooks/usePathRouter";
+import { holdsTake } from "../../lib/campaignOrder";
 import { campaignPath } from "../../lib/productData";
 import type { Campaign } from "../../types/product";
 import { CampaignSticker, StatusSticker, Sticker } from "./Sticker";
@@ -14,7 +15,7 @@ export function CampaignStickerRow({ campaign, index, navigate }: { campaign: Ca
         <span className="sticker-row__copy">
           <strong>{campaign.title}</strong>
           <em>by {campaign.organizer}</em>
-          <small>{campaign.resource} · {campaign.status === "UPCOMING" ? `Opens ${campaign.starts}` : `Ends ${campaign.ends}`}{(campaign.viewer?.usedTakes ?? 0) > 0 ? " · TAKE given" : ""}</small>
+          <small>{campaign.resource} · {campaign.status === "UPCOMING" ? `Opens ${campaign.starts}` : campaign.status === "CLOSED" ? `Ended ${campaign.ends}` : `Ends ${campaign.ends}`}{(campaign.viewer?.usedTakes ?? 0) > 0 ? " · TAKE given" : holdsTake(campaign) ? " · your TAKE is waiting" : ""}</small>
         </span>
         <StatusSticker status={campaign.status} tilt={4} />
       </a>

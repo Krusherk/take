@@ -3,12 +3,13 @@ import type { CSSProperties, ReactNode } from "react";
 import { Avatar } from "../components/Avatar";
 import { ProductError, ProductLoading } from "../components/ProductState";
 import { CampaignStickerRow } from "../components/sticker/CampaignStickerRow";
-import { CampaignSticker, EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, StatusSticker, Sticker } from "../components/sticker/Sticker";
+import { CampaignSticker, EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, Sticker, type TicketFace } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { activityFromHistory, personFromHistoryPerson } from "../lib/currentIdentity";
-import { campaignPath, isParticipantCampaign } from "../lib/productData";
+import { gaveTake, holdsTake, rankLive } from "../lib/campaignOrder";
+import { campaignPath } from "../lib/productData";
 import type { ActivityItem, Campaign, Person } from "../types/product";
 
 interface HomePageProps {
@@ -18,24 +19,20 @@ interface HomePageProps {
   optimisticRecipient: Person | null;
 }
 
+const LIVE_ON_HOME = 4;
+
 export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, optimisticRecipient }: HomePageProps) {
   const { history, me } = useTakeMe();
   const { campaigns, status, error, refetch } = useTakeProduct();
-  const participantCampaigns = campaigns.filter(isParticipantCampaign);
-  const featured = participantCampaigns.find((campaign) => campaign.status === "LIVE") ?? participantCampaigns.find((campaign) => campaign.status === "UPCOMING") ?? participantCampaigns[0];
-  const activeTake = participantCampaigns.find((campaign) => campaign.viewer?.canParticipate && (campaign.viewer.availableTakes ?? 0) > 0)
-    ?? participantCampaigns.find((campaign) => (campaign.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(campaign.id));
-  const isGiven = activeTake ? (activeTake.viewer?.usedTakes ?? 0) > 0 || optimisticGivenCampaigns.includes(activeTake.id) : false;
-  const givenEntry = activeTake ? history?.given.find((entry) => entry.campaignId === activeTake.id) : undefined;
-  const givenPerson = givenEntry?.person ? personFromHistoryPerson(givenEntry.person, `${givenEntry.id}:recipient`) : optimisticRecipient;
+  // Every live campaign, ones the person can give in first, then ending soonest.
+  const live = rankLive(campaigns, optimisticGivenCampaigns);
+  const held = live.filter((campaign) => holdsTake(campaign, optimisticGivenCampaigns));
+  const givenLive = live.filter((campaign) => gaveTake(campaign, optimisticGivenCampaigns));
   const visibleActivity = me && history ? activityFromHistory(me, history).slice(0, 4) : [];
-  const openCampaigns = participantCampaigns.filter((campaign) => campaign.status !== "CLOSED");
-  // With no TAKE of their own, the hero still leads with the live campaign so it is never hidden.
-  const heroCampaign = activeTake ?? featured;
-  // The hero already shows that campaign; the board lists the rest.
-  const showFeatured = featured && featured.id !== heroCampaign?.id ? featured : null;
-  const shownIds = new Set([heroCampaign?.id, showFeatured?.id]);
-  const moreOpen = openCampaigns.filter((campaign) => !shownIds.has(campaign.id)).slice(0, 3);
+  const recipientFor = (campaign: Campaign) => {
+    const entry = history?.given.find((item) => item.campaignId === campaign.id);
+    return entry?.person ? personFromHistoryPerson(entry.person, `${entry.id}:recipient`) : optimisticRecipient;
+  };
 
   return (
     <div className="page-container sticker-page sticker-home">
@@ -53,24 +50,21 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
 
       {status === "ready" ? (
         <>
-          <YourTake campaign={heroCampaign} hasTake={Boolean(activeTake)} isGiven={isGiven} recipient={givenPerson} currentPerson={currentPerson} navigate={navigate} />
+          {held.length === 1
+            ? <OneTake campaign={held[0]!} isGiven={false} recipient={null} currentPerson={currentPerson} navigate={navigate} />
+            : held.length > 1
+              ? <ManyTakes campaigns={held} navigate={navigate} />
+              : givenLive.length === 1
+                ? <OneTake campaign={givenLive[0]!} isGiven recipient={recipientFor(givenLive[0]!)} currentPerson={currentPerson} navigate={navigate} />
+                : <NoTake liveCount={live.length} givenCount={givenLive.length} navigate={navigate} />}
 
           <div className="sticker-home__board">
-            {showFeatured ? (
-              <section className="sticker-home__section" aria-labelledby="home-featured">
-                <h2 id="home-featured"><PaperLabel size="sm" tilt={-2}>Featured opportunity</PaperLabel></h2>
-                <FeaturedSticker campaign={showFeatured} navigate={navigate} />
-              </section>
-            ) : null}
-
-            <section className="sticker-home__section" id="campaigns" aria-labelledby="home-open">
-              <SectionHead id="home-open" title="Open now" action="Explore all" onAction={() => navigate("/explore")} />
-              {!openCampaigns.length ? (
-                <HomeEmpty title="No participant campaigns yet." action="Organize a campaign" onAction={() => navigate("/organize")}>Drafts stay in Organize until TAKE publishes them to Monad.</HomeEmpty>
-              ) : moreOpen.length ? (
-                <ul className="sticker-home__list">{moreOpen.map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}</ul>
+            <section className="sticker-home__section" id="campaigns" aria-labelledby="home-live">
+              <SectionHead id="home-live" title={live.length ? `Live now · ${live.length}` : "Live now"} action={live.length > LIVE_ON_HOME ? `Explore all ${live.length}` : "Explore all"} onAction={() => navigate("/explore")} />
+              {live.length ? (
+                <ul className="sticker-home__list">{live.slice(0, LIVE_ON_HOME).map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}</ul>
               ) : (
-                <p className="sticker-home__aside">Nothing else is open right now.</p>
+                <p className="sticker-home__aside">Live campaigns will be listed here. Drafts stay in Organize until TAKE publishes them to Monad.</p>
               )}
             </section>
 
@@ -89,114 +83,119 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
   );
 }
 
-/**
- * The one clear next action: give it, see who you chose, open the live
- * campaign you can follow, or go find a campaign.
- */
-function YourTake({ campaign, hasTake, isGiven, recipient, currentPerson, navigate }: {
+function HeroArt({ campaign, face, state, navigate }: {
   campaign?: Campaign;
-  hasTake: boolean;
+  face?: TicketFace;
+  state: { label: string; tone: "live" | "upcoming" | "closed" };
+  navigate: (path: TakePath) => void;
+}) {
+  return (
+    <div className="sticker-home__art">
+      {campaign ? (
+        <a className="sticker-home__ticket" href={campaignPath(campaign)} aria-label={`Open ${campaign.title}`} onClick={(event) => { event.preventDefault(); navigate(campaignPath(campaign) as TakePath); }}>
+          <CampaignSticker campaign={campaign} tilt={-5} delay={140} />
+        </a>
+      ) : (
+        <span className="sticker-home__ticket sticker-home__ticket--idle"><CampaignSticker campaign={{ title: "TAKE" }} face={face} tilt={-5} delay={140} /></span>
+      )}
+      <span className="sticker-home__state">
+        <Sticker tilt={-8} delay={220} as="span" className={`status-sticker status-sticker--${state.tone}`}><span>{state.label}</span></Sticker>
+      </span>
+      <MascotSticker kind="lime" tilt={-9} delay={300} className="sticker-home__mascot" />
+    </div>
+  );
+}
+
+/** One TAKE: give it, or see who you chose. */
+function OneTake({ campaign, isGiven, recipient, currentPerson, navigate }: {
+  campaign: Campaign;
   isGiven: boolean;
   recipient: Person | null;
   currentPerson: Person;
   navigate: (path: TakePath) => void;
 }) {
-  const state = !campaign ? "none" : !hasTake ? "watching" : isGiven ? "given" : "available";
-  const headline = state === "none"
-    ? "No TAKE is waiting."
-    : state === "watching"
-      ? watchingHeadline(campaign!)
-      : state === "given" ? "Your TAKE is given." : "You have one TAKE.";
-  const action = !campaign
-    ? { label: "Explore campaigns", to: "/explore" as TakePath }
-    : state === "watching"
-      ? { label: `Open ${campaign.title}`, to: campaignPath(campaign) as TakePath }
-      : isGiven
-        ? { label: "View your choice", to: "/takes" as TakePath }
-        : { label: "Give your TAKE", to: campaignPath(campaign, "/give") as TakePath };
-  const stateSticker = state === "watching"
-    ? <StatusSticker status={campaign!.status} tilt={-8} delay={220} />
-    : (
-      <Sticker tilt={-8} delay={220} as="span" className={`status-sticker status-sticker--${state === "available" ? "live" : state === "given" ? "upcoming" : "closed"}`}>
-        <span>{state === "available" ? "YOUR TAKE" : state === "given" ? "GIVEN" : "NONE ACTIVE"}</span>
-      </Sticker>
-    );
-
   return (
-    <section className={`sticker-home__take sticker-home__take--${state}`} aria-labelledby="home-your-take">
-      <div className="sticker-home__art">
-        {campaign ? (
-          <a className="sticker-home__ticket" href={campaignPath(campaign)} aria-label={`Open ${campaign.title}`} onClick={(event) => { event.preventDefault(); navigate(campaignPath(campaign) as TakePath); }}>
-            <CampaignSticker campaign={campaign} tilt={-5} delay={140} />
-          </a>
-        ) : (
-          <span className="sticker-home__ticket sticker-home__ticket--idle" aria-hidden="true"><CampaignSticker campaign={{ title: "TAKE" }} tilt={-5} delay={140} /></span>
-        )}
-        <span className="sticker-home__state">{stateSticker}</span>
-        <MascotSticker kind="lime" tilt={-9} delay={300} className="sticker-home__mascot" />
+    <section className={`sticker-home__take sticker-home__take--${isGiven ? "given" : "available"}`} aria-labelledby="home-your-take">
+      <HeroArt campaign={campaign} state={isGiven ? { label: "GIVEN", tone: "upcoming" } : { label: "YOUR TAKE", tone: "live" }} navigate={navigate} />
+      <h2 id="home-your-take"><PaperLabel size="lg" tilt={2} delay={160}>{isGiven ? "Your TAKE is given." : "You have one TAKE."}</PaperLabel></h2>
+      <PaperLabel size="sm" tilt={-1.5} delay={200} className="sticker-home__meta">
+        {campaign.title} · {campaign.resource} · ends {campaign.ends}
+      </PaperLabel>
+      <div className="sticker-home__handoff" role="group" aria-label={isGiven && recipient ? `You gave your TAKE to ${recipient.name}` : "Your TAKE"}>
+        <FaceSticker person={currentPerson} size="sm" tilt={-6} delay={230} label="you" />
+        <PassArrow className="pass-arrow--sm" />
+        {isGiven && recipient
+          ? <FaceSticker person={recipient} size="sm" tilt={5} delay={270} label={recipient.name} />
+          : <EmptySlotSticker size="sm" tilt={5} delay={270} label={isGiven ? "given" : "someone else"} />}
       </div>
-
-      <h2 id="home-your-take"><PaperLabel size="lg" tilt={2} delay={160}>{headline}</PaperLabel></h2>
-
-      {campaign ? (
-        <>
-          <PaperLabel size="sm" tilt={-1.5} delay={200} className="sticker-home__meta">
-            {state === "watching" ? "" : `${campaign.title} · `}by {campaign.organizer} · {campaign.status === "UPCOMING" ? `opens ${campaign.starts}` : campaign.status === "CLOSED" ? `ended ${campaign.ends}` : `ends ${campaign.ends}`}
-          </PaperLabel>
-          {state === "watching" ? null : (
-            <div className="sticker-home__handoff" role="group" aria-label={isGiven && recipient ? `You gave your TAKE to ${recipient.name}` : "Your TAKE"}>
-              <FaceSticker person={currentPerson} size="sm" tilt={-6} delay={230} label="you" />
-              <PassArrow className="pass-arrow--sm" />
-              {isGiven && recipient
-                ? <FaceSticker person={recipient} size="sm" tilt={5} delay={270} label={recipient.name} />
-                : <EmptySlotSticker size="sm" tilt={5} delay={270} label={isGiven ? "given" : "someone else"} />}
-            </div>
-          )}
-        </>
-      ) : (
-        <PaperLabel size="sm" tilt={-1} delay={240}>Explore live campaigns to see where you can participate.</PaperLabel>
-      )}
-
       <Sticker tilt={-1.5} delay={320} className="sticker-cta">
-        <button className="sticker-pill" type="button" onClick={() => navigate(action.to)}>{action.label}</button>
+        {isGiven
+          ? <button className="sticker-pill" type="button" onClick={() => navigate("/takes")}>View your choice</button>
+          : <button className="sticker-pill" type="button" onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>Give your TAKE</button>}
       </Sticker>
-      {state === "available" ? <p className="sticker-note">One person. One choice. You cannot give it to yourself.</p> : null}
-      {state === "watching" ? <p className="sticker-note">{watchingNote(campaign!)}</p> : null}
-      {campaign?.description ? <PaperLabel size="md" tilt={1} delay={360} className="sticker-home__copy">{campaign.description}</PaperLabel> : null}
+      {isGiven ? null : <p className="sticker-note">One person. One choice. You cannot give it to yourself.</p>}
     </section>
   );
 }
 
-function watchingHeadline(campaign: Campaign) {
-  if (campaign.status === "LIVE") return `${campaign.title} is live.`;
-  if (campaign.status === "UPCOMING") return `${campaign.title} opens soon.`;
-  return `${campaign.title} has closed.`;
-}
-
-function watchingNote(campaign: Campaign) {
-  if (campaign.sourceStatus === "CREATED") return "It is on Monad. You can give after nominations open.";
-  if (campaign.status === "UPCOMING") return `Nominations open ${campaign.starts}.`;
-  if (campaign.status === "CLOSED") return "The chance to give a TAKE has passed.";
-  return "You are not on this campaign’s giver list, but you can follow it here.";
-}
-
-function FeaturedSticker({ campaign, navigate }: { campaign: Campaign; navigate: (path: TakePath) => void }) {
-  const destination = campaignPath(campaign) as TakePath;
+/** Several TAKEs, one per live campaign, each with its own give action. */
+function ManyTakes({ campaigns, navigate }: { campaigns: Campaign[]; navigate: (path: TakePath) => void }) {
+  const count = campaigns.length;
   return (
-    <Sticker as="div" tilt={1.2} delay={280} className="sticker-row sticker-home__featured">
-      <a href={destination} aria-label={`View ${campaign.title}`} onClick={(event) => { event.preventDefault(); navigate(destination); }}>
-        <CampaignSticker campaign={campaign} size="sm" tilt={-3} />
-        <span className="sticker-row__copy">
-          <strong>{campaign.title}</strong>
-          <em>by {campaign.organizer}</em>
-          {campaign.description ? <small className="sticker-home__featured-copy">{campaign.description}</small> : null}
-        </span>
-        <span className="sticker-home__featured-end">
-          <StatusSticker status={campaign.status} tilt={4} />
-          <ArrowRight size={18} aria-hidden="true" />
-        </span>
-      </a>
-    </Sticker>
+    <section className="sticker-home__take sticker-home__take--many" aria-labelledby="home-your-take">
+      <HeroArt face={{ count: String(count), unit: "TAKES", badge: null }} state={{ label: "YOUR TAKES", tone: "live" }} navigate={navigate} />
+      <h2 id="home-your-take"><PaperLabel size="lg" tilt={2} delay={160}>You have {count} TAKEs.</PaperLabel></h2>
+      <p className="sticker-note">One in each campaign. Each one goes to someone else.</p>
+      <ul className="sticker-home__takes" aria-label="Your TAKEs">
+        {campaigns.map((campaign, index) => {
+          const detail = campaignPath(campaign) as TakePath;
+          return (
+            <Sticker as="li" key={campaign.id} tilt={index % 2 ? 1 : -1} delay={Math.min(420, 260 + index * 40)} className="sticker-home__take-card">
+              <a href={detail} className="sticker-home__take-card-open" onClick={(event) => { event.preventDefault(); navigate(detail); }}>
+                <CampaignSticker campaign={campaign} size="sm" tilt={0} />
+                <span className="sticker-row__copy">
+                  <strong>{campaign.title}</strong>
+                  <em>by {campaign.organizer}</em>
+                  <small>{campaign.resource} · Ends {campaign.ends}</small>
+                </span>
+              </a>
+              <button className="sticker-pill sticker-pill--sm" type="button" aria-label={`Give your TAKE in ${campaign.title}`} onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>Give</button>
+            </Sticker>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** No TAKE to give: say what is live in general, never single out one campaign. */
+function NoTake({ liveCount, givenCount, navigate }: { liveCount: number; givenCount: number; navigate: (path: TakePath) => void }) {
+  const headline = givenCount > 1
+    ? `You gave ${givenCount} TAKEs.`
+    : liveCount === 0
+      ? "Nothing is live right now."
+      : liveCount === 1 ? "1 campaign is live." : `${liveCount} campaigns are live.`;
+  const note = givenCount > 1
+    ? `Your choices are recorded. ${liveCount === 1 ? "1 campaign is" : `${liveCount} campaigns are`} live right now.`
+    : liveCount === 0
+      ? "Campaigns show up here once they open on Monad."
+      : "You don’t hold a TAKE in any of them. Follow along, or start your own.";
+  return (
+    <section className={`sticker-home__take sticker-home__take--${liveCount ? "watching" : "none"}`} aria-labelledby="home-your-take">
+      <HeroArt
+        face={{ count: String(givenCount > 1 ? givenCount : liveCount), unit: givenCount > 1 ? "GIVEN" : "LIVE", badge: null }}
+        state={givenCount > 1 ? { label: "GIVEN", tone: "upcoming" } : liveCount ? { label: "NO TAKE YET", tone: "closed" } : { label: "NONE LIVE", tone: "closed" }}
+        navigate={navigate}
+      />
+      <h2 id="home-your-take"><PaperLabel size="lg" tilt={2} delay={160}>{headline}</PaperLabel></h2>
+      <p className="sticker-note">{note}</p>
+      <Sticker tilt={-1.5} delay={320} className="sticker-cta">
+        {givenCount > 1
+          ? <button className="sticker-pill" type="button" onClick={() => navigate("/takes")}>View your choices</button>
+          : <button className="sticker-pill" type="button" onClick={() => navigate("/explore")}>{liveCount ? "Explore live campaigns" : "Explore campaigns"}</button>}
+      </Sticker>
+      {liveCount === 0 ? <button className="sticker-home__link" type="button" onClick={() => navigate("/organize")}>Organize a campaign <ArrowRight size={14} aria-hidden="true" /></button> : null}
+    </section>
   );
 }
 
