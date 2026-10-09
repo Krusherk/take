@@ -6,7 +6,8 @@ interface BrandProps {
   light?: boolean;
 }
 
-const LOGO = { src: "/assets/sticker/logo.webp", width: 243, height: 240 };
+// Intrinsic size matches the header logo, so the star stays small even if the stylesheet is late.
+const LOGO = { src: "/assets/sticker/logo.webp", width: 41, height: 40 };
 
 /** The TAKE logo: a die-cut star sticker. Screen readers hear "TAKE". */
 function Logo() {
