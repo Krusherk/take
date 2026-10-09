@@ -55,14 +55,33 @@
   display: grid;
   justify-items: center;
   gap: 6px;
+  width: 100%;
   max-width: 100%;
   margin-top: 58px;
   text-align: center;
 }
-.sticker-feed__headline h1 { max-width: min(100%, 520px); }
-.sticker-feed__headline .paper-label--lg .paper-label__paper {
+/* Same width as the other feed headlines. A shrink-wrapped torn strip
+   collapses under overflow-wrap:anywhere and slices words in half. */
+.sticker-feed__headline h1 {
+  width: 100%;
+  max-width: min(100%, 520px);
   overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+.sticker-feed__headline .paper-label--lg {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
+.sticker-feed__headline .paper-label--lg .paper-label__paper {
+  width: 100%;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
   text-wrap: balance;
+  /* Longest word is "attached." — stay large enough to match the other headlines, small enough to fit at 320. */
+  font-size: clamp(28px, 8.4vw, 46px);
 }
 .sticker-feed__headline > .paper-label--sm { max-width: 38ch; margin-left: 12%; }
 
