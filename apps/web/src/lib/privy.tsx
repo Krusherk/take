@@ -1,7 +1,7 @@
 // Privy, viem and the wallet SDKs are large. The landing page and public campaign
 // links paint without them; this module stands in for "@privy-io/react-auth" with
 // the same hook names and loads the real SDK in the background (immediately when
-// a session or OAuth return is likely, otherwise on first interaction or idle).
+// a session or OAuth return is likely, otherwise when a control is touched).
 // The real hooks run once, inside PrivyRuntime, and publish into this store.
 import type * as PrivyTypes from "@privy-io/react-auth";
 import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -68,17 +68,26 @@ function whenReady(): Promise<PrivyBridgeSnapshot> {
   return new Promise((resolve) => readyWaiters.add(() => resolve(snapshot!)));
 }
 
-/** True when a Privy session, OAuth return, or a signed-in route makes Privy needed right away. */
-export function privyNeededNow(location: Pick<Location, "pathname" | "search"> = window.location) {
+// Keys Privy writes only while a session (or a sign-in in progress) exists. Analytics
+// ids such as "privy:caid" are left behind for signed-out visitors and are ignored.
+const SESSION_KEYS = ["privy:token", "privy:refresh_token", "privy:id_token", "privy:pat", "privy:state_code", "privy:code_verifier", "privy:headless_oauth"];
+
+/** True when a Privy session or OAuth return is likely, so Privy must load right away. */
+export function privyNeededNow(location: Pick<Location, "search"> = window.location) {
   if (/privy_/i.test(location.search)) return true;
   try {
-    for (let index = 0; index < window.localStorage.length; index += 1) {
-      if (window.localStorage.key(index)?.startsWith("privy:")) return true;
-    }
-  } catch { /* storage blocked: fall through */ }
-  const path = location.pathname.replace(/\/+$/, "") || "/";
-  const publicPath = path === "/" || /^\/campaign\/[^/]+$/.test(path) || /^\/(invite|r)\//.test(path);
-  return !publicPath;
+    if (SESSION_KEYS.some((key) => window.localStorage.getItem(key) !== null)) return true;
+    if (SESSION_KEYS.some((key) => window.sessionStorage.getItem(key) !== null)) return true;
+  } catch { return true; /* storage blocked: let Privy decide */ }
+  return /(?:^|;\s*)privy-(?:session|token)=/.test(document.cookie);
+}
+
+// With no session hint the visitor is signed out: report ready + signed out at once so
+// gated routes redirect immediately, until the real SDK (once loaded and ready) takes over.
+let signedOutHint: boolean | null = null;
+function signedOut() {
+  if (signedOutHint === null) signedOutHint = typeof window !== "undefined" && !privyNeededNow();
+  return signedOutHint;
 }
 
 const PrivyRuntime = lazy(() => import("./privyRuntime"));
@@ -92,19 +101,17 @@ export function PrivyHost() {
     if (requested) start();
     else if (privyNeededNow()) loadPrivy();
     else {
-      // Signed-out visitors: fetch Privy on first interaction, or once the page is idle.
-      const intent = () => loadPrivy();
-      const events = ["pointerdown", "keydown", "touchstart", "focusin"] as const;
-      events.forEach((name) => window.addEventListener(name, intent, { once: true, passive: true, capture: true }));
-      const idle = window.setTimeout(() => {
-        const ric = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
-        if (ric) ric(() => loadPrivy(), { timeout: 2_000 }); else loadPrivy();
-      }, 3_500);
-      return () => {
-        requestListeners.delete(start);
-        events.forEach((name) => window.removeEventListener(name, intent, { capture: true }));
-        window.clearTimeout(idle);
+      // Signed-out visitors: fetch Privy only when they reach for a control (the sign-in
+      // sheet also requests it on open). No idle timer, and scrolling doesn't count.
+      const intent = (event: Event) => {
+        const target = event.target as Element | null;
+        if (event.type === "keydown" || target?.closest?.("button, a, input, select, textarea, [role='button']")) loadPrivy();
       };
+      const events = ["pointerdown", "keydown"] as const;
+      events.forEach((name) => window.addEventListener(name, intent, { passive: true, capture: true }));
+      const stop = () => events.forEach((name) => window.removeEventListener(name, intent, { capture: true }));
+      requestListeners.add(stop);
+      return () => { requestListeners.delete(start); requestListeners.delete(stop); stop(); };
     }
     return () => { requestListeners.delete(start); };
   }, []);
@@ -143,9 +150,10 @@ const idleState = { status: "initial" } as const;
 const noWallets: PrivyBridgeSnapshot["wallets"]["wallets"] = [];
 
 export function usePrivy() {
-  const ready = useBridge((s) => s.privy.ready, false);
-  const authenticated = useBridge((s) => s.privy.authenticated, false);
-  const user = useBridge((s) => s.privy.user, null);
+  const realReady = useBridge((s) => s.privy.ready, false);
+  const ready = realReady || signedOut();
+  const authenticated = useBridge((s) => s.privy.ready && s.privy.authenticated, false);
+  const user = useBridge((s) => s.privy.ready ? s.privy.user : null, null);
   return { ready, authenticated, user, getAccessToken, logout };
 }
 export function useUser() {
@@ -181,4 +189,4 @@ export function useUnlinkOAuth() { return { unlink: unlinkOAuth }; }
 export function useUnlinkWallet() { return { unlink: unlinkWallet }; }
 
 /** Test helper: forget the loaded SDK. */
-export function resetPrivyBridgeForTests() { snapshot = null; requested = false; listeners.clear(); readyWaiters.clear(); }
+export function resetPrivyBridgeForTests() { snapshot = null; requested = false; signedOutHint = null; listeners.clear(); readyWaiters.clear(); }

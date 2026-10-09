@@ -322,3 +322,37 @@
 @media (max-width: 340px) {
   .ls-fair__who svg { display: none; }
 }
+
+/* ---------- Render below-the-fold sections only when they near the viewport ---------- */
+/*
+ * content-visibility skips style, layout and paint for offscreen sections on first load.
+ * It also clips paint to the section box, so each section's box is grown by padding and
+ * pulled back by an equal negative margin: tilted stickers, step numbers and drop
+ * shadows that poke out of a section keep painting, and layout is unchanged
+ * (.landing-page already clips horizontal overflow). contain-intrinsic-size reserves
+ * each section's measured content height ("auto" then remembers the real size) so the
+ * scrollbar and #anchor jumps stay put and nothing shifts.
+ */
+@supports (content-visibility: auto) {
+  .ls-section {
+    --ls-bleed-block: 48px;
+    --ls-bleed-inline: 32px;
+    padding: var(--ls-bleed-block) var(--ls-bleed-inline);
+    margin: calc(var(--ls-bleed-block) * -1) calc(var(--ls-bleed-inline) * -1);
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto var(--ls-h, 600px);
+  }
+  .ls-final { padding-top: calc(40px + var(--ls-bleed-block)); }
+  .ls-problem { --ls-h: 633px; }
+  .ls-how { --ls-h: 909px; }
+  .ls-give { --ls-h: 273px; }
+  .ls-fair { --ls-h: 443px; }
+  .ls-final { --ls-h: 423px; }
+  @media (min-width: 900px) {
+    .ls-problem { --ls-h: 604px; }
+    .ls-how { --ls-h: 555px; }
+    .ls-give { --ls-h: 274px; }
+    .ls-fair { --ls-h: 553px; }
+    .ls-final { --ls-h: 511px; }
+  }
+}

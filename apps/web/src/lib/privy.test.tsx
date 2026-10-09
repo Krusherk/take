@@ -25,7 +25,7 @@ vi.mock("@privy-io/react-auth", () => ({
 vi.mock("@privy-io/chains", () => ({ addRpcUrlOverrideToChain: (chain: unknown) => chain }));
 vi.mock("viem/chains", () => ({ monadTestnet: { id: 10143 } }));
 
-import { loadPrivy, privyNeededNow, PrivyHost, useLogin, usePrivy } from "./privy";
+import { loadPrivy, privyNeededNow, PrivyHost, resetPrivyBridgeForTests, useLogin, usePrivy } from "./privy";
 
 function Consumer({ onComplete }: { onComplete: (value: unknown) => void }) {
   const { ready, authenticated } = usePrivy();
@@ -36,16 +36,30 @@ function Consumer({ onComplete }: { onComplete: (value: unknown) => void }) {
 describe("lazy Privy bridge", () => {
   it("decides when Privy is needed on first paint", () => {
     window.localStorage.clear();
-    expect(privyNeededNow({ pathname: "/", search: "" })).toBe(false);
-    expect(privyNeededNow({ pathname: "/campaign/abc", search: "" })).toBe(false);
-    expect(privyNeededNow({ pathname: "/home", search: "" })).toBe(true);
-    expect(privyNeededNow({ pathname: "/", search: "?privy_oauth_code=x" })).toBe(true);
-    window.localStorage.setItem("privy:token", "x");
-    expect(privyNeededNow({ pathname: "/", search: "" })).toBe(true);
+    expect(privyNeededNow({ search: "" })).toBe(false);
+    expect(privyNeededNow({ search: "?privy_oauth_code=x" })).toBe(true);
+    // Analytics ids survive sign-out and must not count as a session.
+    window.localStorage.setItem("privy:caid", "x");
+    expect(privyNeededNow({ search: "" })).toBe(false);
+    window.localStorage.setItem("privy:refresh_token", "x");
+    expect(privyNeededNow({ search: "" })).toBe(true);
     window.localStorage.clear();
   });
 
+  it("treats visitors without a session as signed out at once, without loading Privy", async () => {
+    window.localStorage.clear();
+    resetPrivyBridgeForTests();
+    const { unmount } = render(<><Consumer onComplete={vi.fn()} /><PrivyHost /></>);
+    expect(screen.getByText("ready:out")).toBeInTheDocument();
+    // No idle load: nothing requested Privy after a few seconds of doing nothing.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(real.loginOptions.length).toBe(0);
+    unmount();
+    resetPrivyBridgeForTests();
+  });
+
   it("paints before Privy loads, queues login until ready, and relays callbacks", async () => {
+    window.localStorage.setItem("privy:token", "x");
     const onComplete = vi.fn();
     render(<><Consumer onComplete={onComplete} /><PrivyHost /></>);
     expect(screen.getByText("waiting:out")).toBeInTheDocument();
@@ -65,5 +79,6 @@ describe("lazy Privy bridge", () => {
 
     act(() => real.loginOptions.at(-1)?.onComplete?.({ isNewUser: true }));
     expect(onComplete).toHaveBeenCalledWith({ isNewUser: true });
+    window.localStorage.clear();
   });
 });
