@@ -3,7 +3,7 @@
   "framework": "vite",
   "buildCommand": "pnpm --filter @take/web build",
   "outputDirectory": "apps/web/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/assets/(.*)\\.(js|css|woff|woff2)",
