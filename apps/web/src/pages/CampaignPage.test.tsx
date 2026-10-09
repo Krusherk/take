@@ -15,7 +15,7 @@ const state = vi.hoisted(() => ({
   refetch: vi.fn(),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
   usePrivy: () => ({ authenticated: state.authenticated }),
   useLogin: () => ({ login: state.login }),
 }));

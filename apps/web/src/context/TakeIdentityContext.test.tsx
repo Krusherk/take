@@ -12,7 +12,7 @@ const auth = vi.hoisted(() => ({
   getAccessToken: vi.fn<() => Promise<string | null>>(async () => "did:privy:alice"),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
   usePrivy: () => ({ ...auth.state, getAccessToken: auth.getAccessToken }),
 }));
 

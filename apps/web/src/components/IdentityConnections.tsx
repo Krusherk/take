@@ -8,7 +8,7 @@ import {
   useUnlinkOAuth,
   useUnlinkWallet,
   useUser,
-} from "@privy-io/react-auth";
+} from "../lib/privy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import type { TakeMe } from "../types/identity";

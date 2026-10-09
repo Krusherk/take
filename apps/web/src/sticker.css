@@ -13,7 +13,8 @@
   --sticker-paper: #f7f5ee;
   --sticker-ink: #11110f;
   --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
-  --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  /* One drop-shadow pass instead of two: same look, about half the raster work per sticker. */
+  --sticker-drop: drop-shadow(0 6px 10px rgba(14, 44, 86, 0.26));
   --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   /* Same box as background-size: cover on the viewport, so the nav fade lines up. */
   --sky-art: url("/assets/sticker/sky-clouds.jpg");
@@ -36,6 +37,14 @@
 }
 
 .app-shell--sky::after { display: none; }
+
+/* Smaller sky (AVIF ~12 KB, WebP ~15 KB vs JPEG 119 KB) where supported; same picture. */
+@supports (background-image: image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"))) {
+  .app-shell--sky { --sky-art: image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"), url("/assets/sticker/sky-clouds.webp") type("image/webp"), url("/assets/sticker/sky-clouds.jpg") type("image/jpeg")); }
+}
+
+/* Keep the fixed sky on its own compositor layer so iOS does not repaint it while scrolling. */
+.app-shell--sky::before { transform: translateZ(0); backface-visibility: hidden; }
 
 /*
  * Phones: content scrolls behind the floating tab bar. A strip of the same sky
@@ -180,7 +189,11 @@
 
 @keyframes sticker-settle {
   from {
-    opacity: 0;
+    /* 0.01, not 0: looks the same, but browsers only count a paint as "content
+       shown" (FCP/LCP) when it is not fully transparent. At 0 the first paint
+       was not recorded until some later unrelated repaint, seconds after the
+       page was visibly on screen. */
+    opacity: 0.01;
     transform: translateY(14px) rotate(calc(var(--tilt) + 7deg)) scale(0.88);
   }
   to {
@@ -318,14 +331,18 @@
 .campaign-sticker--sm { width: 84px; filter: drop-shadow(0 2px 4px rgba(14, 44, 86, 0.18)); }
 
 /* Mascots: decorative only. Never tappable, never the only place a fact lives. */
+/* The shadow sits on the bobbing image itself, not its parent: a filter on the
+   parent would re-rasterise every frame of the bob (heavy on iPhone). This way
+   the image and its shadow are one composited layer that only moves. */
 .mascot-sticker {
   pointer-events: none;
-  filter: var(--sticker-drop);
 }
 .mascot-sticker img {
   display: block;
   width: 100%;
   height: auto;
+  filter: var(--sticker-drop);
+  will-change: transform;
   animation: mascot-bob 3.4s ease-in-out 900ms infinite;
   user-select: none;
   -webkit-user-drag: none;
@@ -698,7 +715,7 @@
   display: block;
   width: auto;
   height: 48px;
-  filter: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.18)) drop-shadow(0 4px 8px rgba(14, 44, 86, 0.16));
+  filter: drop-shadow(0 3px 6px rgba(14, 44, 86, 0.22));
   transform-origin: 50% 60%;
   transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
@@ -806,7 +823,9 @@ a.brand--logo:active .brand__logo { transform: scale(0.92); }
 }
 .sticker-home__ticket:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 6px; }
 .sticker-home__ticket .campaign-sticker--lg { width: min(76%, 330px); }
-.sticker-home__ticket .campaign-sticker__face { animation: home-ticket-float 6s ease-in-out 1.2s infinite; }
+/* Same idea for the floating home ticket: shadow on the moving face, not the parent. */
+.sticker-home__ticket .campaign-sticker { filter: none; }
+.sticker-home__ticket .campaign-sticker__face { filter: var(--sticker-drop); will-change: transform; animation: home-ticket-float 6s ease-in-out 1.2s infinite; }
 .sticker-home__ticket--idle { opacity: 0.94; }
 @keyframes home-ticket-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }

@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { useLogin, usePrivy } from "@privy-io/react-auth";
+import { useLogin, usePrivy } from "../lib/privy";
 import { useEffect, useState } from "react";
 import { Avatar } from "../components/Avatar";
 import { CampaignSticker, EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, StatusSticker, Sticker } from "../components/sticker/Sticker";
@@ -8,12 +8,12 @@ import { ParticipantEligibilityPanel } from "../components/eligibility/Participa
 import { CampaignAfterSection } from "../components/Signal";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
-import { TAKE_API_BASE_URL } from "../lib/takeApi";
+import { readPublicCampaign } from "../lib/publicCampaign";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
 import { rememberPostAuthDestination, routeAfterAuthentication } from "../lib/authDestination";
 import { campaignFromApi, campaignPath, isParticipantCampaign } from "../lib/productData";
-import type { ApiCampaign, Campaign, Person } from "../types/product";
+import type { Campaign, Person } from "../types/product";
 
 export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, optimisticRecipient }: { campaignId: string; navigate: (path: TakePath) => void; optimisticGivenCampaigns: string[]; optimisticRecipient: Person | null }) {
   const { campaigns, peoplePreview, status, error, refetch } = useTakeProduct();
@@ -31,10 +31,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
     let active = true;
     setPublicLoading(true);
     setPublicError(null);
-    void fetch(`${TAKE_API_BASE_URL}/campaigns/${encodeURIComponent(campaignId)}`).then(async (response) => {
-      if (!response.ok) throw new Error(response.status === 404 ? "This campaign is not available." : "This campaign could not be loaded.");
-      return response.json() as Promise<ApiCampaign>;
-    }).then((source) => {
+    void readPublicCampaign(campaignId).then((source) => {
       if (active) setPublicCampaign(campaignFromApi(source));
     }).catch((caught) => {
       if (active) setPublicError(caught instanceof Error ? caught.message : "This campaign could not be loaded.");

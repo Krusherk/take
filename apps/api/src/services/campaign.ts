@@ -15,14 +15,17 @@ export class CampaignService {
   constructor(private readonly db: Database) {}
 
   async listCampaigns(viewerIdentityId?: string, includeFixtureCampaigns = true) {
-    const records = await this.db.select().from(schema.campaigns).orderBy(desc(schema.campaigns.createdAt));
-    const fixtureCreators = includeFixtureCampaigns ? [] : await this.fixtureCreatorIds();
+    // Independent lookups run together; each sequential query costs a full database round trip.
+    const [records, fixtureCreators, memberships] = await Promise.all([
+      this.db.select().from(schema.campaigns).orderBy(desc(schema.campaigns.createdAt)),
+      includeFixtureCampaigns ? Promise.resolve([] as string[]) : this.fixtureCreatorIds(),
+      viewerIdentityId
+        ? this.db.select({ organizationId: schema.organizationMembers.organizationId })
+            .from(schema.organizationMembers)
+            .where(eq(schema.organizationMembers.takeIdentityId, viewerIdentityId))
+        : Promise.resolve([] as Array<{ organizationId: string }>)
+    ]);
     const fixtureCreatorSet = new Set(fixtureCreators);
-    const memberships = viewerIdentityId
-      ? await this.db.select({ organizationId: schema.organizationMembers.organizationId })
-          .from(schema.organizationMembers)
-          .where(eq(schema.organizationMembers.takeIdentityId, viewerIdentityId))
-      : [];
     const managedOrganizations = new Set(memberships.map((item) => item.organizationId));
     const visible = records.filter((campaign) =>
       !fixtureCreatorSet.has(campaign.createdByIdentityId)
@@ -31,7 +34,7 @@ export class CampaignService {
         || Boolean(viewerIdentityId && (campaign.createdByIdentityId === viewerIdentityId || managedOrganizations.has(campaign.organizationId)))
       )
     );
-    return Promise.all(visible.map((campaign) => this.toView(campaign, viewerIdentityId)));
+    return this.toViews(visible, viewerIdentityId);
   }
 
   async getCampaign(id: string) {
@@ -44,9 +47,12 @@ export class CampaignService {
   }
 
   async getCampaignView(id: string, viewerIdentityId?: string, includeFixtureCampaigns = true) {
-    const campaign = await this.getCampaign(id);
-    if (campaign && !includeFixtureCampaigns && (await this.fixtureCreatorIds()).includes(campaign.createdByIdentityId)) return undefined;
-    return campaign ? this.toView(campaign, viewerIdentityId) : undefined;
+    const [campaign, fixtureCreators] = await Promise.all([
+      this.getCampaign(id),
+      includeFixtureCampaigns ? Promise.resolve([] as string[]) : this.fixtureCreatorIds()
+    ]);
+    if (campaign && fixtureCreators.includes(campaign.createdByIdentityId)) return undefined;
+    return campaign ? (await this.toViews([campaign], viewerIdentityId))[0] : undefined;
   }
 
   async canManageCampaign(campaignId: string, identityId: string) {
@@ -301,38 +307,46 @@ export class CampaignService {
     await assertOrganizationRole(this.db, organizationId, takeIdentityId, ["OWNER", "ADMIN"]);
   }
 
-  private async toView(
-    campaign: typeof schema.campaigns.$inferSelect,
+  /**
+   * Builds campaign views with one query per related table for the whole list
+   * (not one set per campaign), so the list costs the same few round trips
+   * whether it holds two campaigns or fifty.
+   */
+  private async toViews(
+    campaigns: Array<typeof schema.campaigns.$inferSelect>,
     viewerIdentityId?: string
   ) {
-    const [[organization], [resource], [participantAggregate], [nominationAggregate], eligibility, [experiment], lifecycle] = await Promise.all([
+    if (!campaigns.length) return [];
+    const campaignIds = campaigns.map((campaign) => campaign.id);
+    const organizationIds = [...new Set(campaigns.map((campaign) => campaign.organizationId))];
+    const experimentIds = [...new Set(campaigns.flatMap((campaign) => campaign.experimentId ? [campaign.experimentId] : []))];
+    const [organizations, resources, participantRows, nominationRows, experiments, lifecycleRows, eligibilities] = await Promise.all([
       this.db
         .select({ id: schema.organizations.id, name: schema.organizations.name, slug: schema.organizations.slug })
         .from(schema.organizations)
-        .where(eq(schema.organizations.id, campaign.organizationId))
-        .limit(1),
+        .where(inArray(schema.organizations.id, organizationIds)),
       this.db
         .select()
         .from(schema.campaignResources)
-        .where(eq(schema.campaignResources.campaignId, campaign.id))
-        .limit(1),
+        .where(inArray(schema.campaignResources.campaignId, campaignIds)),
       this.db
-        .select({ value: countDistinct(schema.nominationEdges.canonicalGiverKey) })
+        .select({ campaignId: schema.nominationEdges.campaignId, value: countDistinct(schema.nominationEdges.canonicalGiverKey) })
         .from(schema.nominationEdges)
         .where(
           and(
-            eq(schema.nominationEdges.campaignId, campaign.id),
+            inArray(schema.nominationEdges.campaignId, campaignIds),
             eq(schema.nominationEdges.validity, "VALID"),
             eq(schema.nominationEdges.finalityStatus, "FINALIZED")
           )
-        ),
+        )
+        .groupBy(schema.nominationEdges.campaignId),
       viewerIdentityId
         ? this.db
-            .select({ value: count(schema.nominations.id) })
+            .select({ campaignId: schema.nominations.campaignId, value: count(schema.nominations.id) })
             .from(schema.nominations)
             .where(
               and(
-                eq(schema.nominations.campaignId, campaign.id),
+                inArray(schema.nominations.campaignId, campaignIds),
                 eq(schema.nominations.giverIdentityId, viewerIdentityId),
                 inArray(schema.nominations.status, [
                   "SUBMITTED",
@@ -342,27 +356,64 @@ export class CampaignService {
                 ])
               )
             )
-        : Promise.resolve([{ value: 0 }]),
-      viewerIdentityId
-        ? this.viewerEligibility(campaign, viewerIdentityId)
-        : Promise.resolve(null),
-      campaign.experimentId
+            .groupBy(schema.nominations.campaignId)
+        : Promise.resolve([] as Array<{ campaignId: string; value: number }>),
+      experimentIds.length
         ? this.db.select({
             id: schema.campaignExperiments.id,
             version: schema.campaignExperiments.experimentVersion,
             variant: schema.campaignExperiments.variant,
             status: schema.campaignExperiments.status
           }).from(schema.campaignExperiments)
-            .where(eq(schema.campaignExperiments.id, campaign.experimentId)).limit(1)
-        : Promise.resolve([]),
+            .where(inArray(schema.campaignExperiments.id, experimentIds))
+        : Promise.resolve([] as Array<{ id: string; version: string; variant: string; status: string }>),
       this.db.select({
+        campaignId: schema.campaignLifecycleIntents.campaignId,
         action: schema.campaignLifecycleIntents.action,
         status: schema.campaignLifecycleIntents.status,
         transactionHash: schema.campaignLifecycleIntents.transactionHash
       }).from(schema.campaignLifecycleIntents)
-        .where(eq(schema.campaignLifecycleIntents.campaignId, campaign.id))
+        .where(inArray(schema.campaignLifecycleIntents.campaignId, campaignIds)),
+      viewerIdentityId
+        ? Promise.all(campaigns.map((campaign) => this.viewerEligibility(campaign, viewerIdentityId)))
+        : Promise.resolve(campaigns.map(() => null))
     ]);
 
+    const organizationById = new Map(organizations.map((item) => [item.id, item]));
+    const resourceByCampaign = new Map<string, (typeof resources)[number]>();
+    for (const resource of resources) if (!resourceByCampaign.has(resource.campaignId)) resourceByCampaign.set(resource.campaignId, resource);
+    const participantsByCampaign = new Map(participantRows.map((row) => [row.campaignId, row.value]));
+    const nominationsByCampaign = new Map(nominationRows.map((row) => [row.campaignId, row.value]));
+    const experimentById = new Map(experiments.map((item) => [item.id, item]));
+    const lifecycleByCampaign = new Map<string, typeof lifecycleRows>();
+    for (const row of lifecycleRows) lifecycleByCampaign.set(row.campaignId, [...(lifecycleByCampaign.get(row.campaignId) ?? []), row]);
+
+    return campaigns.map((campaign, index) => this.viewFrom(campaign, viewerIdentityId, {
+      organization: organizationById.get(campaign.organizationId),
+      resource: resourceByCampaign.get(campaign.id),
+      participantAggregate: { value: participantsByCampaign.get(campaign.id) ?? 0 },
+      nominationAggregate: { value: nominationsByCampaign.get(campaign.id) ?? 0 },
+      eligibility: eligibilities[index] ?? null,
+      experiment: campaign.experimentId ? experimentById.get(campaign.experimentId) : undefined,
+      lifecycle: lifecycleByCampaign.get(campaign.id) ?? []
+    }));
+  }
+
+  private viewFrom(
+    campaign: typeof schema.campaigns.$inferSelect,
+    viewerIdentityId: string | undefined,
+    {
+      organization, resource, participantAggregate, nominationAggregate, eligibility, experiment, lifecycle
+    }: {
+      organization: { id: string; name: string; slug: string } | undefined;
+      resource: typeof schema.campaignResources.$inferSelect | undefined;
+      participantAggregate: { value: number };
+      nominationAggregate: { value: number };
+      eligibility: Awaited<ReturnType<CampaignService["viewerEligibility"]>> | null;
+      experiment: { id: string; version: string; variant: string; status: string } | undefined;
+      lifecycle: Array<{ action: string; status: string; transactionHash: string | null }>;
+    }
+  ) {
     const usedTakes = Number(nominationAggregate?.value ?? 0);
     const eligibleToParticipate = eligibility?.status === "ELIGIBLE"
       || eligibility?.status === "LEGACY_UNCHECKED";

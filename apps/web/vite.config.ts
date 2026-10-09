@@ -1,5 +1,27 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
+
+// Preload the two Latin text faces the first screen paints with (hashed by Vite),
+// so headline and body text do not wait for CSS to discover them.
+function preloadFirstPaintFonts(): Plugin {
+  const wanted = [/^inter-tight-latin-wght-normal-.*\.woff2$/, /^inter-latin-wght-normal-.*\.woff2$/];
+  return {
+    name: "take-preload-fonts",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(_html, context) {
+        const files = Object.keys(context.bundle ?? {}).filter((file) => wanted.some((pattern) => pattern.test(file.split("/").pop() ?? "")));
+        return files.map((file) => ({
+          tag: "link",
+          attrs: { rel: "preload", as: "font", type: "font/woff2", href: `/${file}`, crossorigin: "" },
+          injectTo: "head" as const,
+        }));
+      },
+    },
+  };
+}
 
 // Production API used when a Vercel preview build has no VITE_API_BASE_URL of its own.
 const PRODUCTION_API_URL = "https://take-api-sand.vercel.app";
@@ -27,5 +49,5 @@ export default defineConfig(({ mode }) => {
       define["import.meta.env.VITE_API_BASE_URL"] = JSON.stringify(PRODUCTION_API_URL);
     }
   }
-  return { plugins: [react()], define };
+  return { plugins: [react(), preloadFirstPaintFonts()], define };
 });

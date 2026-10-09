@@ -62,7 +62,7 @@
   line-height: 0.98;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  filter: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.16)) drop-shadow(0 10px 16px rgba(14, 44, 86, 0.16));
+  filter: drop-shadow(0 8px 13px rgba(14, 44, 86, 0.22));
 }
 
 .identity-gate p {
@@ -790,3 +790,18 @@
 .team-review-queue .team-review { box-shadow: inset 0 0 0 2px #11110f; }
 .team-review__form .signal-checkbox { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
 .team-review__form .signal-checkbox input { flex: none; width: 18px; height: 18px; min-height: 0; margin: 2px 0 0; padding: 0; accent-color: #11110f; }
+
+/* Smaller sky (AVIF/WebP) where supported; same picture. */
+@supports (background-image: image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"))) {
+  .identity-gate {
+    background:image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"), url("/assets/sticker/sky-clouds.webp") type("image/webp"), url("/assets/sticker/sky-clouds.jpg") type("image/jpeg")) center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 48%, #b9defb 100%);
+  }
+  .landing-page::before {
+    background:image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"), url("/assets/sticker/sky-clouds.webp") type("image/webp"), url("/assets/sticker/sky-clouds.jpg") type("image/jpeg")) center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 46%, #b9defb 100%);
+  }
+}
+
+/* Fixed sky on its own compositor layer: no repaint while scrolling on iOS. */
+.landing-page::before { transform: translateZ(0); backface-visibility: hidden; }

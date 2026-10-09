@@ -9,7 +9,8 @@
   --sticker-paper: #f7f5ee;
   --sticker-ink: #11110f;
   --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
-  --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  /* One drop-shadow pass instead of two: same look, about half the raster work per sticker. */
+  --sticker-drop: drop-shadow(0 6px 10px rgba(14, 44, 86, 0.26));
   --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   isolation: isolate;
   background:
@@ -46,7 +47,7 @@
   display: block;
   width: auto;
   height: 58px;
-  filter: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.18)) drop-shadow(0 6px 10px rgba(14, 44, 86, 0.18));
+  filter: drop-shadow(0 4px 8px rgba(14, 44, 86, 0.24));
   transform-origin: 50% 60%;
   transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
   user-select: none;
@@ -331,4 +332,12 @@
   .landing-sky__secondary:active,
   .landing-sky .landing-sign-in:hover { transform: none; }
   .landing-sky__mascot img { animation: none; }
+}
+
+/* Smaller sky (AVIF/WebP) where supported; same picture. */
+@supports (background-image: image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"))) {
+  .landing-sky {
+    background:image-set(url("/assets/sticker/sky-clouds.avif") type("image/avif"), url("/assets/sticker/sky-clouds.webp") type("image/webp"), url("/assets/sticker/sky-clouds.jpg") type("image/jpeg")) center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 46%, #b9defb 100%);
+  }
 }

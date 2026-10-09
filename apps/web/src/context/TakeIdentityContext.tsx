@@ -1,4 +1,4 @@
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "../lib/privy";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createTakeApiClient, type TakeApiClient } from "../lib/takeApi";
 import type { TakeHistory, TakeMe } from "../types/identity";
@@ -13,6 +13,8 @@ interface IdentitySnapshot {
 
 interface TakeIdentityContextValue {
   status: TakeIdentityStatus;
+  /** The signed-in Privy user while authenticated, before /me resolves. Lets other data load in parallel. */
+  sessionId: string | null;
   me: TakeMe | null;
   history: TakeHistory | null;
   error: string | null;
@@ -137,6 +139,7 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<TakeIdentityContextValue>(() => ({
     status: activeSnapshot ? "ready" : status,
+    sessionId: ready && authenticated ? currentPrivyUserId : null,
     me: activeSnapshot?.me ?? null,
     history: activeSnapshot?.history ?? null,
     error,
@@ -144,7 +147,7 @@ export function TakeIdentityProvider({ children }: { children: ReactNode }) {
     request: client.request,
     refetch,
     clear,
-  }), [activeSnapshot, clear, client.request, error, refetch, refreshing, status]);
+  }), [activeSnapshot, authenticated, clear, client.request, currentPrivyUserId, error, ready, refetch, refreshing, status]);
 
   return <TakeIdentityContext.Provider value={value}>{children}</TakeIdentityContext.Provider>;
 }

@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
   linkWallet: vi.fn(),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
   useUser: () => ({ refreshUser: mocks.refreshUser }),
   useUnlinkOAuth: () => ({ unlink: mocks.unlinkOAuth }),
   useUnlinkWallet: () => ({ unlink: mocks.unlinkWallet }),
