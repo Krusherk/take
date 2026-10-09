@@ -52,6 +52,11 @@ export async function buildApp() {
         details: error.issues
       });
     }
+    // Framework client errors (bad content type, malformed JSON, oversized body) keep their 4xx.
+    const statusCode = (error as { statusCode?: unknown }).statusCode;
+    if (typeof statusCode === "number" && statusCode >= 400 && statusCode < 500) {
+      return reply.code(statusCode).send({ error: (error as { code?: string }).code ?? "BAD_REQUEST", message: error instanceof Error ? error.message : "Bad request" });
+    }
     // RPC/client exceptions may embed credentials in URLs or request headers.
     app.log.error(safeErrorDetails(error), "TAKE request failed");
     return reply.code(500).send({ error: "INTERNAL_ERROR", message: "Internal server error" });
