@@ -98,13 +98,22 @@ export class QuickNodeIndexer {
       };
     }
 
-    const toBlock = minBigInt(
-      fromBlock + BigInt(this.env.CHAIN_INDEXER_MAX_BLOCK_RANGE) - 1n,
-      safeHead
-    );
-    const logs = await getTakeCampaignManagerLogs(client, contractAddress, fromBlock, toBlock);
-    const metadata = await loadBlockMetadata(client, logs.map((item) => item.log.blockNumber));
-    const finalizedHead = await client.getBlock({ blockNumber: toBlock });
+    // Each eth_getLogs window stays within CHAIN_INDEXER_MAX_BLOCK_RANGE (the
+    // QuickNode cap). Several consecutive windows are fetched concurrently so a
+    // long backlog catches up in a bounded number of serverless invocations.
+    // The cursor only advances after every window succeeded and was persisted.
+    const range = BigInt(this.env.CHAIN_INDEXER_MAX_BLOCK_RANGE);
+    const parallel = BigInt(this.env.CHAIN_INDEXER_PARALLEL_RANGES);
+    const toBlock = minBigInt(fromBlock + range * parallel - 1n, safeHead);
+    const windows: Array<[bigint, bigint]> = [];
+    for (let start = fromBlock; start <= toBlock; start += range) {
+      windows.push([start, minBigInt(start + range - 1n, toBlock)]);
+    }
+    const logs = (await Promise.all(windows.map(([start, end]) =>
+      withRetry(() => getTakeCampaignManagerLogs(client, contractAddress, start, end))
+    ))).flat();
+    const metadata = await withRetry(() => loadBlockMetadata(client, logs.map((item) => item.log.blockNumber)));
+    const finalizedHead = await withRetry(() => client.getBlock({ blockNumber: toBlock }));
     if (!finalizedHead.hash) throw new Error("Finalized block did not include a hash");
 
     await this.persistRange(client, chainConfig.chainId, contractAddress, logs, metadata);
@@ -822,6 +831,19 @@ function serializeArgs(args: unknown): Record<string, string> {
   return JSON.parse(
     JSON.stringify(args, (_key, value) => (typeof value === "bigint" ? value.toString() : value))
   ) as Record<string, string>;
+}
+
+async function withRetry<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts - 1) await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+    }
+  }
+  throw lastError;
 }
 
 function minBigInt(left: bigint, right: bigint) {

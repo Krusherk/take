@@ -13,7 +13,7 @@ const optionalAddress = z.preprocess(
   z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional()
 );
 const urlList = z.string().default(
-  "https://api.drand.sh,https://api2.drand.sh,https://drand.cloudflare.com"
+  "https://api.drand.sh,https://api2.drand.sh,https://api3.drand.sh"
 ).transform((value, context) => {
   const entries = [...new Set(value.split(",").map((entry) => entry.trim()).filter(Boolean))];
   if (entries.length < 2) {
@@ -63,6 +63,8 @@ export const apiEnvSchema = z.object({
   TAKE_CAMPAIGN_MANAGER_START_BLOCK: z.coerce.number().int().nonnegative().default(0),
   CHAIN_INDEXER_CONFIRMATIONS: z.coerce.number().int().nonnegative().default(2),
   CHAIN_INDEXER_MAX_BLOCK_RANGE: z.coerce.number().int().positive().max(1000).default(1000),
+  CHAIN_INDEXER_PARALLEL_RANGES: z.coerce.number().int().positive().max(25).default(5),
+  CHAIN_INDEXER_STALE_AFTER_MS: z.coerce.number().int().positive().max(86_400_000).default(120_000),
   CHAIN_INDEXER_REORG_LOOKBACK: z.coerce.number().int().positive().max(10_000).default(128),
   EVIDENCE_COLLECTION_CONCURRENCY: z.coerce.number().int().positive().max(20).default(5),
   DRAND_RELAY_URLS: urlList,
