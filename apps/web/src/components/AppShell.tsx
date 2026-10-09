@@ -30,6 +30,12 @@ const mobileItems: Array<{ label: string; path: TakePath; icon: typeof Home }> =
 
 // Sticker-collage sky. Other routes keep their own surface.
 const skyPaths = new Set<TakePath>(["/home", "/explore", "/signal", "/organize", "/profile", "/notifications", "/takes", "/activity"]);
+/** Campaign detail (/campaign/:id) sits on the sky; the give flow steps keep their own frame. */
+const campaignDetailPath = /^\/campaign\/[^/]+$/;
+
+function isSkyPath(path: TakePath) {
+  return skyPaths.has(path) || campaignDetailPath.test(path);
+}
 
 function NavLink({ label, destination, path, navigate }: { label: string; destination: TakePath; path: TakePath; navigate: (path: TakePath) => void }) {
   const active = path === destination;
@@ -98,7 +104,7 @@ export function AppShell({ path, navigate, children, unreadCount, currentPerson,
   }
 
   return (
-    <div className={`app-shell${skyPaths.has(path) ? " app-shell--sky" : ""}`}>
+    <div className={`app-shell${isSkyPath(path) ? " app-shell--sky" : ""}`}>
       <div className="app-noise" aria-hidden="true" />
       <header className="app-header">
         <div className="app-header__inner">

@@ -30,9 +30,11 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
   const givenPerson = givenEntry?.person ? personFromHistoryPerson(givenEntry.person, `${givenEntry.id}:recipient`) : optimisticRecipient;
   const visibleActivity = me && history ? activityFromHistory(me, history).slice(0, 4) : [];
   const openCampaigns = participantCampaigns.filter((campaign) => campaign.status !== "CLOSED");
-  // The hero already shows the active TAKE's campaign; the board lists the rest.
-  const showFeatured = featured && featured.id !== activeTake?.id ? featured : null;
-  const shownIds = new Set([activeTake?.id, showFeatured?.id]);
+  // With no TAKE of their own, the hero still leads with the live campaign so it is never hidden.
+  const heroCampaign = activeTake ?? featured;
+  // The hero already shows that campaign; the board lists the rest.
+  const showFeatured = featured && featured.id !== heroCampaign?.id ? featured : null;
+  const shownIds = new Set([heroCampaign?.id, showFeatured?.id]);
   const moreOpen = openCampaigns.filter((campaign) => !shownIds.has(campaign.id)).slice(0, 3);
 
   return (
@@ -51,7 +53,7 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
 
       {status === "ready" ? (
         <>
-          <YourTake campaign={activeTake} isGiven={isGiven} recipient={givenPerson} currentPerson={currentPerson} navigate={navigate} />
+          <YourTake campaign={heroCampaign} hasTake={Boolean(activeTake)} isGiven={isGiven} recipient={givenPerson} currentPerson={currentPerson} navigate={navigate} />
 
           <div className="sticker-home__board">
             {showFeatured ? (
@@ -68,7 +70,7 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
               ) : moreOpen.length ? (
                 <ul className="sticker-home__list">{moreOpen.map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}</ul>
               ) : (
-                <p className="sticker-home__aside">Everything open right now is above.</p>
+                <p className="sticker-home__aside">Nothing else is open right now.</p>
               )}
             </section>
 
@@ -87,21 +89,38 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
   );
 }
 
-/** The one clear next action: give it, see who you chose, or go find a campaign. */
-function YourTake({ campaign, isGiven, recipient, currentPerson, navigate }: {
+/**
+ * The one clear next action: give it, see who you chose, open the live
+ * campaign you can follow, or go find a campaign.
+ */
+function YourTake({ campaign, hasTake, isGiven, recipient, currentPerson, navigate }: {
   campaign?: Campaign;
+  hasTake: boolean;
   isGiven: boolean;
   recipient: Person | null;
   currentPerson: Person;
   navigate: (path: TakePath) => void;
 }) {
-  const state = !campaign ? "none" : isGiven ? "given" : "available";
-  const headline = state === "none" ? "No TAKE is waiting." : state === "given" ? "Your TAKE is given." : "You have one TAKE.";
+  const state = !campaign ? "none" : !hasTake ? "watching" : isGiven ? "given" : "available";
+  const headline = state === "none"
+    ? "No TAKE is waiting."
+    : state === "watching"
+      ? watchingHeadline(campaign!)
+      : state === "given" ? "Your TAKE is given." : "You have one TAKE.";
   const action = !campaign
     ? { label: "Explore campaigns", to: "/explore" as TakePath }
-    : isGiven
-      ? { label: "View your choice", to: "/takes" as TakePath }
-      : { label: "Give your TAKE", to: campaignPath(campaign, "/give") as TakePath };
+    : state === "watching"
+      ? { label: `Open ${campaign.title}`, to: campaignPath(campaign) as TakePath }
+      : isGiven
+        ? { label: "View your choice", to: "/takes" as TakePath }
+        : { label: "Give your TAKE", to: campaignPath(campaign, "/give") as TakePath };
+  const stateSticker = state === "watching"
+    ? <StatusSticker status={campaign!.status} tilt={-8} delay={220} />
+    : (
+      <Sticker tilt={-8} delay={220} as="span" className={`status-sticker status-sticker--${state === "available" ? "live" : state === "given" ? "upcoming" : "closed"}`}>
+        <span>{state === "available" ? "YOUR TAKE" : state === "given" ? "GIVEN" : "NONE ACTIVE"}</span>
+      </Sticker>
+    );
 
   return (
     <section className={`sticker-home__take sticker-home__take--${state}`} aria-labelledby="home-your-take">
@@ -113,11 +132,7 @@ function YourTake({ campaign, isGiven, recipient, currentPerson, navigate }: {
         ) : (
           <span className="sticker-home__ticket sticker-home__ticket--idle" aria-hidden="true"><CampaignSticker campaign={{ title: "TAKE" }} tilt={-5} delay={140} /></span>
         )}
-        <span className="sticker-home__state">
-          <Sticker tilt={-8} delay={220} as="span" className={`status-sticker status-sticker--${state === "available" ? "live" : state === "given" ? "upcoming" : "closed"}`}>
-            <span>{state === "available" ? "YOUR TAKE" : state === "given" ? "GIVEN" : "NONE ACTIVE"}</span>
-          </Sticker>
-        </span>
+        <span className="sticker-home__state">{stateSticker}</span>
         <MascotSticker kind="lime" tilt={-9} delay={300} className="sticker-home__mascot" />
       </div>
 
@@ -126,15 +141,17 @@ function YourTake({ campaign, isGiven, recipient, currentPerson, navigate }: {
       {campaign ? (
         <>
           <PaperLabel size="sm" tilt={-1.5} delay={200} className="sticker-home__meta">
-            {campaign.title} · by {campaign.organizer} · {campaign.status === "UPCOMING" ? `opens ${campaign.starts}` : `ends ${campaign.ends}`}
+            {state === "watching" ? "" : `${campaign.title} · `}by {campaign.organizer} · {campaign.status === "UPCOMING" ? `opens ${campaign.starts}` : campaign.status === "CLOSED" ? `ended ${campaign.ends}` : `ends ${campaign.ends}`}
           </PaperLabel>
-          <div className="sticker-home__handoff" role="group" aria-label={isGiven && recipient ? `You gave your TAKE to ${recipient.name}` : "Your TAKE"}>
-            <FaceSticker person={currentPerson} size="sm" tilt={-6} delay={230} label="you" />
-            <PassArrow className="pass-arrow--sm" />
-            {isGiven && recipient
-              ? <FaceSticker person={recipient} size="sm" tilt={5} delay={270} label={recipient.name} />
-              : <EmptySlotSticker size="sm" tilt={5} delay={270} label={isGiven ? "given" : "someone else"} />}
-          </div>
+          {state === "watching" ? null : (
+            <div className="sticker-home__handoff" role="group" aria-label={isGiven && recipient ? `You gave your TAKE to ${recipient.name}` : "Your TAKE"}>
+              <FaceSticker person={currentPerson} size="sm" tilt={-6} delay={230} label="you" />
+              <PassArrow className="pass-arrow--sm" />
+              {isGiven && recipient
+                ? <FaceSticker person={recipient} size="sm" tilt={5} delay={270} label={recipient.name} />
+                : <EmptySlotSticker size="sm" tilt={5} delay={270} label={isGiven ? "given" : "someone else"} />}
+            </div>
+          )}
         </>
       ) : (
         <PaperLabel size="sm" tilt={-1} delay={240}>Explore live campaigns to see where you can participate.</PaperLabel>
@@ -143,10 +160,24 @@ function YourTake({ campaign, isGiven, recipient, currentPerson, navigate }: {
       <Sticker tilt={-1.5} delay={320} className="sticker-cta">
         <button className="sticker-pill" type="button" onClick={() => navigate(action.to)}>{action.label}</button>
       </Sticker>
-      {campaign && !isGiven ? <p className="sticker-note">One person. One choice. You cannot give it to yourself.</p> : null}
+      {state === "available" ? <p className="sticker-note">One person. One choice. You cannot give it to yourself.</p> : null}
+      {state === "watching" ? <p className="sticker-note">{watchingNote(campaign!)}</p> : null}
       {campaign?.description ? <PaperLabel size="md" tilt={1} delay={360} className="sticker-home__copy">{campaign.description}</PaperLabel> : null}
     </section>
   );
+}
+
+function watchingHeadline(campaign: Campaign) {
+  if (campaign.status === "LIVE") return `${campaign.title} is live.`;
+  if (campaign.status === "UPCOMING") return `${campaign.title} opens soon.`;
+  return `${campaign.title} has closed.`;
+}
+
+function watchingNote(campaign: Campaign) {
+  if (campaign.sourceStatus === "CREATED") return "It is on Monad. You can give after nominations open.";
+  if (campaign.status === "UPCOMING") return `Nominations open ${campaign.starts}.`;
+  if (campaign.status === "CLOSED") return "The chance to give a TAKE has passed.";
+  return "You are not on this campaign’s giver list, but you can follow it here.";
 }
 
 function FeaturedSticker({ campaign, navigate }: { campaign: Campaign; navigate: (path: TakePath) => void }) {
