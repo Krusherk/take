@@ -13,7 +13,7 @@ const optionalAddress = z.preprocess(
   z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional()
 );
 const urlList = z.string().default(
-  "https://api.drand.sh,https://api2.drand.sh,https://drand.cloudflare.com"
+  "https://api.drand.sh,https://api2.drand.sh,https://api3.drand.sh"
 ).transform((value, context) => {
   const entries = [...new Set(value.split(",").map((entry) => entry.trim()).filter(Boolean))];
   if (entries.length < 2) {
