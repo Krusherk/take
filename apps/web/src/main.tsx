@@ -16,6 +16,7 @@ import "./recovered-functional.css";
 import "./signal.css";
 import "./sticker.css";
 import "./landing-sky.css";
+import "./sticker-surfaces.css";
 
 const root = document.getElementById("root");
 
