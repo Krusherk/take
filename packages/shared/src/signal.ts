@@ -33,15 +33,3 @@ export interface CampaignAfter {
   recommendations: Array<{ id: string; giver: SignalPerson; recipient: SignalPerson; givenAt: string }>;
 }
 
-/** A giver's social call on the person they backed. No money, no points, no effect on allocation. */
-export const signalCallValues = ["YES", "UNSURE", "NO"] as const;
-export type SignalCallValue = typeof signalCallValues[number];
-export interface SignalCallSplit { yes: number; unsure: number; no: number; total: number }
-export interface SignalCallEntry {
-  campaignId: string; recipientKey: string; mine: SignalCallValue | null;
-  /** Calls are open until the locked check date, unless the person was not chosen. */
-  open: boolean; closesAt: string | null;
-  /** Shown only after the campaign result is committed. Null before that. */
-  split: SignalCallSplit | null;
-}
-export interface SignalCalls { calls: SignalCallEntry[] }

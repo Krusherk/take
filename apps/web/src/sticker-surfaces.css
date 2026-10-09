@@ -739,3 +739,54 @@
 .app-shell--sky .operator-page .operator-control-head { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .app-shell--sky .operator-page .operator-control-head .action--secondary { justify-self: start; min-height: 40px; padding-inline: 14px; }
 .app-shell--sky .operator-page .operator-wallet-panel > div:first-child > svg { flex-shrink: 0; width: 20px; height: 20px; }
+
+/* ---------- Team review (organizer and operators) ---------- */
+.team-review {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px #11110f, 0 8px 18px rgba(14, 44, 86, 0.14);
+  color: #11110f;
+}
+.team-review > header { display: grid; gap: 6px; justify-items: start; }
+.team-review > header h3 { margin: 0; font-size: 19px; font-weight: 820; letter-spacing: -0.02em; line-height: 1.2; }
+.team-review__tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 1.5px #11110f;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+.team-review__due { padding: 4px 10px; border-radius: 999px; background: #eef3fa; font-size: 13px; font-weight: 750; }
+.team-review__due.is-due { background: #11110f; color: #ffffff; }
+.team-review details summary { cursor: pointer; font-weight: 700; font-size: 14px; }
+.team-review details p { margin: 6px 0; font-size: 14px; line-height: 1.45; }
+.team-review__wait { margin: 0; padding: 10px 12px; border-radius: 12px; background: #f4f9ff; font-size: 14px; }
+.team-review__people { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.team-review__row { display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: #f4f9ff; }
+.team-review__person { display: grid; gap: 8px; justify-items: start; }
+.team-review__row .action--secondary { justify-self: start; }
+.team-review__choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.team-review__choices button {
+  min-height: 42px;
+  border: 2px solid #11110f;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #11110f;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.team-review__choices button.is-selected { background: #c6ff31; }
+.team-review__form { margin-top: 0; gap: 12px; }
+.team-review__who { color: #55554f; font-size: 12px; }
+.team-review--none p { margin: 0; font-size: 14px; }
+.team-review-queue .team-review { box-shadow: inset 0 0 0 2px #11110f; }
+.team-review__form .signal-checkbox { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
+.team-review__form .signal-checkbox input { flex: none; width: 18px; height: 18px; min-height: 0; margin: 2px 0 0; padding: 0; accent-color: #11110f; }

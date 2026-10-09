@@ -1,8 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { signalCallValues, signalDomains } from "@take/shared";
+import { signalDomains } from "@take/shared";
 import { SignalService } from "../services/signal.js";
-import { SignalCallService } from "../services/signalCalls.js";
 import { assertOrganizationRole, assertTakeOperator, isTakeOperator } from "../services/authorization.js";
 import { GraphService } from "../services/graph.js";
 import { notFound } from "../services/errors.js";
@@ -15,33 +14,27 @@ const evidenceUrl = z.string().url().max(2_000).refine((value) => {
 
 export const signalRoutes: FastifyPluginAsync = async (app) => {
   const signal = new SignalService(app.db);
-  const calls = new SignalCallService(app.db);
   app.get("/me/signal", async (request, reply) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
     reply.header("Cache-Control", "private, no-store");
     return signal.history(request.takeIdentity.protocolIdentityKey);
   });
-  app.get("/me/signal/calls", async (request, reply) => {
-    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
-    reply.header("Cache-Control", "private, no-store");
-    return calls.mine(request.takeIdentity.protocolIdentityKey);
-  });
-  app.post<{ Params: { id: string } }>("/campaigns/:id/calls", async (request, reply) => {
-    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
-    const input = z.object({
-      recipientKey: z.string().regex(/^0x[0-9a-fA-F]{64}$/).transform((value) => value.toLowerCase()),
-      call: z.enum(signalCallValues)
-    }).strict().parse(request.body);
-    return calls.make(id.parse(request.params.id), request.takeIdentity.protocolIdentityKey, input);
-  });
-  app.get<{ Params: { id: string } }>("/campaigns/:id/after", async (request) => {
+  // The campaign team: TAKE operators and the organizer (organization OWNER or ADMIN).
+  // The same people who may lock the check may record what happened.
+  async function isCampaignTeam(identity: Parameters<typeof isTakeOperator>[1], organizationId: string) {
+    if (isTakeOperator(app.env, identity)) return true;
+    if (!identity) return false;
+    try { await assertOrganizationRole(app.db, organizationId, identity.takeIdentityId, ["OWNER", "ADMIN"]); return true; }
+    catch { return false; }
+  }
+  app.get<{ Params: { id: string } }>("/campaigns/:id/after", async (request, reply) => {
     const campaignId = id.parse(request.params.id);
     const campaign = await signal.campaign(campaignId);
-    if (campaign.status === "DRAFT" && !isTakeOperator(app.env, request.takeIdentity)) {
-      if (!request.takeIdentity) notFound("Campaign not found");
-      await assertOrganizationRole(app.db, campaign.organizationId, request.takeIdentity.takeIdentityId, ["OWNER", "ADMIN"]);
-    }
-    return signal.after(campaignId);
+    const team = await isCampaignTeam(request.takeIdentity, campaign.organizationId);
+    if (campaign.status === "DRAFT" && !team) notFound("Campaign not found");
+    // The team sees its own private review notes; everyone else sees public ones only.
+    if (team) reply.header("Cache-Control", "private, no-store");
+    return signal.after(campaignId, team);
   });
   app.post<{ Params: { id: string } }>("/campaigns/:id/evaluation-plan", async (request, reply) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
@@ -57,12 +50,16 @@ export const signalRoutes: FastifyPluginAsync = async (app) => {
     reply.header("Cache-Control", "private, no-store");
     return signal.queue();
   });
-  app.post<{ Params: { id: string } }>("/operator/campaigns/:id/evaluations", async (request) => {
-    const actor = assertTakeOperator(app.env, request.takeIdentity);
+  app.post<{ Params: { id: string } }>("/operator/campaigns/:id/evaluations", async (request, reply) => {
+    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    const campaignId = id.parse(request.params.id);
+    const campaign = await signal.campaign(campaignId);
+    // Team review: TAKE operators, or the campaign's organizer (OWNER/ADMIN).
+    if (!isTakeOperator(app.env, request.takeIdentity)) await assertOrganizationRole(app.db, campaign.organizationId, request.takeIdentity.takeIdentityId, ["OWNER", "ADMIN"]);
     const input = z.object({ recipientKey: z.string().regex(/^0x[0-9a-fA-F]{64}$/).transform((value) => value.toLowerCase()),
       status: z.enum(["PENDING", "POSITIVE", "NEGATIVE", "INCONCLUSIVE"]),
       evidenceUrls: z.array(evidenceUrl).max(5), note: z.string().trim().min(3).max(2_000), isPublic: z.boolean() }).strict().parse(request.body);
-    return signal.recordEvaluation(id.parse(request.params.id), actor.takeIdentityId, input);
+    return signal.recordEvaluation(campaignId, request.takeIdentity.takeIdentityId, input);
   });
   app.get<{ Params: { id: string } }>("/operator/campaigns/:id/integrity-observations", async (request, reply) => {
     assertTakeOperator(app.env, request.takeIdentity);

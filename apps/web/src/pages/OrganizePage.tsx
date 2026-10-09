@@ -4,7 +4,7 @@ import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { Avatar } from "../components/Avatar";
 import { CampaignLaunchSigner } from "../components/CampaignLaunchSigner";
 import { OrganizerEligibilityWorkspace } from "../components/eligibility/OrganizerEligibilityWorkspace";
-import { EvaluationPlanEditor } from "../components/SignalControls";
+import { EvaluationPlanEditor, TeamReview } from "../components/SignalControls";
 import { ProductError, ProductLoading } from "../components/ProductState";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
@@ -436,6 +436,7 @@ function CampaignNext({ campaign, phase, operator, request, onChanged, navigate 
           <SecondaryAction onClick={() => navigate(`/campaign/${campaign.id}`)}>Open this campaign</SecondaryAction>
         </div>
       ) : null}
+      {phase === "LIVE" || phase === "SCHEDULED" || phase === "ENDED" ? <TeamReview key={`review:${campaign.id}`} campaignId={campaign.id} request={request} /> : null}
     </section>
   );
 }
@@ -599,7 +600,7 @@ function CheckStep(props: {
         <div>
           <span className="organize-check__tag">AFTER THE TAKE</span>
           <h3 id="organize-check-title">Schedule a check</h3>
-          <p>Pick a question and a date. After the check date, a TAKE operator records what happened for each person who got the spot. Givers can call it before then. Nothing here changes who gets the spot.</p>
+          <p>Pick a question and a date. On that date, your team (you and TAKE operators) records Yes, No, or Unclear for each person who got the spot. Everyone sees the result on Signal. Nothing here changes who gets the spot.</p>
         </div>
         <label className="organize-check__switch">
           <input type="checkbox" checked={props.on} onChange={(event) => props.onToggle(event.target.checked)} />
