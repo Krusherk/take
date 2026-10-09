@@ -125,14 +125,16 @@ describe.sequential("auto-finalizer (mocked Monad)", () => {
     const first = await new AutoFinalizer(db, env, deps).run();
     const mine = first.steps.filter((item) => item.campaignId === campaignId);
     expect(mine.map((item) => [item.action, item.outcome])).toEqual([["CLOSE", "COMPLETED"], ["ALLOCATE", "COMPLETED"], ["FINALIZE", "COMPLETED"]]);
-    expect(chain.broadcasts.map((item) => item.functionName)).toEqual(["closeCampaign", "finalizeAllocation"]);
-    expect(chain.broadcasts[1]!.args).toEqual([id, keccak256(toHex(`result:${campaignId}`))]);
-    expect(mine[2]!.transactionHash).toBe(chain.broadcasts[1]!.hash);
+    // Other campaigns left in a shared test database may be advanced too; look at this one.
+    const sent = () => chain.broadcasts.filter((item) => item.args[0] === id);
+    expect(sent().map((item) => item.functionName)).toEqual(["closeCampaign", "finalizeAllocation"]);
+    expect(sent()[1]!.args).toEqual([id, keccak256(toHex(`result:${campaignId}`))]);
+    expect(mine[2]!.transactionHash).toBe(sent()[1]!.hash);
 
     const second = await new AutoFinalizer(db, env, deps).run();
     expect(second.steps.filter((item) => item.campaignId === campaignId)).toEqual([]);
-    expect(chain.broadcasts).toHaveLength(2);
-    expect(allocationCalls).toEqual([campaignId]);
+    expect(sent()).toHaveLength(2);
+    expect(allocationCalls.filter((item) => item === campaignId)).toEqual([campaignId]);
   });
 
   it("closes and allocates but skips finalizing a campaign another wallet organizes", async () => {
@@ -143,7 +145,7 @@ describe.sequential("auto-finalizer (mocked Monad)", () => {
     const report = await new AutoFinalizer(db, env, deps).run();
     const mine = report.steps.filter((item) => item.campaignId === campaignId);
     expect(mine.map((item) => [item.action, item.outcome])).toEqual([["CLOSE", "COMPLETED"], ["ALLOCATE", "COMPLETED"], ["SKIP", "SERVER_WALLET_NOT_ORGANIZER"]]);
-    expect(chain.broadcasts.map((item) => item.functionName)).toEqual(["closeCampaign"]);
+    expect(chain.broadcasts.filter((item) => item.args[0] === id).map((item) => item.functionName)).toEqual(["closeCampaign"]);
   });
 
   it("never broadcasts twice when two runs overlap", async () => {
