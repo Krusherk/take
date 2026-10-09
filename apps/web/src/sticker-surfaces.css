@@ -544,6 +544,9 @@
 }
 
 .landing-page > * { position: relative; z-index: 1; }
+/* The sign-in sheet is also a direct child; it must stay pinned to the viewport,
+   not drop to the bottom of the page where a tap on the hero never shows it. */
+.landing-page > .landing-auth-layer { position: fixed; inset: 0; z-index: 100; }
 
 .landing-sky::after { display: none; }
 
