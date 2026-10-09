@@ -94,22 +94,47 @@ export function EmptySlotSticker({ label, tilt = 0, delay = 0, size = "lg" }: { 
   );
 }
 
-const TICKET_ART = "/assets/sticker/ticket.webp";
+const TICKET_ART = "/assets/sticker/ticket-blank.webp";
+
+/** The words printed on a ticket: a big count, a unit, and the TAKE badge. */
+export interface TicketFace {
+  count: string;
+  unit: string;
+  badge?: string | null;
+}
+
+/** Real spot and TAKE counts for a campaign, printed on its ticket. */
+export function ticketFace(campaign: Partial<Pick<Campaign, "spots" | "nominationLimit">>): TicketFace {
+  const spots = campaign.spots ?? 0;
+  const takes = campaign.nominationLimit ?? 1;
+  const badge = `${takes.toLocaleString("en-US")} ${takes === 1 ? "TAKE" : "TAKES"}`;
+  if (!spots) return { count: "1", unit: "OPPORTUNITY", badge };
+  return { count: spots.toLocaleString("en-US"), unit: spots === 1 ? "SPOT" : "SPOTS", badge };
+}
 
 /**
- * Campaign artwork for campaigns without an image: a generated ticket sticker.
- * The ticket is artwork only. The real spot count and dates stay in the text
- * stickers driven by campaign data.
+ * Campaign artwork: a generated blank ticket sticker with the campaign's real
+ * spot count and TAKE count printed on it as text.
  */
-export function CampaignSticker({ campaign, tilt = -4, delay = 0, size = "lg" }: {
-  campaign: Pick<Campaign, "title">;
+export function CampaignSticker({ campaign, face, tilt = -4, delay = 0, size = "lg" }: {
+  campaign: Pick<Campaign, "title"> & Partial<Pick<Campaign, "spots" | "nominationLimit">>;
+  face?: TicketFace;
   tilt?: number;
   delay?: number;
   size?: "sm" | "lg";
 }) {
+  const printed = face ?? ticketFace(campaign);
+  const label = `${campaign.title} ticket: ${printed.count} ${printed.unit.toLowerCase()}${printed.badge ? `, ${printed.badge.toLowerCase()}` : ""}`;
   return (
     <Sticker tilt={tilt} delay={delay} className={`campaign-sticker campaign-sticker--${size}`}>
-      <img src={TICKET_ART} alt={`${campaign.title} artwork`} width={760} height={516} decoding="async" draggable={false} />
+      <span className="campaign-sticker__face">
+        <img src={TICKET_ART} alt={label} width={760} height={516} decoding="async" draggable={false} />
+        <span className="campaign-sticker__print" aria-hidden="true" style={{ "--count-chars": printed.count.length } as CSSProperties}>
+          <span className="campaign-sticker__count">{printed.count}</span>
+          <span className="campaign-sticker__unit">{printed.unit}</span>
+        </span>
+        <span className={`campaign-sticker__badge${printed.badge ? "" : " campaign-sticker__badge--mark"}`} aria-hidden="true">{(printed.badge ?? "TAKE").split(" ").map((part) => <span key={part}>{part}</span>)}</span>
+      </span>
     </Sticker>
   );
 }

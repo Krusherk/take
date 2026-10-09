@@ -7,6 +7,7 @@ import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
+import { rankClosed, rankLive, rankUpcoming } from "../lib/campaignOrder";
 import { campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { TakeHistoryEntry } from "../types/identity";
 import type { Campaign, CampaignState, Person } from "../types/product";
@@ -19,7 +20,7 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
   const { campaigns, status, error, refetch } = useTakeProduct();
   const { me, history } = useTakeMe();
   const currentPerson = me ? personFromMe(me) : null;
-  const visible = useMemo(() => {
+  const matches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return campaigns.filter((campaign) => {
       if (!isParticipantCampaign(campaign)) return false;
@@ -28,8 +29,12 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
       return matchesFilter && matchesQuery;
     });
   }, [campaigns, filter, query]);
-  const featured = useMemo(() => pickFeatured(visible), [visible]);
-  const others = featured ? visible.filter((campaign) => campaign.id !== featured.id) : [];
+  // Every live campaign is listed: ones you can give in first, then ending soonest.
+  const live = useMemo(() => rankLive(matches), [matches]);
+  const upcoming = useMemo(() => rankUpcoming(matches), [matches]);
+  const closed = useMemo(() => rankClosed(matches), [matches]);
+  const [featured, ...moreLive] = live;
+  const nothing = !live.length && !upcoming.length && !closed.length;
 
   return (
     <div className="page-container sticker-page sticker-explore">
@@ -44,28 +49,46 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
       {status === "loading" || status === "idle" ? <ProductLoading label="Loading opportunities" /> : null}
       {status === "error" ? <ProductError message={error ?? "Campaigns are unavailable."} onRetry={() => void refetch()} /> : null}
       {status === "ready" ? (
-        featured ? (
-          <>
-            <FeaturedCampaign key={featured.id} campaign={featured} currentPerson={currentPerson} recipient={historyRecipient(history?.given.find((entry) => entry.campaignId === featured.id))} navigate={navigate} />
-            {others.length ? (
-              <section className="sticker-more" aria-label="More campaigns">
-                <h2><PaperLabel size="sm" tilt={-2}>More opportunities</PaperLabel></h2>
-                <ul>
-                  {others.map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}
-                </ul>
-              </section>
-            ) : null}
-          </>
-        ) : (
+        nothing ? (
           <section className="sticker-empty" aria-label="Campaigns">
             <EmptySlotSticker tilt={-5} />
             <h2><PaperLabel size="lg" tilt={-2} delay={60}>{emptyTitle(filter, query)}</PaperLabel></h2>
             <PaperLabel size="sm" tilt={1.5} delay={120}>{emptyBody(filter, query)}</PaperLabel>
             {query ? null : <Sticker tilt={-1} delay={180} className="sticker-cta"><button className="sticker-pill" type="button" onClick={() => navigate("/organize")}>Create a campaign</button></Sticker>}
           </section>
+        ) : (
+          <>
+            {featured ? (
+              <section className="sticker-explore__section sticker-explore__live" aria-labelledby="explore-live">
+                <h2 id="explore-live"><PaperLabel size="sm" tilt={-2}>{live.length} live now</PaperLabel></h2>
+                <FeaturedCampaign key={featured.id} campaign={featured} currentPerson={currentPerson} recipient={historyRecipient(history?.given.find((entry) => entry.campaignId === featured.id))} navigate={navigate} />
+                {moreLive.length ? (
+                  <ul className="sticker-explore__list" aria-label="More live campaigns">
+                    {moreLive.map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}
+                  </ul>
+                ) : null}
+              </section>
+            ) : filter === "ALL" && !query ? (
+              <p className="sticker-explore__none"><PaperLabel size="sm" tilt={-1.5}>Nothing is live right now.</PaperLabel></p>
+            ) : null}
+            <CampaignSection id="explore-upcoming" title="Opening soon" campaigns={upcoming} navigate={navigate} />
+            <CampaignSection id="explore-closed" title="Closed" campaigns={closed} navigate={navigate} />
+          </>
         )
       ) : null}
     </div>
+  );
+}
+
+function CampaignSection({ id, title, campaigns, navigate }: { id: string; title: string; campaigns: Campaign[]; navigate: (path: TakePath) => void }) {
+  if (!campaigns.length) return null;
+  return (
+    <section className="sticker-more sticker-explore__section" aria-labelledby={id}>
+      <h2 id={id}><PaperLabel size="sm" tilt={-2}>{title} · {campaigns.length}</PaperLabel></h2>
+      <ul>
+        {campaigns.map((campaign, index) => <CampaignStickerRow key={campaign.id} campaign={campaign} index={index} navigate={navigate} />)}
+      </ul>
+    </section>
   );
 }
 
@@ -79,7 +102,6 @@ function FeaturedCampaign({ campaign, currentPerson, recipient, navigate }: {
   const given = (campaign.viewer?.usedTakes ?? 0) > 0;
   const available = canGive(campaign);
   const timing = campaign.status === "UPCOMING" ? `opens ${titleDate(campaign.starts)}` : campaign.status === "CLOSED" ? `ended ${titleDate(campaign.ends)}` : `ends ${titleDate(campaign.ends)}`;
-  const spots = campaign.spots ? `${campaign.spots.toLocaleString("en-US")} ${campaign.spots === 1 ? "spot" : "spots"}` : campaign.resourceName;
 
   return (
     <article className="sticker-campaign" aria-labelledby={`campaign-${campaign.id}-title`}>
@@ -104,7 +126,7 @@ function FeaturedCampaign({ campaign, currentPerson, recipient, navigate }: {
         </div>
       ) : null}
 
-      <PaperLabel size="sm" tilt={-1.5} delay={220} className="sticker-campaign__meta">{spots} · {timing}</PaperLabel>
+      <PaperLabel size="sm" tilt={-1.5} delay={220} className="sticker-campaign__meta">{campaign.resource} · {timing}</PaperLabel>
       {campaign.description ? <PaperLabel size="md" tilt={1} delay={260} className="sticker-campaign__copy">{campaign.description}</PaperLabel> : null}
 
       <Sticker tilt={-1.5} delay={300} className="sticker-cta">
@@ -122,11 +144,6 @@ function canGive(campaign: Campaign) {
     && (campaign.viewer?.usedTakes ?? 0) === 0
     && Boolean(campaign.viewer?.canParticipate)
     && (campaign.viewer?.availableTakes ?? 0) > 0;
-}
-
-/** Lead with a live campaign the viewer can give in, then any live one, then the first match. */
-function pickFeatured(campaigns: Campaign[]): Campaign | null {
-  return campaigns.find(canGive) ?? campaigns.find((campaign) => campaign.status === "LIVE") ?? campaigns[0] ?? null;
 }
 
 function viewerNote(campaign: Campaign, given: boolean, recipient: Person | null) {

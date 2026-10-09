@@ -70,26 +70,61 @@ describe("Home sticker page", () => {
     expect(navigate).toHaveBeenCalledWith("/takes");
   });
 
-  it("sends people with no TAKE waiting to Explore", () => {
+  it("with no live campaigns shows a clear empty state with Explore and Organize", () => {
     product.campaigns = [];
     const navigate = vi.fn();
     render(<HomePage navigate={navigate} currentPerson={person} optimisticGivenCampaigns={[]} optimisticRecipient={null} />);
 
-    expect(screen.getByRole("heading", { name: "No TAKE is waiting." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Nothing is live right now." })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Explore campaigns" }));
     expect(navigate).toHaveBeenCalledWith("/explore");
+    fireEvent.click(screen.getByRole("button", { name: /Organize a campaign/ }));
+    expect(navigate).toHaveBeenCalledWith("/organize");
   });
 
-  it("leads with the live campaign when the person has no TAKE in it", () => {
-    product.campaigns = [campaign({ viewer: { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null } })];
+  it("never names one campaign when the person holds no TAKE", () => {
+    const watching = { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null };
+    product.campaigns = [
+      campaign({ id: "a", title: "Alpha Spots", viewer: watching }),
+      campaign({ id: "b", title: "Beta Tickets", viewer: watching }),
+      campaign({ id: "c", title: "Gamma Seats", viewer: watching }),
+    ];
     const navigate = vi.fn();
     render(<HomePage navigate={navigate} currentPerson={person} optimisticGivenCampaigns={[]} optimisticRecipient={null} />);
 
-    expect(screen.getByRole("heading", { name: "TAKE Demo is live." })).toBeInTheDocument();
-    expect(screen.queryByText("NONE ACTIVE")).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "No TAKE is waiting." })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Open TAKE Demo" }));
-    expect(navigate).toHaveBeenCalledWith("/campaign/demo");
+    expect(screen.getByRole("heading", { name: "3 campaigns are live." })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /is live\./ })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Live now · 3" })).toBeInTheDocument();
+    for (const title of ["Alpha Spots", "Beta Tickets", "Gamma Seats"]) expect(screen.getByText(title)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Explore live campaigns" }));
+    expect(navigate).toHaveBeenCalledWith("/explore");
+  });
+
+  it("gives each held TAKE its own give action when there are several", () => {
+    product.campaigns = [
+      campaign({ id: "a", title: "Alpha Spots", endsAt: "2026-10-20T10:00:00.000Z" }),
+      campaign({ id: "b", title: "Beta Tickets", endsAt: "2026-10-11T10:00:00.000Z" }),
+      campaign({ id: "c", title: "Gamma Seats", viewer: { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null } }),
+    ];
+    const navigate = vi.fn();
+    render(<HomePage navigate={navigate} currentPerson={person} optimisticGivenCampaigns={[]} optimisticRecipient={null} />);
+
+    expect(screen.getByRole("heading", { name: "You have 2 TAKEs." })).toBeInTheDocument();
+    const gives = screen.getAllByRole("button", { name: /^Give your TAKE in / });
+    expect(gives.map((button) => button.getAttribute("aria-label"))).toEqual(["Give your TAKE in Beta Tickets", "Give your TAKE in Alpha Spots"]);
+    fireEvent.click(gives[1]!);
+    expect(navigate).toHaveBeenCalledWith("/campaign/a/give");
+    expect(screen.getByRole("heading", { name: "Live now · 3" })).toBeInTheDocument();
+  });
+
+  it("caps the live list on Home and points to Explore for the rest", () => {
+    const watching = { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null };
+    product.campaigns = Array.from({ length: 6 }, (_, index) => campaign({ id: `c${index}`, title: `Campaign ${index}`, viewer: watching }));
+    const navigate = vi.fn();
+    const { container } = render(<HomePage navigate={navigate} currentPerson={person} optimisticGivenCampaigns={[]} optimisticRecipient={null} />);
+
+    expect(container.querySelectorAll("#campaigns .sticker-row")).toHaveLength(4);
+    fireEvent.click(screen.getByRole("button", { name: /Explore all 6/ }));
+    expect(navigate).toHaveBeenCalledWith("/explore");
   });
 });
-

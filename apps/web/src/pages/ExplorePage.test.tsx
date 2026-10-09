@@ -55,7 +55,7 @@ describe("Explore sticker page", () => {
     render(<ExplorePage navigate={vi.fn()} />);
     expect(screen.getByRole("heading", { name: "TAKE Demo" })).toBeInTheDocument();
     expect(screen.getByText("by Monad Devs")).toBeInTheDocument();
-    expect(screen.getByText("1 spot · ends Oct 13")).toBeInTheDocument();
+    expect(screen.getByText("1 builder spot · ends Oct 13")).toBeInTheDocument();
     expect(screen.getByText("One builder spot. Give it to someone else.")).toBeInTheDocument();
     expect(screen.getByText("LIVE", { selector: ".status-sticker--live span" })).toBeInTheDocument();
     expect(screen.queryByText(/Pass an opportunity/)).not.toBeInTheDocument();
@@ -82,7 +82,8 @@ describe("Explore sticker page", () => {
     expect(screen.getByText("Creator Grants")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "CLOSED" }));
-    expect(screen.getByRole("heading", { name: "Creator Grants" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Closed · 1" })).toBeInTheDocument();
+    expect(screen.getByText("Creator Grants")).toBeInTheDocument();
     expect(screen.queryByText("TAKE Demo")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "UPCOMING" }));
@@ -90,20 +91,50 @@ describe("Explore sticker page", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "ALL" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Search campaigns" }), { target: { value: "kitchen" } });
-    expect(screen.getByRole("heading", { name: "Creator Grants" })).toBeInTheDocument();
+    expect(screen.getByText("Creator Grants")).toBeInTheDocument();
     expect(screen.queryByText("TAKE Demo")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("textbox", { name: "Search campaigns" }), { target: { value: "nothing like this" } });
     expect(screen.getByRole("heading", { name: "No opportunities found." })).toBeInTheDocument();
   });
 
-  it("uses the ticket artwork when a campaign has no image and keeps the real spot count as text", () => {
-    product.campaigns = [campaign({ spots: 5, ends: "20 OCT" })];
+  it("prints the real spot and TAKE counts on the blank ticket", () => {
+    product.campaigns = [campaign({ spots: 5, resource: "5 builder spots", ends: "20 OCT", nominationLimit: 2 })];
+    const { container } = render(<ExplorePage navigate={vi.fn()} />);
+    const art = screen.getByRole("img", { name: "TAKE Demo ticket: 5 spots, 2 takes" });
+    expect(art.getAttribute("src")).toBe("/assets/sticker/ticket-blank.webp");
+    expect(container.querySelector(".campaign-sticker__count")).toHaveTextContent("5");
+    expect(container.querySelector(".campaign-sticker__unit")).toHaveTextContent("SPOTS");
+    expect(container.querySelector(".campaign-sticker__badge")).toHaveTextContent("2TAKES");
+    expect(screen.getByText("5 builder spots · ends Oct 20")).toBeInTheDocument();
+  });
+
+  it("lists every live campaign: ones you can give in first, then ending soonest", () => {
+    product.campaigns = [
+      campaign({ id: "late", title: "Late Fellowship", endsAt: "2026-10-30T10:00:00.000Z", ends: "30 OCT", viewer: { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null } }),
+      campaign({ id: "soon", title: "Soon Tickets", spots: 12, resource: "12 tickets", endsAt: "2026-10-10T10:00:00.000Z", ends: "10 OCT", viewer: { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null } }),
+      campaign({ id: "mine", title: "My Residency", endsAt: "2026-10-20T10:00:00.000Z", ends: "20 OCT" }),
+      campaign({ id: "mid", title: "Mid Mentors", endsAt: "2026-10-15T10:00:00.000Z", ends: "15 OCT", viewer: null }),
+      campaign({ id: "up", title: "Next Spots", status: "UPCOMING", sourceStatus: "CREATED", startsAt: "2026-10-25T10:00:00.000Z", viewer: null }),
+      campaign({ id: "old", title: "Old Grants", status: "CLOSED", sourceStatus: "CLOSED", viewer: null }),
+      campaign({ id: "draft", title: "Hidden Draft", sourceStatus: "DRAFT", onchain: { published: false, network: "monad-testnet", chainId: 10143, managerContractAddress: null, campaignId: null, authorityWalletAddress: null, organizerAddress: null, lifecycle: {} } }),
+    ];
+    const { container } = render(<ExplorePage navigate={vi.fn()} />);
+
+    expect(screen.getByRole("heading", { name: "4 live now" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "My Residency" })).toBeInTheDocument();
+    const more = [...container.querySelectorAll(".sticker-explore__list .sticker-row__copy strong")].map((node) => node.textContent);
+    expect(more).toEqual(["Soon Tickets", "Mid Mentors", "Late Fellowship"]);
+    expect(screen.getByRole("heading", { name: "Opening soon · 1" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Closed · 1" })).toBeInTheDocument();
+    expect(screen.queryByText("Hidden Draft")).not.toBeInTheDocument();
+  });
+
+  it("says nothing is live but still lists upcoming campaigns", () => {
+    product.campaigns = [campaign({ id: "up", title: "Next Spots", status: "UPCOMING", sourceStatus: "CREATED", viewer: null })];
     render(<ExplorePage navigate={vi.fn()} />);
-    const art = screen.getByRole("img", { name: "TAKE Demo artwork" });
-    expect(art.tagName.toLowerCase()).toBe("img");
-    expect(art.getAttribute("src")).toBe("/assets/sticker/ticket.webp");
-    expect(screen.getByText("5 spots · ends Oct 20")).toBeInTheDocument();
+    expect(screen.getByText("Nothing is live right now.")).toBeInTheDocument();
+    expect(screen.getByText("Next Spots")).toBeInTheDocument();
   });
 
   it("keeps the mascot decorative", () => {

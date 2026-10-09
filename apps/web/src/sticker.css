@@ -806,7 +806,7 @@ a.brand--logo:active .brand__logo { transform: scale(0.92); }
 }
 .sticker-home__ticket:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 6px; }
 .sticker-home__ticket .campaign-sticker--lg { width: min(76%, 330px); }
-.sticker-home__ticket .campaign-sticker img { animation: home-ticket-float 6s ease-in-out 1.2s infinite; }
+.sticker-home__ticket .campaign-sticker__face { animation: home-ticket-float 6s ease-in-out 1.2s infinite; }
 .sticker-home__ticket--idle { opacity: 0.94; }
 @keyframes home-ticket-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -950,7 +950,7 @@ a.brand--logo:active .brand__logo { transform: scale(0.92); }
 .sticker-home__empty p { margin: 0 0 4px; color: #55554f; font-size: 14px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sticker-home__ticket .campaign-sticker img { animation: none; }
+  .sticker-home__ticket .campaign-sticker__face { animation: none; }
   .sticker-home__link { transition: none; }
 }
 
@@ -982,3 +982,91 @@ a.brand--logo:active .brand__logo { transform: scale(0.92); }
   .sticker-home__take .sticker-cta { margin-top: 2px; }
   .sticker-home__board { margin-top: 22px; }
 }
+
+/* ---------- Ticket print: real counts on the blank generated ticket ---------- */
+.campaign-sticker { container-type: inline-size; }
+.campaign-sticker__face { position: relative; display: block; }
+.campaign-sticker__print {
+  position: absolute;
+  top: 51%;
+  left: 53%;
+  display: grid;
+  justify-items: center;
+  width: 62%;
+  transform: translate(-50%, -50%) rotate(-7deg);
+  color: var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  line-height: 0.86;
+  text-align: center;
+  pointer-events: none;
+}
+.campaign-sticker__count {
+  font-size: min(24cqw, calc(56cqw / max(1, var(--count-chars, 1)) * 1.6));
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+.campaign-sticker__unit {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 7.6cqw;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.campaign-sticker__badge {
+  position: absolute;
+  top: 21.6%;
+  left: 84%;
+  display: grid;
+  justify-items: center;
+  transform: translate(-50%, -50%) rotate(-7deg);
+  color: var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-weight: 900;
+  line-height: 0.9;
+  pointer-events: none;
+}
+.campaign-sticker__badge > span:first-child { font-size: 6.4cqw; }
+.campaign-sticker__badge > span + span { font-size: 3.9cqw; letter-spacing: 0.02em; }
+/* Tiny row tickets: the count only; the row text carries the rest. */
+.campaign-sticker--sm .campaign-sticker__unit { font-size: 9cqw; }
+
+/* Home: several TAKEs, one card per campaign with its own give pill */
+.sticker-home__takes {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 460px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sticker-home__take-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 8px;
+  border-radius: 18px;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+  text-align: left;
+}
+.sticker-home__take-card-open {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--sticker-ink);
+  text-decoration: none;
+  border-radius: 14px;
+}
+.sticker-home__take-card-open:focus-visible { outline: 3px solid var(--sticker-ink); outline-offset: 2px; }
+.sticker-home__take-card .sticker-pill--sm { min-height: 44px; padding: 0 18px; font-size: 15px; border-width: 3px; }
+.sticker-home__take > .sticker-home__link { margin-top: 2px; }
+.sticker-explore__section { display: grid; justify-items: center; gap: 12px; width: 100%; }
+.sticker-explore__list { display: grid; gap: 12px; width: 100%; margin: 6px 0 0; padding: 0; list-style: none; }
+.sticker-explore__none { margin: 6px 0 0; }
+.campaign-sticker__badge--mark > span:first-child { font-size: 4.4cqw; letter-spacing: 0.02em; }
