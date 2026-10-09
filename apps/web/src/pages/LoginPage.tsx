@@ -1,6 +1,6 @@
 import { ArrowRight, Mail, Wallet, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useLogin, useLoginWithEmail, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
+import { loadPrivy, useLogin, useLoginWithEmail, useLoginWithOAuth, usePrivy } from "../lib/privy";
 import { LandingHeader } from "../components/landing/LandingHeader";
 import { LandingStickerSections } from "../components/landing/LandingStickerSections";
 import { LandingSkyStickers } from "../components/landing/LandingSkyStickers";
@@ -92,6 +92,8 @@ export function LoginPage({ navigate }: LoginPageProps) {
     rememberPostAuthDestination(destination);
     setError(null);
     setDialogOpen(true);
+    // Start fetching the sign-in SDK while the sheet is open (no-op once loaded).
+    loadPrivy();
   }
 
   function closeAuthentication() {

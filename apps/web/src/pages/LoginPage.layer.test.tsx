@@ -5,7 +5,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./LoginPage";
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
+  loadPrivy: vi.fn(),
   usePrivy: () => ({ ready: true, authenticated: false }),
   useLogin: () => ({ login: vi.fn() }),
   useLoginWithOAuth: () => ({ initOAuth: vi.fn(), state: { status: "initial" } }),

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { usePrivy, useSendTransaction, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useSendTransaction, useWallets } from "./lib/privy";
 import { AppShell } from "./components/AppShell";
 import { IdentityGate } from "./components/IdentityGate";
 import { ProductLoading } from "./components/ProductState";

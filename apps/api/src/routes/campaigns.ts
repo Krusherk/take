@@ -11,12 +11,24 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
   const nominations = new NominationService(app.db, app.env);
   const allocations = new AllocationService(app.db, app.env);
 
-  app.get("/campaigns", async (request) =>
-    campaigns.listCampaigns(
+  // Signed-out reads (shared campaign links) are the same for everyone, so Vercel's CDN
+  // may serve them for a few seconds. Requests carrying Authorization are never CDN-cached.
+  const sharePublicRead = (request: { headers: { authorization?: string } }, reply: { header: (name: string, value: string) => unknown }) => {
+    if (request.headers.authorization) {
+      reply.header("Cache-Control", "private, no-store");
+      return;
+    }
+    reply.header("Cache-Control", "public, max-age=0, must-revalidate");
+    reply.header("Vercel-CDN-Cache-Control", "max-age=15, stale-while-revalidate=60");
+  };
+
+  app.get("/campaigns", async (request, reply) => {
+    sharePublicRead(request, reply);
+    return campaigns.listCampaigns(
       request.takeIdentity?.takeIdentityId,
       app.env.NODE_ENV === "development" && app.env.ENABLE_DEV_FIXTURES
-    )
-  );
+    );
+  });
 
   app.get<{ Params: { id: string } }>("/campaigns/:id", async (request, reply) => {
     const campaign = await campaigns.getCampaignView(
@@ -27,6 +39,7 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
     if (!campaign) {
       return reply.code(404).send({ error: "NOT_FOUND" });
     }
+    if (campaign.status !== "DRAFT") sharePublicRead(request, reply);
     if (
       campaign.status === "DRAFT"
       && (

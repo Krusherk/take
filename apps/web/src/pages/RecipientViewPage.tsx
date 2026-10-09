@@ -1,4 +1,4 @@
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "../lib/privy";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductError, ProductLoading } from "../components/ProductState";

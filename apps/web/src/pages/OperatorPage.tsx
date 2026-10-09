@@ -1,5 +1,5 @@
 import { Check, CircleAlert, Copy, ExternalLink, RefreshCw, Wallet } from "lucide-react";
-import { useSendTransaction, useUser, useWallets } from "@privy-io/react-auth";
+import { useSendTransaction, useUser, useWallets } from "../lib/privy";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { EvaluationPlanEditor, IntegrityObservations, OperatorEvaluations } from "../components/SignalControls";

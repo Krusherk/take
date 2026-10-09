@@ -8,7 +8,8 @@ const privy = vi.hoisted(() => ({
   sendCode: vi.fn(async () => {}),
 }));
 
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
+  loadPrivy: vi.fn(),
   usePrivy: () => ({ ready: true, authenticated: false }),
   useLogin: () => ({ login: privy.login }),
   useLoginWithOAuth: () => ({ initOAuth: privy.initOAuth, state: { status: "initial" } }),

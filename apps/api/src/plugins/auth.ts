@@ -22,7 +22,9 @@ export const authPlugin = fp(async (app) => {
     }
 
     try {
-      const result = await app.privyAuth.verifyAccessToken(token);
+      // Identity routes read linked accounts, so they never reuse a recent Privy lookup.
+      const fresh = request.url === "/me" || request.url.startsWith("/me?") || request.url.startsWith("/me/");
+      const result = await app.privyAuth.verifyAccessToken(token, { fresh });
       request.takeIdentity = await app.identityService.resolvePrivyUser(result.user);
     } catch (error) {
       if (isInvalidPrivyToken(error)) {

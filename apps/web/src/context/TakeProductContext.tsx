@@ -16,7 +16,10 @@ interface TakeProductContextValue {
 const TakeProductContext = createContext<TakeProductContextValue | null>(null);
 
 export function TakeProductProvider({ children }: { children: ReactNode }) {
-  const { status: identityStatus, me, request } = useTakeMe();
+  // Campaigns only need a signed-in session, not the /me profile, so they load in
+  // parallel with /me and /me/history instead of after them.
+  const { status: identityStatus, sessionId, request } = useTakeMe();
+  const signedIn = Boolean(sessionId) && identityStatus !== "profile-error" && identityStatus !== "unauthenticated";
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [peoplePreview, setPeoplePreview] = useState<Person[]>([]);
   const [status, setStatus] = useState<ProductStatus>("idle");
@@ -24,7 +27,7 @@ export function TakeProductProvider({ children }: { children: ReactNode }) {
   const version = useRef(0);
 
   const load = useCallback(async () => {
-    if (identityStatus !== "ready" || !me) return;
+    if (!signedIn) return;
     const requestVersion = ++version.current;
     setStatus("loading");
     setError(null);
@@ -44,10 +47,10 @@ export function TakeProductProvider({ children }: { children: ReactNode }) {
       setStatus("error");
       setError(caught instanceof Error ? caught.message : "TAKE could not load campaigns.");
     }
-  }, [identityStatus, me, request]);
+  }, [signedIn, request]);
 
   useEffect(() => {
-    if (identityStatus !== "ready" || !me) {
+    if (!signedIn) {
       version.current += 1;
       setCampaigns([]);
       setPeoplePreview([]);
@@ -56,7 +59,7 @@ export function TakeProductProvider({ children }: { children: ReactNode }) {
       return;
     }
     void load();
-  }, [identityStatus, load, me]);
+  }, [load, signedIn, sessionId]);
 
   const value = useMemo<TakeProductContextValue>(() => ({
     status,

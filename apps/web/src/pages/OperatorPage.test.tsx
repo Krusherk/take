@@ -45,7 +45,7 @@ vi.mock("../context/TakeProductContext", () => ({
   useTakeProduct: () => ({ campaigns: [campaignFromApi(apiCampaign())], refetch: refetchCampaigns }),
 }));
 const refetchCampaigns = vi.fn(async () => {});
-vi.mock("@privy-io/react-auth", () => ({
+vi.mock("../lib/privy", () => ({
   useSendTransaction: () => ({ sendTransaction }),
   useUser: () => ({ refreshUser: async () => {} }),
   useWallets: () => ({ ready: true, wallets: [{ address: WALLET, walletClientType: "privy" }] }),

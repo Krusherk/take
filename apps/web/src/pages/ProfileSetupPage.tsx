@@ -1,6 +1,6 @@
 import { ArrowRight, Check } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useCreateWallet, useUser, useWallets } from "@privy-io/react-auth";
+import { useCreateWallet, useUser, useWallets } from "../lib/privy";
 import { Avatar } from "../components/Avatar";
 import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";

@@ -1,4 +1,4 @@
-import { useSendTransaction, useUser, useWallets } from "@privy-io/react-auth";
+import { useSendTransaction, useUser, useWallets } from "../lib/privy";
 import { Copy, ExternalLink, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { TakeApiClient } from "../lib/takeApi";
