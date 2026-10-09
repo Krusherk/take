@@ -1,31 +1,43 @@
-import { useState } from "react";
-import type { SignalCallEntry, SignalCallValue, SignalRecommendation } from "../../../../packages/shared/src/signal";
+import type { RecipientEvaluation, SignalRecommendation } from "../../../../packages/shared/src/signal";
 
 const DAY = 24 * 60 * 60 * 1000;
-const shortDate = (value: string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+export const shortDate = (value: string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
 
+export function daysUntil(value: string, now = Date.now()) {
+  return Math.ceil((Date.parse(value) - now) / DAY);
+}
 export function countdown(value: string, now = Date.now()) {
-  const days = Math.ceil((Date.parse(value) - now) / DAY);
+  const days = daysUntil(value, now);
   if (days <= 0) return "due now";
   if (days === 1) return "in 1 day";
   return `in ${days} days`;
+}
+/** "Did they ship?" → "did they ship?" for "The team checks on Nov 1: did they ship?" */
+export function lowerFirst(text: string) {
+  return text ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+}
+export function reviewWord(status: RecipientEvaluation["status"]) {
+  return status === "POSITIVE" ? "Yes" : status === "NEGATIVE" ? "No" : status === "INCONCLUSIVE" ? "Unclear" : "Not reviewed";
+}
+export function isReviewed(evaluation: RecipientEvaluation | null | undefined): evaluation is RecipientEvaluation {
+  return Boolean(evaluation && evaluation.status !== "PENDING");
 }
 
 type StepState = "done" | "now" | "off" | "todo";
 type Step = { key: string; label: string; detail: string; state: StepState };
 
-/** Given → Chosen → Check scheduled → Outcome recorded, from real Signal data only. */
+/** Given → Chosen → Team check → Outcome, from real Signal data only. */
 export function afterSteps(item: SignalRecommendation, now = Date.now()): Step[] {
   const chosen: Step = item.receivedOpportunity === true ? { key: "chosen", label: "Chosen", detail: "got the spot", state: "done" }
     : item.receivedOpportunity === false ? { key: "chosen", label: "Not chosen", detail: "this time", state: "off" }
       : { key: "chosen", label: "Chosen?", detail: "after close", state: "now" };
   const due = item.plan ? Date.parse(item.plan.evaluateAfter) <= now : false;
-  const check: Step = !item.plan ? { key: "check", label: "Check", detail: "not scheduled", state: "off" }
-    : { key: "check", label: due ? "Check due" : "Check", detail: due ? shortDate(item.plan.evaluateAfter) : `${shortDate(item.plan.evaluateAfter)} · ${countdown(item.plan.evaluateAfter, now)}`,
-      state: due ? "done" : item.receivedOpportunity === false ? "off" : item.receivedOpportunity ? "now" : "todo" };
-  const status = item.evaluation?.status;
-  const outcome: Step = status && status !== "PENDING"
-    ? { key: "outcome", label: status === "POSITIVE" ? "It worked out" : status === "NEGATIVE" ? "It didn't" : "Unclear", detail: "recorded", state: "done" }
+  const reviewed = isReviewed(item.evaluation);
+  const check: Step = !item.plan ? { key: "check", label: "Team check", detail: "not scheduled", state: "off" }
+    : { key: "check", label: "Team check", detail: due || reviewed ? shortDate(item.plan.evaluateAfter) : `${shortDate(item.plan.evaluateAfter)} · ${countdown(item.plan.evaluateAfter, now)}`,
+      state: due || reviewed ? "done" : item.receivedOpportunity === false ? "off" : item.receivedOpportunity ? "now" : "todo" };
+  const outcome: Step = reviewed
+    ? { key: "outcome", label: reviewWord(item.evaluation!.status), detail: "team review", state: "done" }
     : { key: "outcome", label: "Outcome", detail: item.plan && item.receivedOpportunity !== false ? "not yet" : "—", state: !item.plan || item.receivedOpportunity === false ? "off" : due ? "now" : "todo" };
   return [{ key: "given", label: "Given", detail: shortDate(item.givenAt), state: "done" }, chosen, check, outcome];
 }
@@ -43,42 +55,11 @@ export function AfterTimeline({ item, now }: { item: SignalRecommendation; now?:
   </div>;
 }
 
-const CHOICES: Array<{ value: SignalCallValue; label: string }> = [
-  { value: "YES", label: "Yes" },
-  { value: "UNSURE", label: "Not sure" },
-  { value: "NO", label: "No" },
-];
-
-export function CallIt({ item, entry, onCall }: { item: SignalRecommendation; entry: SignalCallEntry | null; onCall: (call: SignalCallValue) => Promise<void> }) {
-  const [busy, setBusy] = useState<SignalCallValue | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  if (!item.plan) return null;
-  const open = entry ? entry.open : item.receivedOpportunity !== false && Date.parse(item.plan.evaluateAfter) > Date.now();
-  const mine = entry?.mine ?? null;
-  async function choose(value: SignalCallValue) {
-    setBusy(value); setError(null);
-    try { await onCall(value); } catch (caught) { setError(caught instanceof Error ? caught.message : "Your call could not be saved."); } finally { setBusy(null); }
-  }
-  return <section className="call-it" aria-label={`Your call on ${item.recipient.name}`}>
-    <header><span className="call-it__tag">CALL IT</span><strong>{item.plan.question}</strong></header>
-    {open ? <div className="call-it__choices" role="group" aria-label="Your call">
-      {CHOICES.map((choice) => <button key={choice.value} type="button" aria-pressed={mine === choice.value} className={mine === choice.value ? "is-mine" : ""} disabled={busy !== null} onClick={() => void choose(choice.value)}>{busy === choice.value ? "Saving…" : choice.label}</button>)}
-    </div> : <p className="call-it__closed">{mine ? `You called “${CHOICES.find((choice) => choice.value === mine)?.label}”.` : "Calls are closed."}</p>}
-    {entry?.split ? <CallSplit split={entry.split} name={item.recipient.name} /> : <small>{open ? "What others called shows after the results are committed." : null}</small>}
-    {error ? <p className="call-it__error" role="alert">{error}</p> : null}
-    <small className="call-it__note">Just a call. No money, no points, and it doesn't change who gets the spot. You can change it until the check{entry?.closesAt ? ` on ${shortDate(entry.closesAt)}` : ""}.</small>
-  </section>;
-}
-
-export function CallSplit({ split, name }: { split: NonNullable<SignalCallEntry["split"]>; name: string }) {
-  if (!split.total) return <small>Nobody who backed {name} has made a call yet.</small>;
-  const pct = (value: number) => `${Math.round((value / split.total) * 100)}%`;
-  return <div className="call-split">
-    <div className="call-split__bar" role="img" aria-label={`People who backed ${name}: ${split.yes} yes, ${split.unsure} not sure, ${split.no} no`}>
-      {split.yes ? <span className="call-split__yes" style={{ width: pct(split.yes) }} /> : null}
-      {split.unsure ? <span className="call-split__unsure" style={{ width: pct(split.unsure) }} /> : null}
-      {split.no ? <span className="call-split__no" style={{ width: pct(split.no) }} /> : null}
-    </div>
-    <p><span>{split.yes} yes</span><span>{split.unsure} not sure</span><span>{split.no} no</span><span>{split.total} {split.total === 1 ? "call" : "calls"} from people who backed {name}</span></p>
+/** The team's recorded outcome, as everyone sees it. */
+export function TeamReviewResult({ evaluation }: { evaluation: RecipientEvaluation }) {
+  return <div className={`team-result team-result--${evaluation.status.toLowerCase()}`}>
+    <p><strong>Team review: {reviewWord(evaluation.status)}</strong>{evaluation.note ? <> — {evaluation.note}</> : "."}</p>
+    {evaluation.evidenceUrls.length ? <p className="team-result__links">{evaluation.evidenceUrls.map((url, index) => <a href={url} key={url} target="_blank" rel="noopener noreferrer">{evaluation.evidenceUrls.length > 1 ? `Link ${index + 1}` : "Link"} ↗</a>)}</p> : null}
+    <small>{evaluation.evaluatedAt ? `Reviewed ${shortDate(evaluation.evaluatedAt)} by ${evaluation.evaluator.name}.` : null}{!evaluation.isPublic ? " The team kept its notes private." : ""}</small>
   </div>;
 }

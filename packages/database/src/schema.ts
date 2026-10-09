@@ -1107,22 +1107,6 @@ export const recipientEvaluations = pgTable("recipient_evaluations", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
 }, (table) => ({ recipientIdx: uniqueIndex("recipient_evaluations_plan_recipient_idx").on(table.planId, table.recipientKey) }));
 
-// A giver's social call on the person they backed. Purely social: it never
-// feeds eligibility, allocation, evaluation, or any reward.
-export const signalCalls = pgTable("signal_calls", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  campaignId: uuid("campaign_id").notNull().references(() => campaigns.id),
-  planId: uuid("plan_id").notNull().references(() => campaignEvaluationPlans.id),
-  giverKey: varchar("giver_key", { length: 66 }).notNull(),
-  recipientKey: varchar("recipient_key", { length: 66 }).notNull(),
-  call: varchar("call", { length: 16 }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
-}, (table) => ({
-  giverIdx: uniqueIndex("signal_calls_campaign_giver_idx").on(table.campaignId, table.giverKey),
-  recipientIdx: index("signal_calls_campaign_recipient_idx").on(table.campaignId, table.recipientKey)
-}));
-
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
   recipientTakeIdentityId: uuid("recipient_take_identity_id").references(() => takeIdentities.id),

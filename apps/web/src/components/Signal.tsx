@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { CampaignAfter, RecipientEvaluation, SignalCallEntry, SignalCallValue, SignalPerson, SignalRecommendation } from "../../../../packages/shared/src/signal";
-import { AfterTimeline, CallIt, countdown } from "./SignalAfter";
+import type { CampaignAfter, RecipientEvaluation, SignalPerson, SignalRecommendation } from "../../../../packages/shared/src/signal";
+import { AfterTimeline, countdown, isReviewed, lowerFirst, shortDate, TeamReviewResult } from "./SignalAfter";
 import { TAKE_API_BASE_URL } from "../lib/takeApi";
 import { useSignal } from "../hooks/useSignal";
 import type { TakePath } from "../hooks/usePathRouter";
@@ -11,18 +11,12 @@ export function signalDate(value: string) {
 export function SignalPersonLabel({ person }: { person: SignalPerson }) {
   return <span className="signal-person">{person.avatarUrl ? <img src={person.avatarUrl} alt="" loading="lazy" /> : <span className="signal-person__initial" aria-hidden="true">{person.name.slice(0, 1)}</span>}<strong>{person.name}</strong></span>;
 }
-export function SignalOutcome({ evaluation, fallback = "Awaiting evaluation" }: { evaluation: RecipientEvaluation | null; fallback?: string }) {
-  return <div className="signal-outcome">
-    <span className={`signal-status signal-status--${evaluation?.status.toLowerCase() ?? "pending"}`}>{evaluation?.status === "PENDING" || !evaluation ? fallback : evaluation.status.toLowerCase()}</span>
-    {evaluation?.note ? <p>{evaluation.note}</p> : null}
-    {evaluation && !evaluation.isPublic ? <small>Supporting notes and evidence are private.</small> : null}
-    {evaluation?.evidenceUrls.map((url, index) => <a href={url} key={url} target="_blank" rel="noopener noreferrer">Evidence{evaluation.evidenceUrls.length > 1 ? ` ${index + 1}` : ""} ↗</a>)}
-    {evaluation?.evaluatedAt ? <small>Evaluated {signalDate(evaluation.evaluatedAt)} by {evaluation.evaluator.name}</small> : null}
-  </div>;
+export function SignalOutcome({ evaluation, fallback = "Not reviewed yet" }: { evaluation: RecipientEvaluation | null; fallback?: string }) {
+  if (isReviewed(evaluation)) return <TeamReviewResult evaluation={evaluation} />;
+  return <div className="signal-outcome"><span className="signal-status signal-status--pending">{fallback}</span></div>;
 }
-type CallsLayer = { available: boolean; find: (campaignId: string, recipientKey: string) => SignalCallEntry | null; make: (campaignId: string, recipientKey: string, call: SignalCallValue) => Promise<void> };
 
-export function RecommendationRow({ item, navigate, calls }: { item: SignalRecommendation; navigate: (path: TakePath) => void; calls?: CallsLayer }) {
+export function RecommendationRow({ item, navigate }: { item: SignalRecommendation; navigate: (path: TakePath) => void }) {
   return <li className="signal-card">
     <div className="signal-card__people">
       <SignalPersonLabel person={item.giver} />
@@ -37,23 +31,17 @@ export function RecommendationRow({ item, navigate, calls }: { item: SignalRecom
       <p>A check is the question an organizer locks in before anyone gives, like “In 30 days: did they ship?”. Then TAKE records what happened. This campaign didn't set one, and it can't be added later.</p>
       <a href="/organize" onClick={(event) => { event.preventDefault(); navigate("/organize"); }}>Schedule a check in your next campaign →</a>
     </div> : null}
-    {calls?.available && item.plan ? <CallIt item={item} entry={calls.find(item.campaign.id, item.recipient.key)} onCall={(call) => calls.make(item.campaign.id, item.recipient.key, call)} /> : null}
-    {item.evaluation?.evidenceUrls.map((url, index) => <a href={url} key={url} target="_blank" rel="noopener noreferrer">Evidence{item.evaluation && item.evaluation.evidenceUrls.length > 1 ? ` ${index + 1}` : ""} ↗</a>)}
-    {item.evaluation?.evaluatedAt ? <small>Checked {signalDate(item.evaluation.evaluatedAt)} by {item.evaluation.evaluator.name}</small> : null}
-    {item.evaluation && !item.evaluation.isPublic ? <small>Supporting notes stay private.</small> : null}
-    {item.plan ? <details><summary>What will be checked</summary><strong>{item.plan.question}</strong><p>{item.plan.criteria}</p><small>Locked {signalDate(item.plan.lockedAt ?? item.plan.createdAt)}. It can't be changed.</small></details> : null}
+    {isReviewed(item.evaluation) ? <TeamReviewResult evaluation={item.evaluation} /> : null}
+    {item.plan ? <details><summary>What the team checks</summary><strong>{item.plan.question}</strong><p>{item.plan.criteria}</p><small>Locked {signalDate(item.plan.lockedAt ?? item.plan.createdAt)}. It can't be changed.</small></details> : null}
   </li>;
 }
 
 function outcomeSentence(item: SignalRecommendation) {
   if (item.state === "NOT_SELECTED") return "They did not receive this one.";
   if (item.state === "NOT_PLANNED") return item.receivedOpportunity ? "They received the spot. No check was scheduled." : item.receivedOpportunity === false ? "They did not receive this one." : "Results come after the campaign closes.";
-  const note = item.evaluation?.note?.trim();
-  if (item.evaluation?.status === "POSITIVE") return note || "It worked out.";
-  if (item.evaluation?.status === "NEGATIVE") return note || "It did not work out.";
-  if (item.evaluation?.status === "INCONCLUSIVE") return note || "The outcome was inconclusive.";
-  if (item.plan && item.receivedOpportunity === null) return `Results after close. If they get the spot, it's checked ${signalDate(item.plan.evaluateAfter)}.`;
-  if (item.plan) return `They received the spot. Checked from ${signalDate(item.plan.evaluateAfter)}.`;
+  if (isReviewed(item.evaluation)) return "They received the spot. The team has reviewed it.";
+  if (item.plan && item.receivedOpportunity === null) return `Results after close. If they get the spot, the team checks on ${shortDate(item.plan.evaluateAfter)}: ${lowerFirst(item.plan.question)}`;
+  if (item.plan) return `The team checks on ${shortDate(item.plan.evaluateAfter)}: ${lowerFirst(item.plan.question)}`;
   return "Waiting to see what happened.";
 }
 export function ProfileSignal({ navigate }: { navigate: (path: TakePath) => void }) {
@@ -82,7 +70,7 @@ export function CampaignAfterSection({ campaignId }: { campaignId: string }) {
   return <section className="campaign-after">
     <header><span className="eyebrow">{data.seats} {data.seats === 1 ? "SPOT" : "SPOTS"}</span><h2>Received by</h2><p>{data.resource}</p></header>
     {!data.allocationCommitted ? <p>The committed recipient list is not available yet.</p> : !data.recipients.length ? <p>No recipients were selected by the committed allocation.</p> : <ul className="signal-recipients">{data.recipients.map((recipient) => <li key={recipient.person.key}><SignalPersonLabel person={recipient.person} /><span>Backed by {recipient.supporters} community {recipient.supporters === 1 ? "member" : "members"}</span></li>)}</ul>}
-    {data.plan ? <section className="campaign-evaluation"><span className="eyebrow">AFTER THE CAMPAIGN</span><h3>{data.plan.question}</h3><p>{data.plan.criteria}</p><p>Checked from {signalDate(data.plan.evaluateAfter)} ({countdown(data.plan.evaluateAfter)}) · {data.plan.domain.toLowerCase()}</p><small>Criteria locked {signalDate(data.plan.lockedAt ?? data.plan.createdAt)}. {data.plan.evidenceExpected ? "Evidence is required." : "Evidence is optional."}</small>
+    {data.plan ? <section className="campaign-evaluation"><span className="eyebrow">AFTER THE CAMPAIGN</span><h3>{data.plan.question}</h3><p>{data.plan.criteria}</p><p>The team checks on {signalDate(data.plan.evaluateAfter)} ({countdown(data.plan.evaluateAfter)}) · {data.plan.domain.toLowerCase()}</p><small>Criteria locked {signalDate(data.plan.lockedAt ?? data.plan.createdAt)}. {data.plan.evidenceExpected ? "Evidence is required." : "Evidence is optional."}</small>
       {data.recipients.map((recipient) => <article key={recipient.person.key}><strong>{recipient.person.name}</strong><SignalOutcome evaluation={recipient.evaluation} /></article>)}
     </section> : null}
     {data.recommendations.length ? <details className="signal-edges"><summary>Who backed whom</summary><ul>{data.recommendations.map((edge) => <li key={edge.id}><span>{edge.giver.name} → <strong>{edge.recipient.name}</strong></span><time dateTime={edge.givenAt}>{signalDate(edge.givenAt)}</time></li>)}</ul></details> : null}

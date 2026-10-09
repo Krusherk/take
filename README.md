@@ -24,7 +24,7 @@ A community hands out a scarce spot (a grant, a beta seat, an event ticket). Eac
 2. Tap **Sign in** (in the menu on a phone), then **Continue with X**. TAKE creates an embedded wallet for you.
 3. Tap **Enter TAKE** on the welcome screen.
 4. Browse **Explore** and open **TAKE Demo** (campaign 4): https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. It shows the locked rules, who can give, who can receive, and the Monad links.
-5. Open **Signal** to see who you backed, who got the spot, the scheduled check, and what was recorded after.
+5. Open **Signal** to see who you backed, who got the spot, when the team checks, and the team's review.
 6. Open **Organize** to see how a campaign is created: the opportunity, the giver and recipient lists, an optional check ("In 30 days: did they ship?"), then the signatures.
 
 Giving needs you to be on that campaign's giver list. The organizer sets the list before the rules are locked, so a new sign-in can browse and verify but cannot give in campaign 4. To see a give end to end, use the transactions below. A give asks for two wallet approvals the first time (register identity, then give) and needs testnet MON for gas. TAKE does not pay gas.
@@ -77,8 +77,7 @@ Works on testnet:
 - Sign-in with X, email, or wallet; giving from the Privy embedded wallet.
 - Managed campaigns: anyone can draft; a TAKE operator publishes.
 - Signal: who you backed and who backed you, with a track from Given → Chosen → Check → Outcome.
-- Checks after the TAKE: an organizer can lock a question and a date ("In 30 days: did they ship?") when creating a campaign. It can't be changed or added after publication. A TAKE operator records the outcome after the date.
-- Call it: a giver can say Yes / Not sure / No on the person they backed until the check date. The split shows after results are committed. No money, no points, no effect on who gets the spot. Needs database migration `0014_signal_calls.sql`; until it runs, Signal hides this.
+- Checks after the TAKE: an organizer can lock a question and a date ("In 30 days: did they ship?") when creating a campaign. It can't be changed or added after publication. After the result is committed and the date arrives, the campaign team (the organizer and TAKE operators) records Yes, No, or Unclear with a note and a link. Signal shows it to everyone.
 
 Not built, or not proven yet:
 

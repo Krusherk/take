@@ -5,13 +5,11 @@ import { RecommendationRow } from "../components/Signal";
 import { EmptySlotSticker, FaceSticker, MascotSticker, PaperLabel, PassArrow, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useSignal } from "../hooks/useSignal";
-import { useSignalCalls } from "../hooks/useSignalCalls";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromHistoryPerson, personFromMe } from "../lib/currentIdentity";
 
 export function SignalPage({ navigate }: { navigate: (path: TakePath) => void }) {
   const { data, error, reload } = useSignal();
-  const calls = useSignalCalls();
   const { me, history } = useTakeMe();
   const [domain, setDomain] = useState("ALL");
   const backed = data?.history.filter((item) => domain === "ALL" || item.domain === domain) ?? [];
@@ -86,8 +84,8 @@ export function SignalPage({ navigate }: { navigate: (path: TakePath) => void })
               <h2><PaperLabel size="sm" tilt={1.5}>People you backed</PaperLabel></h2>
               {data.domains.length > 1 ? <label>Category <select value={domain} onChange={(event) => setDomain(event.target.value)}><option value="ALL">All opportunities</option>{data.domains.map((item) => <option value={item.domain} key={item.domain}>{item.domain.toLowerCase()}</option>)}</select></label> : null}
             </header>
-            <p className="sticker-note signal-history__lead">After you give, follow what happens: who got the spot, the check the organizer scheduled, and what was recorded.</p>
-            <ol className="signal-board">{backed.map((item) => <RecommendationRow key={item.id} item={item} navigate={navigate} calls={calls} />)}</ol>
+            <p className="sticker-note signal-history__lead">After you give, follow what happens: who got the spot, when the team checks, and what the team found.</p>
+            <ol className="signal-board">{backed.map((item) => <RecommendationRow key={item.id} item={item} navigate={navigate} />)}</ol>
           </section>
         ) : featured ? <p className="sticker-note">You have not given a TAKE yet. When you back someone, they show up here too.</p> : null}
       </>

@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { signalDomains, type CampaignAfter, type EvaluationPlan, type SignalDomain } from "../../../../packages/shared/src/signal";
 import type { TakeApiClient } from "../lib/takeApi";
 import { PrimaryAction, SecondaryAction } from "./Actions";
-import { SignalOutcome, SignalPersonLabel, signalDate } from "./Signal";
+import { SignalPersonLabel, signalDate } from "./Signal";
+import { daysUntil, isReviewed, lowerFirst, TeamReviewResult } from "./SignalAfter";
 
 type Request = TakeApiClient["request"];
 const message = (error: unknown) => error instanceof Error ? error.message : "This action could not be completed.";
@@ -53,9 +54,16 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
   </details>;
 }
 
+export function reviewDue(evaluateAfter: string, now = Date.now()) {
+  const days = daysUntil(evaluateAfter, now);
+  if (days <= 0) return "Review due now";
+  if (days === 1) return "Review due tomorrow";
+  return `Review due in ${days} days`;
+}
+
+/** The campaign team's review queue: finalized campaigns that have a check. */
 export function OperatorEvaluations({ request }: { request: Request }) {
   const [campaigns, setCampaigns] = useState<CampaignAfter[] | null>(null);
-  const [selected, setSelected] = useState("");
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(async () => {
     setError(null);
@@ -63,50 +71,83 @@ export function OperatorEvaluations({ request }: { request: Request }) {
     catch (caught) { setError(message(caught)); }
   }, [request]);
   useEffect(() => { void refresh(); }, [refresh]);
-  const campaign = campaigns?.find((item) => item.campaignId === selected);
-  return <section className="signal-operator"><header><div><span className="eyebrow">AFTER THE TAKE</span><h2>Record what happened.</h2></div><SecondaryAction onClick={() => void refresh()}>REFRESH</SecondaryAction></header>
+  return <section className="signal-operator team-review-queue"><header><div><span className="eyebrow">TEAM REVIEW</span><h2>Record what happened.</h2></div><SecondaryAction onClick={() => void refresh()}>REFRESH</SecondaryAction></header>
     {error ? <p role="alert" className="form-error">{error}</p> : null}
-    {!campaigns ? !error ? <p role="status">Loading evaluation queue…</p> : null : !campaigns.length ? <p>No finalized campaign has a scheduled check yet.</p> : <>
-      <label className="field"><span>CAMPAIGN TO EVALUATE</span><select value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">Choose a campaign</option>{campaigns.map((item) => {
-        const pending = item.recipients.filter((recipient) => !recipient.evaluation || recipient.evaluation.status === "PENDING").length;
-        const due = item.plan && Date.parse(item.plan.evaluateAfter) <= Date.now();
-        return <option value={item.campaignId} key={item.campaignId}>{item.title} · {pending ? `${pending} ${due ? "due" : "awaiting date"}` : "evaluated"}</option>;
-      })}</select></label>
-      {campaign?.plan ? <div className="signal-plan"><span className="eyebrow">LOCKED CRITERIA</span><h3>{campaign.plan.question}</h3><p>{campaign.plan.criteria}</p><p>Evaluate from {signalDate(campaign.plan.evaluateAfter)} · {campaign.plan.evidenceExpected ? "Evidence required" : "Evidence optional"}</p>
-        {!campaign.allocationCommitted ? <p>The finalized allocation record is not available. Evaluation is blocked.</p> : campaign.recipients.map((recipient) => <EvaluationEditor key={`${campaign.campaignId}:${recipient.person.key}`} campaign={campaign} recipient={recipient} request={request} onSaved={refresh} />)}
-      </div> : null}
-    </>}
+    {!campaigns ? !error ? <p role="status">Loading reviews…</p> : null
+      : !campaigns.length ? <p>No finalized campaign has a scheduled check yet.</p>
+        : campaigns.map((campaign) => <TeamReviewPanel key={campaign.campaignId} data={campaign} request={request} onSaved={refresh} />)}
   </section>;
 }
 
-function EvaluationEditor({ campaign, recipient, request, onSaved }: { campaign: CampaignAfter; recipient: CampaignAfter["recipients"][number]; request: Request; onSaved: () => Promise<void> }) {
+/** Loads one campaign's check for its team (organizer or TAKE operator). */
+export function TeamReview({ campaignId, request }: { campaignId: string; request: Request }) {
+  const [data, setData] = useState<CampaignAfter | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const load = useCallback(async () => {
+    setError(null);
+    try { setData(await request<CampaignAfter>(`/campaigns/${campaignId}/after`)); }
+    catch (caught) { setError(message(caught)); }
+  }, [campaignId, request]);
+  useEffect(() => { void load(); }, [load]);
+  if (error) return <p role="alert" className="form-error">{error}</p>;
+  if (!data) return <p role="status">Loading the team review…</p>;
+  if (!data.plan) return <section className="team-review team-review--none"><span className="team-review__tag">TEAM REVIEW</span><p>No check was scheduled for this campaign, so there is nothing to review.</p></section>;
+  return <TeamReviewPanel data={data} request={request} onSaved={load} />;
+}
+
+export function TeamReviewPanel({ data, request, onSaved }: { data: CampaignAfter; request: Request; onSaved: () => Promise<void> }) {
+  const plan = data.plan!;
+  const due = Date.parse(plan.evaluateAfter) <= Date.now();
+  const finalized = data.status === "FINALIZED";
+  return <section className="team-review" aria-label={`Team review for ${data.title}`}>
+    <header>
+      <span className="team-review__tag">TEAM REVIEW · {data.title}</span>
+      <h3>The team checks on {signalDate(plan.evaluateAfter)}: {lowerFirst(plan.question)}</h3>
+      <span className={`team-review__due${due ? " is-due" : ""}`}>{reviewDue(plan.evaluateAfter)}</span>
+    </header>
+    <details><summary>What counts as yes, no, unclear</summary><p>{plan.criteria}</p><small>{plan.evidenceExpected ? "A link is required for Yes, No, or Unclear." : "A link is optional."} Locked {signalDate(plan.lockedAt ?? plan.createdAt)}.</small></details>
+    {!finalized ? <p className="team-review__wait">Review opens once the result is committed onchain and the check date arrives.</p>
+      : !data.allocationCommitted ? <p className="team-review__wait">The committed result is not available, so review is blocked.</p>
+        : !data.recipients.length ? <p className="team-review__wait">Nobody received the spot, so there is no one to review.</p>
+          : <ul className="team-review__people">{data.recipients.map((recipient) => <TeamReviewRow key={`${data.campaignId}:${recipient.person.key}`} campaign={data} recipient={recipient} due={due} request={request} onSaved={onSaved} />)}</ul>}
+    <small className="team-review__who">Only the organizer and TAKE operators can record this. It doesn't change who got the spot.</small>
+  </section>;
+}
+
+const OUTCOMES = [{ value: "POSITIVE", label: "Yes" }, { value: "NEGATIVE", label: "No" }, { value: "INCONCLUSIVE", label: "Unclear" }] as const;
+
+function TeamReviewRow({ campaign, recipient, due, request, onSaved }: { campaign: CampaignAfter; recipient: CampaignAfter["recipients"][number]; due: boolean; request: Request; onSaved: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(recipient.evaluation?.status === "PENDING" ? "" : recipient.evaluation?.status ?? "");
   const [urls, setUrls] = useState(recipient.evaluation?.evidenceUrls.join("\n") ?? "");
   const [note, setNote] = useState(recipient.evaluation?.note ?? "");
-  const [isPublic, setIsPublic] = useState(recipient.evaluation?.isPublic ?? false);
+  const [isPublic, setIsPublic] = useState(recipient.evaluation?.isPublic ?? true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const due = Boolean(campaign.plan && Date.parse(campaign.plan.evaluateAfter) <= Date.now());
+  const reviewed = isReviewed(recipient.evaluation);
   async function save(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError(null);
+    event.preventDefault();
+    if (!status) { setError("Choose Yes, No, or Unclear."); return; }
+    setBusy(true); setError(null);
     try {
       await request(`/operator/campaigns/${campaign.campaignId}/evaluations`, { method: "POST", body: JSON.stringify({ recipientKey: recipient.person.key, status, evidenceUrls: urls.split(/\n/).map((url) => url.trim()).filter(Boolean), note, isPublic }) });
       await onSaved(); setOpen(false);
     } catch (caught) { setError(message(caught)); } finally { setBusy(false); }
   }
-  return <article className="signal-evaluation-editor"><SignalPersonLabel person={recipient.person} /><SignalOutcome evaluation={recipient.evaluation} />
-    {!open ? <SecondaryAction disabled={!due} onClick={() => setOpen(true)}>{due ? recipient.evaluation ? "UPDATE EVALUATION" : "RECORD OUTCOME" : "EVALUATION NOT DUE YET"}</SecondaryAction>
-      : <form className="signal-form" onSubmit={(event) => void save(event)}>
-        <label className="field"><span>OUTCOME AGAINST THE ORIGINAL CRITERIA</span><select required value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Choose outcome</option><option value="POSITIVE">Positive</option><option value="NEGATIVE">Negative</option><option value="INCONCLUSIVE">Inconclusive</option></select></label>
-        <label className="field"><span>EVIDENCE URLS (HTTPS, ONE PER LINE, UP TO FIVE)</span><textarea required={campaign.plan?.evidenceExpected} value={urls} onChange={(event) => setUrls(event.target.value)} /></label>
-        <label className="field"><span>WHAT HAPPENED?</span><textarea required minLength={3} maxLength={2000} value={note} onChange={(event) => setNote(event.target.value)} /></label>
-        <label className="signal-checkbox"><input type="checkbox" checked={isPublic} onChange={(event) => setIsPublic(event.target.checked)} />Make this note and its evidence links public. Do not include private eligibility or integrity evidence.</label>
-        <small>The outcome, evaluation date, and evaluator are visible. This does not change the allocation.</small>
+  return <li className="team-review__row">
+    <div className="team-review__person"><SignalPersonLabel person={recipient.person} />{reviewed ? <TeamReviewResult evaluation={recipient.evaluation!} /> : <span className="signal-status signal-status--pending">Not reviewed yet</span>}</div>
+    {!open ? <SecondaryAction disabled={!due} onClick={() => setOpen(true)}>{!due ? reviewDue(campaign.plan!.evaluateAfter) : reviewed ? "Change review" : "Record review"}</SecondaryAction>
+      : <form className="signal-form team-review__form" onSubmit={(event) => void save(event)}>
+        <div className="team-review__choices" role="radiogroup" aria-label={`Did it happen for ${recipient.person.name}?`}>
+          {OUTCOMES.map((choice) => <button key={choice.value} type="button" role="radio" aria-checked={status === choice.value} className={status === choice.value ? "is-selected" : ""} onClick={() => setStatus(choice.value)}>{choice.label}</button>)}
+        </div>
+        <label className="field"><span>Short note</span><textarea required minLength={3} maxLength={2000} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Shipped v1 on Oct 30." /></label>
+        <label className="field"><span>Link{campaign.plan?.evidenceExpected ? "" : " (optional)"}, one per line</span><textarea required={campaign.plan?.evidenceExpected} value={urls} onChange={(event) => setUrls(event.target.value)} placeholder="https://" /></label>
+        <label className="signal-checkbox"><input type="checkbox" checked={isPublic} onChange={(event) => setIsPublic(event.target.checked)} />Show the note and link to everyone. Leave private eligibility or integrity details out.</label>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
-        <div className="signal-form__actions"><SecondaryAction type="button" onClick={() => setOpen(false)} disabled={busy}>CANCEL</SecondaryAction><PrimaryAction type="submit" disabled={busy}>{busy ? "SAVING…" : "SAVE EVALUATION"}</PrimaryAction></div>
+        <div className="signal-form__actions"><SecondaryAction type="button" onClick={() => setOpen(false)} disabled={busy}>Cancel</SecondaryAction><PrimaryAction type="submit" disabled={busy}>{busy ? "Saving…" : "Save review"}</PrimaryAction></div>
       </form>}
-  </article>;
+  </li>;
 }
 
 type Observation = { id: string; signalType: string; status: string; evidence: unknown; limitation: string | null; createdAt: string };
