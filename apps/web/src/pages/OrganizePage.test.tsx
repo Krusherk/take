@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Campaign } from "../types/product";
 import { OrganizePage } from "./OrganizePage";
 
+const operatorState = vi.hoisted(() => ({ value: true }));
 const request = vi.hoisted(() => vi.fn(async (path: string) => {
   if (path === "/organizations/mine") {
     return [{ id: "org-1", name: "Monad Devs", slug: "monad-devs", role: "OWNER", joinedAt: "2026-01-01T00:00:00.000Z" }];
@@ -11,8 +12,11 @@ const request = vi.hoisted(() => vi.fn(async (path: string) => {
     { displayName: "Ada Obi", username: "adaobi", avatarUrl: null, recipient: { type: "take_identity", takeIdentityId: "11111111-1111-4111-8111-111111111111" } },
     { displayName: "Tunde K", username: "tundek", avatarUrl: null, recipient: { type: "take_identity", takeIdentityId: "22222222-2222-4222-8222-222222222222" } },
   ] };
-  if (path.endsWith("/campaigns")) return { campaignId: "new-1", message: "The campaign is ready." };
-  if (path === "/operator/me") return { operator: true };
+  if (path.endsWith("/campaigns")) return operatorState.value
+    ? { campaignId: "new-1", stage: "READY_TO_SIGN", message: "The campaign is ready." }
+    : { campaignId: "new-1", stage: "DRAFT", message: "The campaign is saved." };
+  if (path === "/operator/me") return { operator: operatorState.value };
+  if (path === "/operator/server-wallet") return { configured: true, address: "0xCAf7053F61c7c6087B3Da5f43A027E77113C6ebE", balanceWei: "15000000000000000000" };
   return [];
 }));
 
@@ -103,5 +107,37 @@ describe("Organize page", () => {
     const body = JSON.parse(String(call[1].body));
     expect(body.evaluationPlan).toBeUndefined();
     expect(Date.parse(body.startTime)).toBeLessThan(Date.now());
+  });
+
+  it("uses wheels for the time, and offers server signing to operators", async () => {
+    operatorState.value = true;
+    render(<OrganizePage navigate={vi.fn()} />);
+    expect(await screen.findByRole("spinbutton", { name: "Nominations end, day" })).toBeInTheDocument();
+    expect(document.querySelector('input[type="datetime-local"]')).toBeNull();
+    expect(await screen.findByRole("checkbox", { name: /Let TAKE sign it onto Monad/ })).toBeChecked();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Open as soon as I sign/ }));
+    expect(screen.getByRole("spinbutton", { name: "Nominations open, hour" })).toBeInTheDocument();
+  });
+
+  it("tells a non-operator, next to the button, that the draft is not on Monad", async () => {
+    operatorState.value = false;
+    render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.change(await screen.findByPlaceholderText("Monad community spots"), { target: { value: "Builder Week" } });
+    fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "Builder grant" } });
+    fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "One grant." } });
+    fireEvent.click((await screen.findAllByRole("button", { name: "Can give" }))[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: "Can receive" })[1]!);
+    expect(screen.queryByRole("checkbox", { name: /Let TAKE sign it onto Monad/ })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Create campaign/ }));
+    const status = await screen.findByText("Saved as a draft. Not on Monad yet.");
+    expect(status.closest('[role="status"]')).not.toBeNull();
+    expect(screen.getByText(/not a TAKE operator/)).toBeInTheDocument();
+    operatorState.value = true;
+  });
+
+  it("shows form problems as an error toast", async () => {
+    render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Create campaign/ }));
+    expect(await screen.findByText(/things to fix\./)).toBeInTheDocument();
   });
 });
