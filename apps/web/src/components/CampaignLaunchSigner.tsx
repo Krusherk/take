@@ -1,6 +1,6 @@
 import { useSendTransaction, useUser, useWallets } from "../lib/privy";
 import { Copy, ExternalLink, Wallet } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TakeApiClient } from "../lib/takeApi";
 import type { OrganizePhase } from "../lib/organizePhase";
 import { PrimaryAction, SecondaryAction } from "./Actions";
@@ -18,6 +18,8 @@ type Intent = {
   transaction: { to: `0x${string}`; data: `0x${string}`; value: string; chainId: number };
 };
 
+export type SignerFeedback = { tone: "success" | "action" | "error"; title: string; body?: string };
+
 const pendingStatuses = ["WAITING_FOR_WALLET", "SUBMITTED", "CONFIRMING", "INDEXING"];
 
 export function CampaignLaunchSigner({
@@ -25,11 +27,16 @@ export function CampaignLaunchSigner({
   phase,
   request,
   onChanged,
+  autoServer = false,
+  onFeedback,
 }: {
   campaignId: string;
   phase: SignPhase;
   request: TakeApiClient["request"];
   onChanged: () => Promise<void>;
+  /** Sign with the TAKE server wallet without a click (set right after "Create campaign"). */
+  autoServer?: boolean;
+  onFeedback?: (feedback: SignerFeedback) => void;
 }) {
   const { me } = useTakeMe();
   const { sendTransaction } = useSendTransaction();
@@ -41,6 +48,8 @@ export function CampaignLaunchSigner({
   const [copied, setCopied] = useState(false);
   const [refreshingWallet, setRefreshingWallet] = useState(false);
   const [serverWallet, setServerWallet] = useState<string | null>(null);
+  const [intentsLoaded, setIntentsLoaded] = useState(false);
+  const autoTried = useRef<Set<string>>(new Set());
   const primaryWallet = me?.wallets.find((wallet) => wallet.primary && wallet.embedded)?.address
     ?? me?.wallets.find((wallet) => wallet.embedded)?.address
     ?? null;
@@ -53,7 +62,7 @@ export function CampaignLaunchSigner({
   useEffect(() => {
     let cancelled = false;
     void request<Intent[]>(`/operator/campaigns/${campaignId}/lifecycle-intents`)
-      .then((rows) => { if (!cancelled) setIntents(rows); })
+      .then((rows) => { if (!cancelled) { setIntents(rows); setIntentsLoaded(true); } })
       .catch((caught) => { if (!cancelled) setError(message(caught)); });
     return () => { cancelled = true; };
   }, [campaignId, request]);
@@ -70,15 +79,30 @@ export function CampaignLaunchSigner({
     setBusy(true);
     setError(null);
     try {
-      await request(`/operator/campaigns/${campaignId}/lifecycle/${action.toLowerCase()}/server-sign`, { method: "POST", body: "{}" });
+      const result = await request<{ outcome?: string; transactionHash?: string | null }>(`/operator/campaigns/${campaignId}/lifecycle/${action.toLowerCase()}/server-sign`, { method: "POST", body: "{}" });
       setIntents(await request<Intent[]>(`/operator/campaigns/${campaignId}/lifecycle-intents`));
+      onFeedback?.(action === "PUBLISH"
+        ? { tone: "success", title: "Signed onto Monad.", body: "The TAKE server wallet published it. Nominations open next; TAKE does that too." }
+        : { tone: "success", title: "Nominations are opening.", body: "The TAKE server wallet signed. It shows as live in Explore once Monad confirms." });
       await onChanged();
     } catch (caught) {
       setError(message(caught));
+      onFeedback?.({ tone: "error", title: "The TAKE server wallet could not sign.", body: message(caught) });
     } finally {
       setBusy(false);
     }
   }
+
+  // Right after "Create campaign" with server signing on: publish, then open
+  // nominations, without asking for a click. Each action is tried once.
+  useEffect(() => {
+    if (!autoServer || !serverWallet || !intentsLoaded || busy) return;
+    if (intents.some((intent) => intent.action === action && pendingStatuses.includes(intent.status) && intent.transactionHash)) return;
+    const key = `${campaignId}:${action}`;
+    if (autoTried.current.has(key)) return;
+    autoTried.current.add(key);
+    void signWithServer();
+  }, [autoServer, serverWallet, intentsLoaded, action, campaignId, intents, busy]);
 
   const signature = JSON.stringify(intents.map((intent) => [intent.id, intent.status, intent.transactionHash]));
   useEffect(() => {
@@ -145,28 +169,40 @@ export function CampaignLaunchSigner({
   }
 
   const waiting = pending && ["SUBMITTED", "CONFIRMING", "INDEXING"].includes(pending.status);
-  const label = phase === "SIGN_TO_PUBLISH" ? "Sign to publish" : "Sign to open nominations";
+  const shownWallet = serverWallet ?? authority;
+  const label = phase == "SIGN_TO_PUBLISH" ? "Sign to publish" : "Sign to open nominations";
   return (
     <div className="organize-sign">
       <div className="organize-sign__wallet">
         <Wallet size={18} />
         <div>
-          <span>Campaign wallet</span>
-          <strong>{authority ?? "No TAKE wallet yet"}</strong>
+          <span>{serverWallet ? "TAKE server wallet" : "Campaign wallet"}</span>
+          <strong>{shownWallet ?? "No TAKE wallet yet"}</strong>
         </div>
-        {authority ? <SecondaryAction onClick={() => void copy(authority, setCopied)}>{copied ? "Copied" : "Copy"}<Copy size={14} /></SecondaryAction> : null}
+        {shownWallet ? <SecondaryAction onClick={() => void copy(shownWallet, setCopied)}>{copied ? "Copied" : "Copy"}<Copy size={14} /></SecondaryAction> : null}
       </div>
-      <p>{walletReady
-        ? "This opens a Monad testnet transaction for you to approve. TAKE does not send it until you sign."
-        : "Connect the TAKE wallet above before signing. Do not create a second wallet."}</p>
-      <p className="organize-sign__gas">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "Gas sponsorship is on." : "This wallet needs testnet MON for gas."}</p>
-      {serverWallet ? <p className="organize-sign__gas">Or let the TAKE server wallet {short(serverWallet)} sign.{action === "PUBLISH" ? " It becomes the campaign organizer, so TAKE closes and finalizes the campaign automatically after it ends." : ""}</p> : null}
+      {serverWallet ? (
+        <p>The TAKE server wallet {short(serverWallet)} signs this for you. No wallet pop-up.{action === "PUBLISH" ? " It becomes the campaign organizer, so TAKE also closes and finalizes the campaign after it ends." : ""}</p>
+      ) : (
+        <>
+          <p>{walletReady
+            ? "This opens a Monad testnet transaction for you to approve. TAKE does not send it until you sign."
+            : "Connect the TAKE wallet above before signing. Do not create a second wallet."}</p>
+          <p className="organize-sign__gas">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "Gas sponsorship is on." : "This wallet needs testnet MON for gas."}</p>
+        </>
+      )}
       {error ? <p className="organize-sign__error" role="alert">{error}</p> : null}
       {pending?.errorMessage ? <p className="organize-sign__error" role="alert">{pending.errorMessage}</p> : null}
       {waiting ? <p role="status">{progress(pending.status)}</p> : null}
       <div className="organize-sign__actions">
-        <PrimaryAction onClick={() => void sign()} disabled={busy || waiting || !walletReady}>{busy ? "Waiting for wallet…" : label}</PrimaryAction>
-        {serverWallet && !waiting ? <SecondaryAction onClick={() => void signWithServer()} disabled={busy}>Use TAKE server wallet</SecondaryAction> : null}
+        {serverWallet && !waiting ? (
+          <>
+            <PrimaryAction onClick={() => void signWithServer()} disabled={busy}>{busy ? "TAKE is signing…" : action === "PUBLISH" ? "Publish with TAKE" : "Open nominations with TAKE"}</PrimaryAction>
+            <SecondaryAction onClick={() => void sign()} disabled={busy || !walletReady}>Sign with my wallet instead</SecondaryAction>
+          </>
+        ) : (
+          <PrimaryAction onClick={() => void sign()} disabled={busy || waiting || !walletReady}>{busy ? "Waiting for wallet…" : label}</PrimaryAction>
+        )}
         {!walletReady ? <SecondaryAction onClick={() => void refreshWallet(refreshUser, setRefreshingWallet, setError)} disabled={refreshingWallet}>{refreshingWallet ? "Checking wallet…" : "Retry wallet"}</SecondaryAction> : null}
         {pending?.transactionHash ? <a className="organize-sign__tx" href={`https://testnet.monadexplorer.com/tx/${pending.transactionHash}`} target="_blank" rel="noreferrer">View transaction <ExternalLink size={14} /></a> : null}
       </div>
