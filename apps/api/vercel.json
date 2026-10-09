@@ -4,7 +4,20 @@
   "buildCommand": "pnpm -r --filter '@take/api...' build",
   "outputDirectory": "public",
   "functions": {
-    "api/index.mjs": { "maxDuration": 60 }
+    "api/index.mjs": {
+      "maxDuration": 60
+    }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/internal/cron/finalize",
+      "schedule": "0 12 * * *"
+    }
+  ]
 }

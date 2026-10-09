@@ -40,6 +40,7 @@ export function CampaignLaunchSigner({
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [refreshingWallet, setRefreshingWallet] = useState(false);
+  const [serverWallet, setServerWallet] = useState<string | null>(null);
   const primaryWallet = me?.wallets.find((wallet) => wallet.primary && wallet.embedded)?.address
     ?? me?.wallets.find((wallet) => wallet.embedded)?.address
     ?? null;
@@ -56,6 +57,28 @@ export function CampaignLaunchSigner({
       .catch((caught) => { if (!cancelled) setError(message(caught)); });
     return () => { cancelled = true; };
   }, [campaignId, request]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void request<{ configured: boolean; address: string | null }>("/operator/server-wallet")
+      .then((wallet) => { if (!cancelled) setServerWallet(wallet.configured ? wallet.address : null); })
+      .catch(() => { if (!cancelled) setServerWallet(null); });
+    return () => { cancelled = true; };
+  }, [request]);
+
+  async function signWithServer() {
+    setBusy(true);
+    setError(null);
+    try {
+      await request(`/operator/campaigns/${campaignId}/lifecycle/${action.toLowerCase()}/server-sign`, { method: "POST", body: "{}" });
+      setIntents(await request<Intent[]>(`/operator/campaigns/${campaignId}/lifecycle-intents`));
+      await onChanged();
+    } catch (caught) {
+      setError(message(caught));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const signature = JSON.stringify(intents.map((intent) => [intent.id, intent.status, intent.transactionHash]));
   useEffect(() => {
@@ -137,11 +160,13 @@ export function CampaignLaunchSigner({
         ? "This opens a Monad testnet transaction for you to approve. TAKE does not send it until you sign."
         : "Connect the TAKE wallet above before signing. Do not create a second wallet."}</p>
       <p className="organize-sign__gas">{import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS === "true" ? "Gas sponsorship is on." : "This wallet needs testnet MON for gas."}</p>
+      {serverWallet ? <p className="organize-sign__gas">Or let the TAKE server wallet {short(serverWallet)} sign.{action === "PUBLISH" ? " It becomes the campaign organizer, so TAKE closes and finalizes the campaign automatically after it ends." : ""}</p> : null}
       {error ? <p className="organize-sign__error" role="alert">{error}</p> : null}
       {pending?.errorMessage ? <p className="organize-sign__error" role="alert">{pending.errorMessage}</p> : null}
       {waiting ? <p role="status">{progress(pending.status)}</p> : null}
       <div className="organize-sign__actions">
         <PrimaryAction onClick={() => void sign()} disabled={busy || waiting || !walletReady}>{busy ? "Waiting for wallet…" : label}</PrimaryAction>
+        {serverWallet && !waiting ? <SecondaryAction onClick={() => void signWithServer()} disabled={busy}>Use TAKE server wallet</SecondaryAction> : null}
         {!walletReady ? <SecondaryAction onClick={() => void refreshWallet(refreshUser, setRefreshingWallet, setError)} disabled={refreshingWallet}>{refreshingWallet ? "Checking wallet…" : "Retry wallet"}</SecondaryAction> : null}
         {pending?.transactionHash ? <a className="organize-sign__tx" href={`https://testnet.monadexplorer.com/tx/${pending.transactionHash}`} target="_blank" rel="noreferrer">View transaction <ExternalLink size={14} /></a> : null}
       </div>
@@ -175,4 +200,8 @@ function progress(status: string) {
 
 function message(error: unknown) {
   return error instanceof Error ? error.message : "TAKE could not open the wallet.";
+}
+
+function short(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }

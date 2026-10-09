@@ -17,6 +17,7 @@ import { campaignLifecycleRoutes } from "./routes/campaignLifecycle.js";
 import { ServiceError } from "./services/errors.js";
 import { ZodError } from "zod";
 import { signalRoutes } from "./routes/signal.js";
+import { cronRoutes } from "./routes/cron.js";
 
 export async function buildApp() {
   const app = Fastify({
@@ -67,6 +68,7 @@ export async function buildApp() {
   await app.register(operatorRoutes);
   await app.register(campaignLifecycleRoutes);
   await app.register(signalRoutes);
+  await app.register(cronRoutes);
 
   return app;
 }

@@ -49,6 +49,18 @@ export const apiEnvSchema = z.object({
   PRIVY_APP_SECRET: optionalNonEmptyString,
   PRIVY_VERIFICATION_KEY: optionalNonEmptyString,
   INTERNAL_API_TOKEN: optionalNonEmptyString,
+  // Vercel Cron sends "Authorization: Bearer $CRON_SECRET" when this is set on the project.
+  CRON_SECRET: optionalNonEmptyString,
+  // Dedicated TAKE server wallet. Closes ended campaigns, finalizes campaigns it organizes,
+  // and can publish/activate campaigns for operators. Never logged or returned.
+  FINALIZER_PRIVATE_KEY: z.preprocess(
+    (value) => typeof value === "string" && value.trim() ? value.trim() : undefined,
+    z.string().regex(/^0x[0-9a-fA-F]{64}$/, "FINALIZER_PRIVATE_KEY must be a 0x-prefixed 32-byte hex key").optional()
+  ),
+  AUTO_FINALIZE_ENABLED: z.preprocess(
+    (value) => value === undefined ? true : !["false", "0", "off"].includes(String(value).toLowerCase()),
+    z.boolean()
+  ),
   X_API_BEARER_TOKEN: optionalNonEmptyString,
   DISCORD_APPLICATION_ID: optionalNonEmptyString,
   DISCORD_BOT_TOKEN: optionalNonEmptyString,
