@@ -53,7 +53,7 @@ export async function buildApp() {
       });
     }
     // RPC/client exceptions may embed credentials in URLs or request headers.
-    app.log.error({ name: error instanceof Error ? error.name : "UnknownError" }, "TAKE request failed");
+    app.log.error(safeErrorDetails(error), "TAKE request failed");
     return reply.code(500).send({ error: "INTERNAL_ERROR", message: "Internal server error" });
   });
   await app.register(authPlugin);
@@ -73,4 +73,27 @@ export async function buildApp() {
   await app.register(signupRoutes);
 
   return app;
+}
+
+/** Error class, codes and a short message with URLs, hex keys and quoted secrets removed. */
+export function safeErrorDetails(error: unknown) {
+  const details: Record<string, string> = { name: error instanceof Error ? error.name : "UnknownError" };
+  let current: unknown = error;
+  for (let depth = 0; current && typeof current === "object" && depth < 4; depth += 1) {
+    const item = current as { code?: unknown; errno?: unknown; message?: unknown; severity?: unknown };
+    const prefix = depth === 0 ? "" : `cause${depth}`;
+    if (typeof item.code === "string" || typeof item.code === "number") details[`${prefix}code`] = String(item.code);
+    if (typeof item.severity === "string") details[`${prefix}severity`] = item.severity;
+    if (typeof item.message === "string") details[`${prefix}message`] = redact(item.message);
+    current = (current as { cause?: unknown }).cause;
+  }
+  return details;
+}
+
+function redact(message: string) {
+  return message
+    .replace(/[a-z][a-z0-9+.-]*:\/\/\S+/gi, "[url]")
+    .replace(/0x[0-9a-f]{40,}/gi, "[hex]")
+    .replace(/(password|secret|token|key)\S*\s*[=:]\s*\S+/gi, "$1=[redacted]")
+    .slice(0, 300);
 }
