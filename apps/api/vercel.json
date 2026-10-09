@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
+  "regions": [
+    "pdx1"
+  ],
   "buildCommand": "pnpm -r --filter '@take/api...' build",
   "outputDirectory": "public",
   "functions": {

@@ -15,6 +15,8 @@ import { rememberPostAuthDestination, routeAfterAuthentication } from "../lib/au
 import { campaignFromApi, campaignPath, isParticipantCampaign } from "../lib/productData";
 import type { Campaign, Person } from "../types/product";
 
+const LOADING_FACE = { count: "", unit: "", badge: null };
+
 export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, optimisticRecipient }: { campaignId: string; navigate: (path: TakePath) => void; optimisticGivenCampaigns: string[]; optimisticRecipient: Person | null }) {
   const { campaigns, peoplePreview, status, error, refetch } = useTakeProduct();
   const { history, me, request } = useTakeMe();
@@ -39,7 +41,22 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
     return () => { active = false; };
   }, [campaignId, campaigns]);
 
-  if (!campaign && (publicLoading || status === "loading")) return <div className="page-container sticker-page sticker-detail"><ProductLoading label="Loading campaign" /></div>;
+  if (!campaign && (publicLoading || status === "loading")) {
+    // Same element tree as the loaded page (back sticker, hero, art, ticket), so React keeps
+    // the ticket's DOM node when the data lands: it paints, and settles, once instead of
+    // waiting on the API, and the printed counts simply appear on it.
+    return (
+      <div className="page-container sticker-page sticker-detail campaign-page" aria-busy="true">
+        <BackSticker label="Explore" onClick={() => navigate("/explore")} />
+        <section className="sticker-campaign sticker-detail__hero" aria-label="Loading campaign">
+          <div className="sticker-campaign__art">
+            <CampaignSticker campaign={{ title: "Campaign" }} face={LOADING_FACE} tilt={-4} />
+          </div>
+        </section>
+        <ProductLoading label="Loading campaign" />
+      </div>
+    );
+  }
   if (!campaign && (publicError || status === "error")) return <div className="page-container sticker-page sticker-detail"><ProductError message={publicError ?? error ?? "This campaign could not be loaded."} onRetry={() => void refetch()} /></div>;
   if (!campaign) return <div className="page-container sticker-page sticker-detail"><ProductError message="This campaign does not exist or is no longer available." onRetry={() => navigate("/explore")} /></div>;
 

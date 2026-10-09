@@ -19,7 +19,9 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
       return;
     }
     reply.header("Cache-Control", "public, max-age=0, must-revalidate");
-    reply.header("Vercel-CDN-Cache-Control", "max-age=15, stale-while-revalidate=60");
+    // Fresh for 15s; after that the edge answers at once with the last copy (up to 5 min
+    // old) while it refetches, so a shared campaign link rarely waits on a cold function.
+    reply.header("Vercel-CDN-Cache-Control", "max-age=15, stale-while-revalidate=300");
   };
 
   app.get("/campaigns", async (request, reply) => {

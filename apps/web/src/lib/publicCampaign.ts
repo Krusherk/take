@@ -5,10 +5,24 @@ import type { ApiCampaign } from "../types/product";
 // campaign screen's code has even downloaded, so the two load in parallel.
 const reads = new Map<string, Promise<ApiCampaign>>();
 
+declare global {
+  interface Window { __takeEarlyCampaign?: { id: string; read: Promise<Response> } }
+}
+
+/** The read index.html already started for this campaign link, used once. */
+function request(campaignId: string): Promise<Response> {
+  const early = typeof window === "undefined" ? undefined : window.__takeEarlyCampaign;
+  if (early) {
+    window.__takeEarlyCampaign = undefined;
+    if (early.id === campaignId) return early.read;
+  }
+  return fetch(`${TAKE_API_BASE_URL}/campaigns/${encodeURIComponent(campaignId)}`);
+}
+
 export function readPublicCampaign(campaignId: string): Promise<ApiCampaign> {
   let read = reads.get(campaignId);
   if (!read) {
-    read = fetch(`${TAKE_API_BASE_URL}/campaigns/${encodeURIComponent(campaignId)}`).then(async (response) => {
+    read = request(campaignId).then(async (response) => {
       if (!response.ok) throw new Error(response.status === 404 ? "This campaign is not available." : "This campaign could not be loaded.");
       return response.json() as Promise<ApiCampaign>;
     });

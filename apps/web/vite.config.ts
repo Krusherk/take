@@ -23,6 +23,19 @@ function preloadFirstPaintFonts(): Plugin {
   };
 }
 
+// Campaign links: start the signed-out campaign read from the HTML itself, before any
+// script downloads. The ticket (the page's largest paint) waits on this response, so it
+// should not also wait for the app bundle. lib/publicCampaign.ts picks the promise up.
+function earlyCampaignRead(apiUrl: string): Plugin {
+  const base = apiUrl.trim().replace(/\/+$/, "");
+  const code = `(function(){try{var m=/^\\/campaign\\/([^/]+)\\/?$/.exec(location.pathname);if(!m||!window.fetch)return;var id=decodeURIComponent(m[1]);var read=fetch(${JSON.stringify(base)}+"/campaigns/"+encodeURIComponent(id));read.catch(function(){});window.__takeEarlyCampaign={id:id,read:read}}catch(e){}})()`;
+  return {
+    name: "take-early-campaign-read",
+    apply: "build",
+    transformIndexHtml: () => [{ tag: "script", children: code, injectTo: "head" as const }],
+  };
+}
+
 // Production API used when a Vercel preview build has no VITE_API_BASE_URL of its own.
 const PRODUCTION_API_URL = "https://take-api-sand.vercel.app";
 
@@ -38,16 +51,17 @@ function isDeployableApiUrl(value: string | undefined) {
 
 export default defineConfig(({ mode }) => {
   const define: Record<string, string> = {};
+  const env = loadEnv(mode, process.cwd(), "VITE_");
+  let apiUrl = process.env.VITE_API_BASE_URL ?? env.VITE_API_BASE_URL;
   if (process.env.VERCEL === "1") {
-    const env = loadEnv(mode, process.cwd(), "VITE_");
-    const apiUrl = process.env.VITE_API_BASE_URL ?? env.VITE_API_BASE_URL;
     if (!isDeployableApiUrl(apiUrl)) {
       // Production must name its API explicitly. Previews fall back to the production API.
       if (process.env.VERCEL_ENV === "production") {
         throw new Error("Set VITE_API_BASE_URL to the deployed HTTPS TAKE API before building on Vercel.");
       }
       define["import.meta.env.VITE_API_BASE_URL"] = JSON.stringify(PRODUCTION_API_URL);
+      apiUrl = PRODUCTION_API_URL;
     }
   }
-  return { plugins: [react(), preloadFirstPaintFonts()], define };
+  return { plugins: [react(), preloadFirstPaintFonts(), earlyCampaignRead(apiUrl ?? "http://localhost:3000")], define };
 });
