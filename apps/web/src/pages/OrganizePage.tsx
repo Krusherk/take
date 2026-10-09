@@ -1,8 +1,10 @@
-import { Check, Link2, Lock, ShieldAlert } from "lucide-react";
+import { Link2, Lock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { Avatar } from "../components/Avatar";
-import { CampaignLaunchSigner } from "../components/CampaignLaunchSigner";
+import { CampaignLaunchSigner, type SignerFeedback } from "../components/CampaignLaunchSigner";
+import { OrganizeToast, type OrganizeToastMessage, type ToastTone } from "../components/organize/OrganizeToast";
+import { WheelDateTimePicker, roundTo, toLocal } from "../components/organize/WheelDateTimePicker";
 import { OrganizerEligibilityWorkspace } from "../components/eligibility/OrganizerEligibilityWorkspace";
 import { EvaluationPlanEditor, TeamReview } from "../components/SignalControls";
 import { ProductError, ProductLoading } from "../components/ProductState";
@@ -26,14 +28,17 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const [discord, setDiscord] = useState<DiscordIntegrationView | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [toast, setToast] = useState<OrganizeToastMessage | null>(null);
+  const [serverWallet, setServerWallet] = useState<{ address: string; funded: boolean } | null>(null);
+  const [serverSign, setServerSign] = useState(true);
+  const [autoServerIds, setAutoServerIds] = useState<string[]>([]);
   const [organizationName, setOrganizationName] = useState("");
   const [creatingOrganization, setCreatingOrganization] = useState(false);
   const [creatingCampaign, setCreatingCampaign] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [openNow, setOpenNow] = useState(true);
-  const [startLocal, setStartLocal] = useState(() => localInput(new Date(Date.now() + 60 * 60 * 1000)));
-  const [endLocal, setEndLocal] = useState(() => localInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
+  const [startLocal, setStartLocal] = useState(() => toLocal(roundTo(new Date(Date.now() + 60 * 60 * 1000), 5)));
+  const [endLocal, setEndLocal] = useState(() => toLocal(roundTo(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 5)));
   const [title, setTitle] = useState("");
   const [resourceName, setResourceName] = useState("");
   const [description, setDescription] = useState("");
@@ -69,6 +74,11 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
     return members.filter((person) => `${person.name} ${person.handle}`.toLowerCase().includes(query));
   }, [members, personQuery]);
 
+  const showToast = useCallback((tone: ToastTone, title: string, body?: string, action?: OrganizeToastMessage["action"]) => {
+    setToast({ id: Date.now() + Math.random(), tone, title, body, action });
+  }, []);
+  const onSignerFeedback = useCallback((feedback: SignerFeedback) => showToast(feedback.tone, feedback.title, feedback.body), [showToast]);
+
   const loadOrganizations = useCallback(async () => {
     setState("loading");
     setError(null);
@@ -81,6 +91,13 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       setOrganizations(result);
       setPeople(roster.people);
       setOperator(access.operator);
+      if (access.operator) {
+        void request<{ configured: boolean; address: string | null; balanceWei: string | null }>("/operator/server-wallet")
+          .then((wallet) => setServerWallet(wallet.configured && wallet.address
+            ? { address: wallet.address, funded: wallet.balanceWei === null || BigInt(wallet.balanceWei) > 0n }
+            : null))
+          .catch(() => setServerWallet(null));
+      }
       const firstManager = result.find((organization) => organization.role === "OWNER" || organization.role === "ADMIN");
       setOrganizationId((current) => current && result.some((organization) => organization.id === current)
         ? current
@@ -123,15 +140,16 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   }, [loadDiscord, organizationId, selectedPhase]);
 
   async function createOrganization() {
-    if (organizationName.trim().length < 2) return setError("Enter a community or organization name.");
+    if (organizationName.trim().length < 2) return showToast("error", "Name your community first.", "Use at least two characters.");
     setCreatingOrganization(true);
-    setError(null);
+    setToast(null);
     try {
       await request("/organizations", { method: "POST", body: JSON.stringify({ name: organizationName }) });
+      showToast("success", `${organizationName.trim()} is ready.`, "Now create its first campaign.");
       setOrganizationName("");
       await loadOrganizations();
     } catch (caught) {
-      setError(message(caught));
+      showToast("error", "The community was not created.", message(caught));
     } finally {
       setCreatingOrganization(false);
     }
@@ -153,17 +171,29 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       check: checkOn ? { preset: checkPreset, question: checkQuestion, criteria: checkCriteria, days: checkDays, evidenceExpected: checkEvidence } : null,
     });
     setFieldErrors(parsed.errors);
-    if (!parsed.value || !organizationId) return;
+    if (!parsed.value || !organizationId) {
+      const count = Object.keys(parsed.errors).length;
+      if (count) showToast("error", count === 1 ? "One thing to fix." : `${count} things to fix.`, Object.values(parsed.errors)[0]);
+      return;
+    }
     setCreatingCampaign(true);
-    setError(null);
-    setNotice(null);
+    setToast(null);
     try {
-      const created = await request<{ campaignId: string; message: string }>(`/organizations/${organizationId}/campaigns`, {
+      const created = await request<{ campaignId: string; message: string; stage?: "DRAFT" | "READY_TO_SIGN" }>(`/organizations/${organizationId}/campaigns`, {
         method: "POST",
         body: JSON.stringify(parsed.value),
       });
       setCampaignId(created.campaignId);
-      setNotice(created.message);
+      const useServer = operator && serverSign && Boolean(serverWallet) && created.stage !== "DRAFT";
+      if (created.stage === "DRAFT" || !operator) {
+        showToast("action", "Saved as a draft. Not on Monad yet.",
+          "This account is not a TAKE operator, so it cannot sign campaigns onto Monad. A TAKE operator has to finish it before Explore lists it.");
+      } else if (useServer) {
+        setAutoServerIds((current) => [...current, created.campaignId]);
+        showToast("success", "Campaign created.", "TAKE is signing it onto Monad with the server wallet now.");
+      } else {
+        showToast("action", "Campaign created. Sign to publish.", created.message);
+      }
       setTitle("");
       setResourceName("");
       setDescription("");
@@ -173,7 +203,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       setCheckOn(false);
       await refetchProducts();
     } catch (caught) {
-      setError(message(caught));
+      showToast("error", "The campaign was not created.", message(caught));
       await refetchProducts();
     } finally {
       setCreatingCampaign(false);
@@ -183,7 +213,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   async function installDiscord() {
     if (!organizationId) return;
     setDiscordBusy(true);
-    setError(null);
+    setToast(null);
     try {
       const result = await request<{ installUrl: string }>(`/organizations/${organizationId}/integrations/discord/install`, {
         method: "POST",
@@ -191,7 +221,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       });
       window.location.assign(result.installUrl);
     } catch (caught) {
-      setError(message(caught));
+      showToast("error", "Discord could not open.", message(caught));
       setDiscordBusy(false);
     }
   }
@@ -218,7 +248,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const organization = manageableOrganizations.find((item) => item.id === organizationId) ?? null;
 
   return (
-    <div className="page-container organize-page">
+    <div className={`page-container organize-page${toast ? " has-toast" : ""}`}>
       <header className="page-intro organize-intro organize-intro--plain">
         <div>
           <span className="eyebrow">ORGANIZE</span>
@@ -234,8 +264,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
         <li><span>4</span><strong>{operator ? "Sign twice" : "TAKE signs"}</strong><small>Publish, then open nominations.</small></li>
       </ol>
 
-      {notice ? <div className="organize-notice" role="status"><Check size={18} /><span>{notice}</span></div> : null}
-      {error ? <div className="organize-error" role="alert"><ShieldAlert size={18} /><span>{error}</span></div> : null}
+      <OrganizeToast toast={toast} onDismiss={() => setToast(null)} />
 
       {!manageableOrganizations.length ? (
         <section className="organize-studio">
@@ -295,6 +324,8 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
               request={request}
               onChanged={refetchProducts}
               navigate={navigate}
+              autoServer={autoServerIds.includes(selectedCampaign.id)}
+              onFeedback={onSignerFeedback}
             />
           ) : null}
 
@@ -316,18 +347,37 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 <Field label="Number of spots" error={fieldErrors.seats}>
                   <input value={seats} onChange={(event) => { setSeats(event.target.value); clearError("seats", setFieldErrors); }} type="number" min="1" step="1" required />
                 </Field>
-                <Field label="Nominations end" error={fieldErrors.endTime}>
-                  <input value={endLocal} onChange={(event) => { setEndLocal(event.target.value); clearError("endTime", setFieldErrors); }} type="datetime-local" required />
-                </Field>
+                <div className="field field--wide organize-when">
+                  <WheelDateTimePicker
+                    label="Nominations end"
+                    value={endLocal}
+                    onChange={(value) => { setEndLocal(value); clearError("endTime", setFieldErrors); }}
+                    error={fieldErrors.endTime ?? liveTimeError(openNow ? null : startLocal, endLocal, "end")}
+                  />
+                </div>
                 <label className="organize-open-now">
                   <input type="checkbox" checked={openNow} onChange={(event) => setOpenNow(event.target.checked)} />
                   <span>Open as soon as I sign. Leave this on to publish and open nominations in one sitting.</span>
                 </label>
                 {openNow ? null : (
-                  <Field label="Nominations open" error={fieldErrors.startTime}>
-                    <input value={startLocal} onChange={(event) => { setStartLocal(event.target.value); clearError("startTime", setFieldErrors); }} type="datetime-local" required />
-                  </Field>
+                  <div className="field field--wide organize-when">
+                    <WheelDateTimePicker
+                      label="Nominations open"
+                      value={startLocal}
+                      onChange={(value) => { setStartLocal(value); clearError("startTime", setFieldErrors); clearError("endTime", setFieldErrors); }}
+                      error={fieldErrors.startTime ?? liveTimeError(startLocal, endLocal, "start")}
+                    />
+                  </div>
                 )}
+                {operator && serverWallet ? (
+                  <label className="organize-open-now organize-server-sign">
+                    <input type="checkbox" checked={serverSign} onChange={(event) => setServerSign(event.target.checked)} />
+                    <span>
+                      Let TAKE sign it onto Monad with its server wallet ({short(serverWallet.address)}). No wallet pop-ups, and TAKE closes and finalizes it after it ends.
+                      {serverWallet.funded ? null : " The server wallet has no MON right now, so signing will wait until it is funded."}
+                    </span>
+                  </label>
+                ) : null}
               </div>
 
               <div className="organize-people">
@@ -415,13 +465,15 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   );
 }
 
-function CampaignNext({ campaign, phase, operator, request, onChanged, navigate }: {
+function CampaignNext({ campaign, phase, operator, request, onChanged, navigate, autoServer, onFeedback }: {
   campaign: Campaign;
   phase: OrganizePhase;
   operator: boolean;
   request: Parameters<typeof CampaignLaunchSigner>[0]["request"];
   onChanged: () => Promise<void>;
   navigate: (path: TakePath) => void;
+  autoServer: boolean;
+  onFeedback: (feedback: SignerFeedback) => void;
 }) {
   const signable = phase === "SIGN_TO_PUBLISH" || phase === "SIGN_TO_OPEN";
   return (
@@ -429,7 +481,7 @@ function CampaignNext({ campaign, phase, operator, request, onChanged, navigate 
       <span className="eyebrow">NEXT STEP</span>
       <h2>{nextTitle(phase)}</h2>
       <p>{nextDetail(campaign, phase, operator)}</p>
-      {signable && operator ? <CampaignLaunchSigner campaignId={campaign.id} phase={phase} request={request} onChanged={onChanged} /> : null}
+      {signable && operator ? <CampaignLaunchSigner campaignId={campaign.id} phase={phase} request={request} onChanged={onChanged} autoServer={autoServer} onFeedback={onFeedback} /> : null}
       {phase === "LIVE" ? (
         <div className="organize-next__actions">
           <PrimaryAction onClick={() => navigate("/explore")}>Open Explore</PrimaryAction>
@@ -563,9 +615,22 @@ function clearError(name: string, setErrors: React.Dispatch<React.SetStateAction
   });
 }
 
-function localInput(date: Date) {
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+/** Shown under the wheel as soon as the time is wrong, before submit. */
+function liveTimeError(startLocal: string | null, endLocal: string, field: "start" | "end") {
+  const now = Date.now();
+  const end = new Date(endLocal).getTime();
+  const start = startLocal ? new Date(startLocal).getTime() : null;
+  if (field === "start") {
+    if (start !== null && start < now - 60_000) return "This time has passed. Pick a later one, or turn on \u201copen as soon as I sign\u201d.";
+    return undefined;
+  }
+  if (end <= now) return "This time has passed. Pick a later end.";
+  if (start !== null && end <= start) return "The end has to be after nominations open.";
+  return undefined;
+}
+
+function short(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
 function message(error: unknown) {
