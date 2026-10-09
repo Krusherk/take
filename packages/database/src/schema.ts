@@ -5,6 +5,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   text,
@@ -1127,4 +1128,50 @@ export const auditLogs = pgTable("audit_logs", {
   action: varchar("action", { length: 96 }).notNull(),
   metadata: jsonb("metadata").notNull().default(sql`'{}'::jsonb`),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const campaignSignups = pgTable("campaign_signups", {
+  campaignId: uuid("campaign_id").primaryKey().references(() => campaigns.id, { onDelete: "cascade" }),
+  joinCode: varchar("join_code", { length: 32 }).notNull().unique(),
+  joinEnabled: boolean("join_enabled").notNull().default(true),
+  giverAllowlistId: uuid("giver_allowlist_id").notNull().references(() => identityAllowlists.id),
+  recipientAllowlistId: uuid("recipient_allowlist_id").notNull().references(() => identityAllowlists.id),
+  recipientSelfJoin: boolean("recipient_self_join").notNull().default(false),
+  minXAccountAgeDays: integer("min_x_account_age_days"),
+  signupDeadline: timestamp("signup_deadline", { withTimezone: true }),
+  status: varchar("status", { length: 16 }).notNull().default("OPEN"),
+  removedIdentityIds: uuid("removed_identity_ids").array().notNull().default(sql`'{}'::uuid[]`),
+  autoOpenApprovedByIdentityId: uuid("auto_open_approved_by_identity_id").references(() => takeIdentities.id),
+  closeRequestedByIdentityId: uuid("close_requested_by_identity_id").references(() => takeIdentities.id),
+  closeRequestedAt: timestamp("close_requested_at", { withTimezone: true }),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  closeReport: jsonb("close_report").notNull().default(sql`'{}'::jsonb`),
+  openedNotifiedAt: timestamp("opened_notified_at", { withTimezone: true }),
+  createdByIdentityId: uuid("created_by_identity_id").notNull().references(() => takeIdentities.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const campaignSignupInterest = pgTable("campaign_signup_interest", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
+  campaignId: uuid("campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
+  takeIdentityId: uuid("take_identity_id").notNull().references(() => takeIdentities.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => ({
+  uniqueIdx: uniqueIndex("campaign_signup_interest_organization_id_take_identity_id_key").on(table.organizationId, table.takeIdentityId)
+}));
+
+export const gasDrips = pgTable("gas_drips", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  takeIdentityId: uuid("take_identity_id").notNull().unique().references(() => takeIdentities.id, { onDelete: "cascade" }),
+  walletAddress: varchar("wallet_address", { length: 42 }).notNull(),
+  amountWei: numeric("amount_wei", { precision: 78, scale: 0 }).notNull(),
+  campaignId: uuid("campaign_id").references(() => campaigns.id, { onDelete: "set null" }),
+  status: varchar("status", { length: 16 }).notNull().default("PENDING"),
+  transactionHash: varchar("transaction_hash", { length: 66 }),
+  error: text("error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  sentAt: timestamp("sent_at", { withTimezone: true })
 });

@@ -6,6 +6,7 @@ import { normalizeAddress } from "@take/shared";
 import type { ApiEnv } from "../config/env.js";
 import { AllocationService } from "./allocation.js";
 import { CampaignLifecycleService } from "./campaignLifecycle.js";
+import { CampaignSignupService } from "./signups.js";
 import { ServiceError } from "./errors.js";
 import { ServerWallet, ServerWalletUnfundedError } from "./serverWallet.js";
 import { QuickNodeIndexer } from "../workers/quicknodeIndexer.js";
@@ -33,6 +34,7 @@ export type FinalizerStep = {
 export type FinalizerReport = {
   serverWallet: string | null;
   indexer: unknown;
+  signups?: unknown;
   steps: FinalizerStep[];
   durationMs: number;
 };
@@ -93,6 +95,13 @@ export class AutoFinalizer {
     if (!manager || !this.env.AUTO_FINALIZE_ENABLED) {
       return { serverWallet: this.wallet?.address ?? null, indexer, steps, durationMs: Date.now() - started };
     }
+    // Sign-ups whose deadline passed (or that are mid-opening) lock and open first.
+    let signups: unknown;
+    try {
+      signups = await new CampaignSignupService(this.db, this.env).runDue(this, this.now());
+    } catch (error) {
+      signups = { error: safeErrorCode(error) };
+    }
     const campaigns = await this.db.select().from(schema.campaigns).where(and(
       eq(schema.campaigns.managerContractAddress, manager),
       isNotNull(schema.campaigns.onchainCampaignId),
@@ -110,7 +119,34 @@ export class AutoFinalizer {
         steps.push(step(campaign, "ERROR", safeErrorCode(error)));
       }
     }
-    return { serverWallet: this.wallet?.address ?? null, indexer, steps, durationMs: Date.now() - started };
+    return { serverWallet: this.wallet?.address ?? null, indexer, signups, steps, durationMs: Date.now() - started };
+  }
+
+  /** Publishes a launch-approved draft with the server wallet and opens nominations right away. */
+  async publishAndOpen(campaignId: string, actorIdentityId: string): Promise<{ outcome: string; transactionHash?: string; detail?: string }> {
+    let campaign = await this.reload(campaignId);
+    let transactionHash: string | undefined;
+    if (campaign.status === "DRAFT") {
+      const published = await this.serverAction(campaign, "PUBLISH", actorIdentityId);
+      if (published.action === "SKIP" || published.action === "ERROR") return { outcome: published.outcome, detail: published.detail };
+      transactionHash = published.transactionHash;
+      await this.catchUp();
+      campaign = await this.reload(campaignId);
+      if (campaign.status === "DRAFT") return { outcome: "WAITING_FOR_INDEXER", transactionHash };
+    }
+    if (campaign.status === "CREATED") {
+      if (this.now().getTime() < campaign.startTime.getTime()) return { outcome: "SCHEDULED", transactionHash };
+      const activated = await this.serverAction(campaign, "ACTIVATE", actorIdentityId);
+      if (activated.action === "SKIP" || activated.action === "ERROR") return { outcome: activated.outcome, detail: activated.detail };
+      transactionHash = activated.transactionHash;
+      await this.catchUp();
+      campaign = await this.reload(campaignId);
+    }
+    return { outcome: campaign.status, transactionHash };
+  }
+
+  private async catchUp() {
+    await this.indexer.runUntilCaughtUp(50, 15_000).catch(() => null);
   }
 
   private async advance(initial: CampaignRow, deadline: number): Promise<FinalizerStep[]> {

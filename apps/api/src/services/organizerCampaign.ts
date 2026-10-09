@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import type { Database } from "@take/database";
 import { schema } from "@take/database";
@@ -26,21 +27,36 @@ export interface OrganizerCampaignInput {
   giverIdentityIds: string[];
   recipientIdentityIds: string[];
   evaluationPlan?: { domain: SignalDomain; question: string; criteria: string; evaluateAfter: Date; evidenceExpected: boolean };
+  /** Phase 1 "Sign-ups": collect people through a join link before anything is locked. */
+  signups?: { deadline: Date | null; recipientSelfJoin: boolean };
 }
+
+export type CampaignListIds = { giverAllowlistId: string; recipientAllowlistId: string };
 
 export class OrganizerCampaignService {
   constructor(private readonly db: Database, private readonly env: ApiEnv) {}
 
   async create(input: OrganizerCampaignInput, actor: { takeIdentityId: string; isOperator: boolean }) {
     await assertOrganizationRole(this.db, input.organizationId, actor.takeIdentityId, ["OWNER", "ADMIN"]);
-    if (input.endTime <= input.startTime) {
+    const now = new Date();
+    const signups = input.signups ?? null;
+    if (signups?.deadline) {
+      if (signups.deadline <= now) throw new ServiceError("SIGNUP_DEADLINE_PASSED", "Pick a sign-up deadline in the future", 400);
+      if (signups.deadline >= input.endTime) throw new ServiceError("SIGNUP_DEADLINE_AFTER_END", "Sign-ups have to close before nominations end", 400);
+    }
+    // With sign-ups first, nominations open when sign-ups close. Until then the
+    // draft's start is a placeholder: the deadline, or a little ahead of now.
+    const startTime = signups
+      ? signups.deadline ?? new Date(Math.min(input.endTime.getTime() - 120_000, now.getTime() + 60 * 60_000))
+      : input.startTime;
+    if (input.endTime <= startTime) {
       throw new ServiceError("INVALID_CAMPAIGN_TIME", "Campaign end must be after its start", 400);
     }
-    if (input.endTime <= new Date()) {
+    if (input.endTime <= now) {
       throw new ServiceError("INVALID_CAMPAIGN_TIME", "Campaign end must be in the future", 400);
     }
     if (input.evaluationPlan) {
-      if (input.startTime <= new Date()) {
+      if (startTime <= now) {
         throw new ServiceError("EVALUATION_PLAN_TOO_LATE", "A scheduled check has to be locked before nominations open. Pick a start time a few minutes ahead.", 400);
       }
       if (input.evaluationPlan.evaluateAfter < input.endTime) {
@@ -49,13 +65,13 @@ export class OrganizerCampaignService {
     }
     const givers = uniqueIds(input.giverIdentityIds);
     const recipients = uniqueIds(input.recipientIdentityIds);
-    if (!givers.length || !recipients.length) {
+    if (!signups && (!givers.length || !recipients.length)) {
       throw new ServiceError("ROSTER_REQUIRED", "Choose at least one person who can give a TAKE and one person who can receive it", 400);
     }
     if (recipients.some((id) => givers.includes(id))) {
       throw new ServiceError("SELECTOR_RECIPIENT_OVERLAP", "The same person cannot both give and receive in this campaign", 400);
     }
-    await this.requireIdentities([...givers, ...recipients]);
+    if (givers.length || recipients.length) await this.requireIdentities([...givers, ...recipients]);
 
     const requests = new CampaignRequestService(this.db);
     const draft = await requests.createDraft({
@@ -64,7 +80,7 @@ export class OrganizerCampaignService {
       description: input.description,
       resourceName: input.resourceName,
       seatCount: input.seatCount,
-      startTime: input.startTime,
+      startTime,
       endTime: input.endTime,
       selectorMode: "DISJOINT",
       eligibilityDescription: "Only people on the organizer's giver list can give, one TAKE each, with a connected wallet. Nobody can give a TAKE to themselves."
@@ -85,16 +101,43 @@ export class OrganizerCampaignService {
       }
     }
 
+    // The chosen people are always saved, so a draft never loses its lists.
+    const lists = await this.createLists(input.organizationId, input.title, givers, recipients, actor.takeIdentityId);
+    const joinCode = newJoinCode();
+    await this.db.insert(schema.campaignSignups).values({
+      campaignId,
+      joinCode,
+      joinEnabled: Boolean(signups),
+      giverAllowlistId: lists.giverAllowlistId,
+      recipientAllowlistId: lists.recipientAllowlistId,
+      recipientSelfJoin: signups?.recipientSelfJoin ?? false,
+      signupDeadline: signups?.deadline ?? null,
+      status: "OPEN",
+      autoOpenApprovedByIdentityId: actor.isOperator ? actor.takeIdentityId : null,
+      createdByIdentityId: actor.takeIdentityId
+    });
+
+    if (signups) {
+      return {
+        campaignId,
+        stage: "SIGNUPS" as const,
+        joinCode,
+        message: signups.deadline
+          ? "Sign-ups are open. Share the join link. TAKE locks the lists and opens nominations at the deadline."
+          : "Sign-ups are open. Share the join link, then close sign-ups to open nominations."
+      };
+    }
+
     if (!actor.isOperator) {
       return {
         campaignId,
         stage: "DRAFT" as const,
-        message: "The campaign is saved. The TAKE campaign wallet still has to sign it onto Monad before Explore can list it."
+        message: "The campaign and its people are saved. A TAKE operator has to open it on Monad before Explore can list it."
       };
     }
 
     try {
-      await this.prepareForSignature(campaignId, input.title, givers, recipients, actor.takeIdentityId);
+      await this.prepareForSignature(campaignId, lists, actor.takeIdentityId);
     } catch (error) {
       if (error instanceof ServiceError) {
         const details = error.details && typeof error.details === "object" ? error.details : {};
@@ -102,6 +145,8 @@ export class OrganizerCampaignService {
       }
       throw error;
     }
+    await this.db.update(schema.campaignSignups).set({ status: "CLOSED", closedAt: new Date(), updatedAt: new Date() })
+      .where(eq(schema.campaignSignups.campaignId, campaignId));
     return {
       campaignId,
       stage: "READY_TO_SIGN" as const,
@@ -109,28 +154,33 @@ export class OrganizerCampaignService {
     };
   }
 
-  private async prepareForSignature(
+  private async createLists(organizationId: string, title: string, giverIds: string[], recipientIds: string[], actorIdentityId: string): Promise<CampaignListIds> {
+    const allowlists = new AllowlistService(this.db);
+    const label = title.trim().slice(0, 100);
+    const givers = await allowlists.create(organizationId, actorIdentityId, `${label} / givers`);
+    for (const takeIdentityId of giverIds) await allowlists.addMember(givers.id, actorIdentityId, { takeIdentityId });
+    const receivers = await allowlists.create(organizationId, actorIdentityId, `${label} / recipients`);
+    for (const takeIdentityId of recipientIds) await allowlists.addMember(receivers.id, actorIdentityId, { takeIdentityId });
+    return { giverAllowlistId: givers.id, recipientAllowlistId: receivers.id };
+  }
+
+  /**
+   * Locks the saved lists into eligibility, mechanism and experiment artifacts
+   * and approves launch. Everything after this is signing on Monad.
+   */
+  async prepareForSignature(
     campaignId: string,
-    title: string,
-    giverIdentityIds: string[],
-    recipientIdentityIds: string[],
-    actorIdentityId: string
+    lists: CampaignListIds,
+    actorIdentityId: string,
+    options: { cutoffAt?: Date; allowPartialGivers?: boolean; minXAccountAgeDays?: number | null; approverIdentityId?: string } = {}
   ) {
     const [campaign] = await this.db.select().from(schema.campaigns).where(inArray(schema.campaigns.id, [campaignId])).limit(1);
     if (!campaign) throw new ServiceError("NOT_FOUND", "Campaign not found", 404);
-    const allowlists = new AllowlistService(this.db);
+    const givers = { id: lists.giverAllowlistId };
+    const receivers = { id: lists.recipientAllowlistId };
     const eligibility = new SelectorEligibilityService(this.db, this.env);
-    const label = title.trim().slice(0, 120);
-    const givers = await allowlists.create(campaign.organizationId, actorIdentityId, `${label} / givers`);
-    for (const takeIdentityId of giverIdentityIds) {
-      await allowlists.addMember(givers.id, actorIdentityId, { takeIdentityId });
-    }
-    const receivers = await allowlists.create(campaign.organizationId, actorIdentityId, `${label} / recipients`);
-    for (const takeIdentityId of recipientIdentityIds) {
-      await allowlists.addMember(receivers.id, actorIdentityId, { takeIdentityId });
-    }
-
-    const cutoffAt = new Date(Math.min(Date.now(), campaign.startTime.getTime()) - 60_000).toISOString();
+    const cutoffAt = (options.cutoffAt ?? new Date(Math.min(Date.now(), campaign.startTime.getTime()) - 60_000)).toISOString();
+    const minXAge = options.minXAccountAgeDays ?? null;
     await eligibility.saveDraft(campaignId, actorIdentityId, {
       version: TAKE_SELECTOR_ELIGIBILITY_VERSION,
       campaignId,
@@ -149,9 +199,21 @@ export class OrganizerCampaignService {
           source: "AUTOMATED",
           evidenceRule: { id: "wallet-connected", version: 1, type: "WALLET_CONNECTED", chainType: "ethereum" }
         }]
-      }],
-      requiredTotalPoints: 1,
-      minimumDistinctCategories: 1,
+      }, ...(minXAge ? [{
+        id: "SOCIAL" as const,
+        label: "X account",
+        enabled: true,
+        maximumPoints: 1,
+        rules: [{
+          id: "x-account-age",
+          label: `X account at least ${minXAge} days old`,
+          points: 1,
+          source: "AUTOMATED" as const,
+          evidenceRule: { id: "x-account-age", version: 1, type: "X_ACCOUNT_MIN_AGE" as const, minimumDays: minXAge }
+        }]
+      }] : [])],
+      requiredTotalPoints: minXAge ? 2 : 1,
+      minimumDistinctCategories: minXAge ? 2 : 1,
       allowAppeals: false,
       integrityScreeningEnabled: false,
       newcomerPath: { enabled: false }
@@ -159,7 +221,8 @@ export class OrganizerCampaignService {
     await eligibility.evaluate(campaignId, actorIdentityId);
     const assessments = await eligibility.listAssessments(campaignId, actorIdentityId);
     const blocked = assessments.filter((item) => item.status !== "ELIGIBLE");
-    if (!assessments.length || blocked.length) {
+    const eligibleCount = assessments.length - blocked.length;
+    if (!assessments.length || (blocked.length && !(options.allowPartialGivers && eligibleCount > 0))) {
       const names = blocked.map((item) => item.person.name).join(", ");
       throw new ServiceError(
         "GIVERS_NOT_ELIGIBLE",
@@ -213,7 +276,12 @@ export class OrganizerCampaignService {
     }, true);
     await new MechanismService(this.db).lock(campaignId, actorIdentityId, true);
     await experiments.lock(campaignId, actorIdentityId, true);
-    await new CampaignLifecycleService(this.db, this.env).approveLaunch(campaignId, actorIdentityId);
+    await new CampaignLifecycleService(this.db, this.env).approveLaunch(campaignId, options.approverIdentityId ?? actorIdentityId);
+    return {
+      eligibleGivers: built.nominator.eligibleCount,
+      eligibleRecipients: built.recipient.eligibleCount,
+      skippedGivers: blocked.map((item) => item.person.name)
+    };
   }
 
   private async requireIdentities(ids: string[]) {
@@ -228,4 +296,10 @@ export class OrganizerCampaignService {
 
 function uniqueIds(ids: string[]) {
   return [...new Set(ids)];
+}
+
+function newJoinCode() {
+  const alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
+  const bytes = randomBytes(10);
+  return [...bytes].map((byte) => alphabet[byte % alphabet.length]).join("");
 }

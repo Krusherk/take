@@ -3,7 +3,7 @@ import { privateKeyToAccount, type PrivateKeyAccount } from "viem/accounts";
 import { createMonadPublicClient, loadChainConfig } from "@take/chain";
 import type { ApiEnv } from "../config/env.js";
 
-export type ServerWalletCall = { to: Address; data: Hex; chainId: number };
+export type ServerWalletCall = { to: Address; data: Hex; chainId: number; value?: bigint };
 export type SignedServerTransaction = { hash: Hex; serialized: Hex; from: Address; nonce: number };
 
 /**
@@ -41,19 +41,19 @@ export class ServerWallet {
     if (call.chainId !== this.chainId) throw new Error("Server wallet chain does not match the prepared transaction");
     const [nonce, gasEstimate, fees, balance] = await Promise.all([
       this.client.getTransactionCount({ address: this.account.address, blockTag: "pending" }),
-      this.client.estimateGas({ account: this.account.address, to: call.to, data: call.data }),
+      this.client.estimateGas({ account: this.account.address, to: call.to, data: call.data, value: call.value ?? 0n }),
       this.client.estimateFeesPerGas(),
       this.client.getBalance({ address: this.account.address })
     ]);
     // Monad bills the gas limit, so keep the margin small.
     const gas = (gasEstimate * 12n) / 10n;
-    if (balance < gas * fees.maxFeePerGas) throw new ServerWalletUnfundedError(this.account.address);
+    if (balance < gas * fees.maxFeePerGas + (call.value ?? 0n)) throw new ServerWalletUnfundedError(this.account.address);
     const serialized = await this.account.signTransaction({
       type: "eip1559",
       chainId: call.chainId,
       to: call.to,
       data: call.data,
-      value: 0n,
+      value: call.value ?? 0n,
       nonce,
       gas,
       maxFeePerGas: fees.maxFeePerGas,

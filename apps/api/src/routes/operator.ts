@@ -28,8 +28,13 @@ const organizerCampaignInput = z.object({
   seatCount: z.number().int().positive().max(10_000),
   startTime: z.coerce.date(),
   endTime: z.coerce.date(),
-  giverIdentityIds: z.array(z.string().uuid()).min(1).max(100),
-  recipientIdentityIds: z.array(z.string().uuid()).min(1).max(100),
+  // Required unless sign-ups collect people through the join link first.
+  giverIdentityIds: z.array(z.string().uuid()).max(100),
+  recipientIdentityIds: z.array(z.string().uuid()).max(100),
+  signups: z.object({
+    deadline: z.coerce.date().nullable(),
+    recipientSelfJoin: z.boolean()
+  }).strict().optional(),
   // Optional "what happens after" check. Locked with the campaign, before anyone can give.
   evaluationPlan: z.object({
     domain: z.enum(signalDomains),

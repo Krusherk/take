@@ -72,6 +72,13 @@ export const apiEnvSchema = z.object({
   MONAD_TESTNET_RPC_URL: optionalUrl,
   MONAD_MAINNET_RPC_URL: optionalUrl,
   TAKE_CAMPAIGN_MANAGER_ADDRESS: optionalAddress,
+  GAS_DRIP_ENABLED: z.preprocess(
+    (value) => value === undefined || value === "" ? true : !["false", "0", "off"].includes(String(value).toLowerCase()),
+    z.boolean()
+  ),
+  GAS_DRIP_AMOUNT_WEI: z.string().regex(/^\d+$/).default("50000000000000000"),
+  GAS_DRIP_MIN_BALANCE_WEI: z.string().regex(/^\d+$/).default("30000000000000000"),
+  GAS_DRIP_DAILY_CAP_WEI: z.string().regex(/^\d+$/).default("3000000000000000000"),
   TAKE_CAMPAIGN_MANAGER_START_BLOCK: z.coerce.number().int().nonnegative().default(0),
   CHAIN_INDEXER_CONFIRMATIONS: z.coerce.number().int().nonnegative().default(2),
   CHAIN_INDEXER_MAX_BLOCK_RANGE: z.coerce.number().int().positive().max(1000).default(1000),
