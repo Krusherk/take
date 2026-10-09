@@ -51,7 +51,7 @@ describe("authenticated account shell", () => {
     expect(container.querySelector(".app-shell")).toHaveClass("app-shell--sky");
   });
 
-  it("puts a campaign detail page on the sky but leaves the give steps alone", () => {
+  it("puts a campaign detail page and its give steps on the sky", () => {
     const detail = render(
       <AppShell path="/campaign/demo" navigate={vi.fn()} unreadCount={0} currentPerson={personFromMe(xConnectedMe)} onLogout={vi.fn()}>
         <p>Campaign</p>
@@ -65,6 +65,14 @@ describe("authenticated account shell", () => {
         <p>Give</p>
       </AppShell>,
     );
-    expect(give.container.querySelector(".app-shell")).not.toHaveClass("app-shell--sky");
+    expect(give.container.querySelector(".app-shell")).toHaveClass("app-shell--sky");
+    give.unmount();
+
+    const other = render(
+      <AppShell path="/campaign/demo/unknown" navigate={vi.fn()} unreadCount={0} currentPerson={personFromMe(xConnectedMe)} onLogout={vi.fn()}>
+        <p>Other</p>
+      </AppShell>,
+    );
+    expect(other.container.querySelector(".app-shell")).not.toHaveClass("app-shell--sky");
   });
 });

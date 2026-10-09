@@ -19,7 +19,8 @@
     "contracts:build": "forge build --root packages/contracts",
     "mechanism:simulate": "pnpm --filter @take/mechanism-simulator exec tsx src/cli.ts",
     "mechanism:simulate:persist": "pnpm --filter @take/mechanism-simulator exec tsx src/cli.ts --runs 10000 --persist",
-    "mechanism:report": "pnpm --filter @take/mechanism-simulator report"
+    "mechanism:report": "pnpm --filter @take/mechanism-simulator report",
+    "verify:rules": "pnpm --filter @take/shared build && pnpm --filter @take/mechanism build && node scripts/verify-rules-hash.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

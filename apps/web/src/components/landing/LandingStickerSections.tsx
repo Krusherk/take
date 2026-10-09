@@ -47,7 +47,7 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
             <CampaignSticker campaign={{ title: "One TAKE" }} face={{ count: "1", unit: "TAKE", badge: "GIVE" }} tilt={-6} />
           </div>
         </div>
-        <PaperLabel size="md" tilt={1} className="ls-note">Anyone can tap like. You get one TAKE, and it has to go to someone else.</PaperLabel>
+        <PaperLabel size="md" tilt={1} className="ls-note">Anyone can tap like. In a TAKE campaign, each person on the giver list gets one TAKE, and it has to go to someone else.</PaperLabel>
       </section>
 
       <section id="how-it-works" className="ls-section ls-how" aria-labelledby="how-heading">
@@ -58,7 +58,7 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
             <span className="ls-step__num" aria-hidden="true">1</span>
             <div className="ls-step__art"><CampaignSticker campaign={{ title: "Your TAKE" }} face={{ count: "1", unit: "TAKE", badge: null }} tilt={-6} /></div>
             <strong>You get one TAKE.</strong>
-            <small>One per campaign.</small>
+            <small>One per campaign, if you’re on its giver list.</small>
           </Sticker>
           <Sticker as="li" tilt={1.5} delay={80} className="ls-step">
             <span className="ls-step__num" aria-hidden="true">2</span>
@@ -76,8 +76,8 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
               <MascotSticker kind="star" tilt={-4} className="ls-step__mascot ls-step__mascot--big" />
               <Sticker tilt={-10} as="span" className="status-sticker status-sticker--live ls-step__badge"><span>CHOSEN</span></Sticker>
             </div>
-            <strong>See who gets chosen.</strong>
-            <small>Public and checkable.</small>
+            <strong>Results after close.</strong>
+            <small>The organizer commits the result onchain.</small>
           </Sticker>
         </ol>
       </section>
@@ -98,7 +98,7 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
           <FairRow tilt={1.2} delay={80} icon={<UserPlus aria-hidden="true" />} who="12 followers" sign="=" gets="1 TAKE" />
           <FairRow tilt={-1} delay={160} icon={<Wallet aria-hidden="true" />} who="a full wallet" sign="=" gets="1 TAKE" />
         </ul>
-        <PaperLabel size="md" tilt={-1} className="ls-note">Rules are locked before anyone gives. Nobody can claim their own spot.</PaperLabel>
+        <PaperLabel size="md" tilt={-1} className="ls-note">Rules are locked onchain before anyone gives. You can’t give your TAKE to yourself.</PaperLabel>
       </section>
 
       <section id="about" className="ls-section ls-final" aria-labelledby="final-heading">

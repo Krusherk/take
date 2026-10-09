@@ -195,7 +195,6 @@ export function LoginPage({ navigate }: LoginPageProps) {
             </div>
 
             {error ? <p className="landing-auth-error" role="alert">{error}</p> : null}
-            <small>By continuing, you agree to TAKE’s terms and privacy policy.</small>
           </section>
         </div>
       ) : null}

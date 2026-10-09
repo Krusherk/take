@@ -1,9 +1,7 @@
-import { Share2 } from "lucide-react";
-import { PrimaryAction, SecondaryAction, TextAction } from "../components/Actions";
-import { Avatar } from "../components/Avatar";
-import { HandoffPair } from "../components/Handoff";
+import { ArrowRight, Share2 } from "lucide-react";
 import { ProductError } from "../components/ProductState";
-import { TakeMascotAccent } from "../components/TakeMascotAccent";
+import { FlowHandoff } from "../components/sticker/FlowParts";
+import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { campaignPath } from "../lib/productData";
@@ -30,16 +28,21 @@ export function SuccessPage({ campaignId, recipient, navigate, transactionHash, 
   }
 
   return (
-    <div className="state-page success-page">
-      <section className="success-state">
-        <TakeMascotAccent character="yellow" />
-        <div className="success-state__portrait"><span className="success-ring" aria-hidden="true" /><Avatar person={recipient} size="hero" /><span className="success-state__given">GIVEN</span></div>
-        <header><span className="eyebrow">YOUR CHOICE IS RECORDED</span><h1>You gave <em>{recipient.name}</em> your TAKE.</h1>{recipient.handle ? <strong>{recipient.handle}</strong> : null}<p>{recipient.name} can now see that you chose them for {campaign.title}.</p></header>
-        <HandoffPair from={currentPerson} to={recipient} compact labels={false} />
-        <div className="success-state__campaign"><span>CAMPAIGN</span><strong>{campaign.title}</strong></div>
-        <div className="success-state__actions"><PrimaryAction onClick={() => navigate(campaignPath(campaign) as TakePath)}>VIEW CAMPAIGN</PrimaryAction><SecondaryAction onClick={() => void share()}><span className="provider-label"><Share2 size={17} />SHARE</span></SecondaryAction></div>
-        {transactionHash ? <TextAction arrow="up" onClick={() => window.open(`https://testnet.monadscan.com/tx/${transactionHash}`, "_blank", "noopener,noreferrer")}>VIEW RECEIPT</TextAction> : <span className="success-state__confirmation">CONFIRMED ON MONAD</span>}
+    <div className="page-container sticker-page sticker-feed sticker-flow success-page">
+      <section className="sticker-feed__stage" aria-labelledby="success-heading">
+        <Sticker tilt={4} className="feed-tag"><span>GIVEN</span></Sticker>
+        <MascotSticker kind="star" tilt={-10} delay={240} className="sticker-feed__mascot sticker-feed__mascot--star" />
+        <div className="sticker-feed__headline">
+          <h1 id="success-heading"><PaperLabel size="lg" tilt={-2} delay={60}>{`You gave ${recipient.name} your TAKE.`}</PaperLabel></h1>
+          <PaperLabel size="sm" tilt={1.5} delay={120}>{`It’s recorded on Monad for ${campaign.title}. ${recipient.name} sees it in TAKE.`}</PaperLabel>
+        </div>
+        <FlowHandoff from={currentPerson} to={recipient} label={`You gave your TAKE to ${recipient.name}`} />
       </section>
+      <div className="sticker-flow__dock sticker-flow__dock--two">
+        <button className="sticker-pill" type="button" onClick={() => navigate(campaignPath(campaign) as TakePath)}><span>View campaign</span><ArrowRight aria-hidden="true" /></button>
+        <button className="sticker-pill sticker-pill--paper sticker-pill--sm" type="button" onClick={() => void share()}><Share2 size={16} aria-hidden="true" />Share</button>
+        {transactionHash ? <a className="sticker-pill sticker-pill--paper sticker-pill--sm" href={`https://testnet.monadexplorer.com/tx/${transactionHash}`} target="_blank" rel="noreferrer">View receipt</a> : null}
+      </div>
     </div>
   );
 }

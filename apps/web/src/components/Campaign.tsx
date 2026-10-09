@@ -74,7 +74,7 @@ export function CampaignRow({ campaign, navigate, featured = false, giver, recip
       <span className="campaign-row__resource">
         <small>OPPORTUNITY</small>
         <strong>{campaign.resource}</strong>
-        <em>{campaign.participants === null ? "Participation hidden" : `${campaign.participants.toLocaleString("en-US")} participating`}</em>
+        <em>{campaign.participants === null ? "Totals after close" : `${campaign.participants.toLocaleString("en-US")} participating`}</em>
       </span>
       <span className="campaign-row__timing">
         <small>{campaign.status === "UPCOMING" ? "OPENS" : "ENDS"}</small>

@@ -56,7 +56,7 @@ export class OrganizerCampaignService {
       startTime: input.startTime,
       endTime: input.endTime,
       selectorMode: "DISJOINT",
-      eligibilityDescription: "A connected wallet is enough to give one TAKE. A person cannot give a TAKE to themselves."
+      eligibilityDescription: "Only people on the organizer's giver list can give, one TAKE each, with a connected wallet. Nobody can give a TAKE to themselves."
     }, actor.takeIdentityId);
     await requests.submit(draft.id, actor.takeIdentityId);
     const provisioned = await requests.provision(draft.id, actor.takeIdentityId);

@@ -204,13 +204,13 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
           <span className="eyebrow">ORGANIZE</span>
           <h1>Create a campaign.</h1>
         </div>
-        <p>Name the opportunity, choose who can give one TAKE and who can receive it, then sign it onto Monad. After you open nominations, it shows up as live in Explore.</p>
+        <p>{operator ? "Name the opportunity, choose who can give one TAKE and who can receive it, then sign it onto Monad. After you open nominations, it shows up as live in Explore." : "Name the opportunity and choose who can give one TAKE and who can receive it. A TAKE operator signs it onto Monad. After nominations open, it shows up as live in Explore."}</p>
       </header>
 
       <ol className="organize-steps" aria-label="How a campaign goes live">
         <li><span>1</span><strong>Describe it</strong><small>What you are giving, and when.</small></li>
         <li><span>2</span><strong>Choose people</strong><small>Givers and recipients stay separate.</small></li>
-        <li><span>3</span><strong>Sign twice</strong><small>Publish, then open nominations.</small></li>
+        <li><span>3</span><strong>{operator ? "Sign twice" : "TAKE signs"}</strong><small>Publish, then open nominations.</small></li>
       </ol>
 
       {notice ? <div className="organize-notice" role="status"><Check size={18} /><span>{notice}</span></div> : null}
@@ -280,7 +280,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
           <section className="organize-studio">
             <span className="eyebrow">NEW CAMPAIGN</span>
             <h2>What are you giving?</h2>
-            <p>This creates the campaign now. You sign it onto Monad yourself. It is not sent off for someone else to approve.</p>
+            <p>{operator ? "This creates the campaign now. You sign it onto Monad yourself." : "This saves a draft. A TAKE operator reviews it and signs it onto Monad."}</p>
             <form onSubmit={(event) => void createCampaign(event)} noValidate>
               <div className="organize-studio__grid">
                 <Field label="Campaign title" error={fieldErrors.title}>

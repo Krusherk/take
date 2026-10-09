@@ -53,6 +53,18 @@ describe("LoginPage (signed out)", () => {
     expect(container.querySelector('img[src*="take-mascot-"]')).toBeNull();
   });
 
+  it("only says what the product does", () => {
+    const { container } = render(<LoginPage navigate={vi.fn()} />);
+    fireEvent.click(screen.getAllByRole("button", { name: "Sign in" })[0]!);
+
+    expect(screen.getByLabelText("You give your TAKE to someone else")).toBeInTheDocument();
+    expect(container.querySelector('img[src*="ticket.webp"]')).toBeNull();
+    expect(screen.queryByText(/kubo|sarah/i)).toBeNull();
+    expect(screen.queryByText(/terms|privacy policy/i)).toBeNull();
+    expect(screen.queryByText(/public and checkable|sybil/i)).toBeNull();
+    expect(screen.getByText("Results after close.")).toBeInTheDocument();
+  });
+
   it("uses the same sign-in for the final call to action", () => {
     render(<LoginPage navigate={vi.fn()} />);
     const final = screen.getByRole("region", { name: "Who would yougive your TAKE to?" });
