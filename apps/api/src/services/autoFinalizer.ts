@@ -36,6 +36,8 @@ export type FinalizerReport = {
   indexer: unknown;
   signups?: unknown;
   steps: FinalizerStep[];
+  /** Stage-level failures (indexer, sign-ups, campaign lookup). Step failures are in steps. */
+  errors?: Array<{ stage: string; code: string }>;
   durationMs: number;
 };
 
@@ -102,11 +104,17 @@ export class AutoFinalizer {
     } catch (error) {
       signups = { error: safeErrorCode(error) };
     }
-    const campaigns = await this.db.select().from(schema.campaigns).where(and(
-      eq(schema.campaigns.managerContractAddress, manager),
-      isNotNull(schema.campaigns.onchainCampaignId),
-      inArray(schema.campaigns.status, ["CREATED", "ACTIVE", "CLOSED", "ALLOCATING"])
-    )).orderBy(schema.campaigns.endTime);
+    let campaigns: Array<typeof schema.campaigns.$inferSelect>;
+    try {
+      campaigns = await this.db.select().from(schema.campaigns).where(and(
+        eq(schema.campaigns.managerContractAddress, manager),
+        isNotNull(schema.campaigns.onchainCampaignId),
+        inArray(schema.campaigns.status, ["CREATED", "ACTIVE", "CLOSED", "ALLOCATING"])
+      )).orderBy(schema.campaigns.endTime);
+    } catch (error) {
+      return { serverWallet: this.wallet?.address ?? null, indexer, signups, steps,
+        errors: [{ stage: "campaigns", code: safeErrorCode(error) }], durationMs: Date.now() - started };
+    }
 
     for (const campaign of campaigns) {
       if (Date.now() > deadline - 8_000) {
@@ -338,7 +346,7 @@ function step(campaign: CampaignRow, action: FinalizerStep["action"], outcome: s
 }
 
 /** Provider errors can embed credential-bearing RPC URLs; only expose a code. */
-function safeErrorCode(error: unknown) {
+export function safeErrorCode(error: unknown) {
   if (error instanceof ServiceError) return error.code;
   if (error && typeof error === "object" && "name" in error && typeof error.name === "string") return error.name;
   return "UnknownError";
