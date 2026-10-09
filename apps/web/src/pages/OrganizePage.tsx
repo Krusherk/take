@@ -1,4 +1,4 @@
-import { Check, Link2, ShieldAlert } from "lucide-react";
+import { Check, Link2, Lock, ShieldAlert } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { Avatar } from "../components/Avatar";
@@ -42,6 +42,12 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const [recipientIds, setRecipientIds] = useState<string[]>([]);
   const [personQuery, setPersonQuery] = useState("");
   const [discordBusy, setDiscordBusy] = useState(false);
+  const [checkOn, setCheckOn] = useState(false);
+  const [checkPreset, setCheckPreset] = useState<CheckPresetKey>("SHIP");
+  const [checkQuestion, setCheckQuestion] = useState(CHECK_PRESETS.SHIP.question);
+  const [checkCriteria, setCheckCriteria] = useState(CHECK_PRESETS.SHIP.criteria);
+  const [checkDays, setCheckDays] = useState(30);
+  const [checkEvidence, setCheckEvidence] = useState(true);
 
   const manageableOrganizations = useMemo(
     () => organizations.filter((organization) => organization.role === "OWNER" || organization.role === "ADMIN"),
@@ -95,6 +101,18 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   }, [request]);
 
   useEffect(() => { void loadOrganizations(); }, [loadOrganizations]);
+  // A campaign with a check opens a few minutes after creation. Re-render so
+  // "Scheduled" turns into "Sign to open" without a reload.
+  const [, setTick] = useState(0);
+  const opensSoon = organizationCampaigns.some((campaign) => {
+    const start = Date.parse(campaign.startsAt);
+    return organizePhase(campaign) === "SCHEDULED" && start - Date.now() < 15 * 60 * 1000;
+  });
+  useEffect(() => {
+    if (!opensSoon) return;
+    const timer = window.setInterval(() => setTick((value) => value + 1), 10_000);
+    return () => window.clearInterval(timer);
+  }, [opensSoon]);
   useEffect(() => {
     setCampaignId((current) => current && organizationCampaigns.some((campaign) => campaign.id === current)
       ? current
@@ -132,6 +150,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       endLocal,
       giverIds,
       recipientIds,
+      check: checkOn ? { preset: checkPreset, question: checkQuestion, criteria: checkCriteria, days: checkDays, evidenceExpected: checkEvidence } : null,
     });
     setFieldErrors(parsed.errors);
     if (!parsed.value || !organizationId) return;
@@ -151,6 +170,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       setGiverIds([]);
       setRecipientIds([]);
       setPersonQuery("");
+      setCheckOn(false);
       await refetchProducts();
     } catch (caught) {
       setError(message(caught));
@@ -210,7 +230,8 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       <ol className="organize-steps" aria-label="How a campaign goes live">
         <li><span>1</span><strong>Describe it</strong><small>What you are giving, and when.</small></li>
         <li><span>2</span><strong>Choose people</strong><small>Givers and recipients stay separate.</small></li>
-        <li><span>3</span><strong>{operator ? "Sign twice" : "TAKE signs"}</strong><small>Publish, then open nominations.</small></li>
+        <li><span>3</span><strong>Schedule a check</strong><small>Optional. What should have happened after, and when.</small></li>
+        <li><span>4</span><strong>{operator ? "Sign twice" : "TAKE signs"}</strong><small>Publish, then open nominations.</small></li>
       </ol>
 
       {notice ? <div className="organize-notice" role="status"><Check size={18} /><span>{notice}</span></div> : null}
@@ -337,6 +358,24 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 <p className="organize-people__count">{giverIds.length} can give · {recipientIds.length} can receive</p>
               </div>
 
+              <CheckStep
+                on={checkOn}
+                onToggle={setCheckOn}
+                preset={checkPreset}
+                onPreset={(key) => { setCheckPreset(key); setCheckQuestion(CHECK_PRESETS[key].question); setCheckCriteria(CHECK_PRESETS[key].criteria); clearError("check", setFieldErrors); }}
+                question={checkQuestion}
+                onQuestion={(value) => { setCheckQuestion(value); clearError("check", setFieldErrors); }}
+                criteria={checkCriteria}
+                onCriteria={(value) => { setCheckCriteria(value); clearError("check", setFieldErrors); }}
+                days={checkDays}
+                onDays={setCheckDays}
+                evidence={checkEvidence}
+                onEvidence={setCheckEvidence}
+                endLocal={endLocal}
+                openNow={openNow}
+                error={fieldErrors.check}
+              />
+
               <PrimaryAction type="submit" disabled={creatingCampaign}>{creatingCampaign ? "Creating campaign…" : "Create campaign"}</PrimaryAction>
               {creatingCampaign ? <p className="organize-wait" role="status">Preparing who can give and receive. This can take a minute, then you sign.</p> : null}
             </form>
@@ -453,12 +492,15 @@ function readCampaignForm(input: {
   endLocal: string;
   giverIds: string[];
   recipientIds: string[];
+  check?: { preset: CheckPresetKey; question: string; criteria: string; days: number; evidenceExpected: boolean } | null;
 }) {
   const title = input.title.trim();
   const resourceName = input.resourceName.trim();
   const description = input.description.trim();
   const seatCount = Number(input.seats);
-  const start = input.openNow ? new Date(Date.now() - 5 * 60 * 1000) : new Date(input.startLocal);
+  // A scheduled check is locked before nominations can open, so "open now"
+  // starts a few minutes after creation instead of in the past.
+  const start = input.openNow ? new Date(Date.now() + (input.check ? CHECK_LEAD_MS : -5 * 60 * 1000)) : new Date(input.startLocal);
   const end = new Date(input.endLocal);
   const errors: Record<string, string> = {};
   if (!input.organizationId) errors.organizationId = "Choose a community.";
@@ -472,7 +514,19 @@ function readCampaignForm(input: {
   else if (!Number.isNaN(start.getTime()) && end <= start) errors.endTime = "The end has to be after the start.";
   if (!input.giverIds.length || !input.recipientIds.length) errors.people = "Choose at least one person who can give and one person who can receive.";
   else if (input.recipientIds.some((id) => input.giverIds.includes(id))) errors.people = "The same person cannot both give and receive.";
+  if (input.check) {
+    if (input.check.question.trim().length < 5) errors.check = "Write the question you will check, like “Did they ship?”.";
+    else if (input.check.criteria.trim().length < 10) errors.check = "Say what counts as yes, no, and unclear.";
+    else if (!input.openNow && !Number.isNaN(start.getTime()) && start.getTime() <= Date.now() + 60_000) errors.check = "With a check, nominations have to open at least a few minutes from now.";
+  }
   if (Object.keys(errors).length || !input.organizationId) return { value: null, errors };
+  const evaluationPlan = input.check ? {
+    domain: CHECK_PRESETS[input.check.preset].domain,
+    question: input.check.question.trim(),
+    criteria: input.check.criteria.trim(),
+    evaluateAfter: new Date(end.getTime() + input.check.days * DAY_MS).toISOString(),
+    evidenceExpected: input.check.evidenceExpected,
+  } : undefined;
   return {
     value: {
       title,
@@ -483,6 +537,7 @@ function readCampaignForm(input: {
       endTime: end.toISOString(),
       giverIdentityIds: input.giverIds,
       recipientIdentityIds: input.recipientIds,
+      ...(evaluationPlan ? { evaluationPlan } : {}),
     },
     errors,
   };
@@ -514,4 +569,75 @@ function localInput(date: Date) {
 
 function message(error: unknown) {
   return error instanceof Error ? error.message : "TAKE could not complete this organizer action.";
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CHECK_LEAD_MS = 3 * 60 * 1000;
+type CheckPresetKey = "SHIP" | "ATTEND" | "USE" | "CUSTOM";
+const CHECK_PRESETS: Record<CheckPresetKey, { label: string; domain: "BUILDER" | "ACCESS" | "GRANT" | "OTHER"; question: string; criteria: string }> = {
+  SHIP: { label: "Did they ship?", domain: "BUILDER", question: "Did they ship what they planned?", criteria: "Yes: there is a public link to what they shipped (repo, demo, or post). No: nothing shipped by the check date. Unclear: something exists, but it isn't what they planned." },
+  ATTEND: { label: "Did they show up?", domain: "ACCESS", question: "Did they show up and take part?", criteria: "Yes: they attended or used the spot. No: they didn't show up. Unclear: they came for part of it, or we can't confirm." },
+  USE: { label: "Did they use it?", domain: "GRANT", question: "Did they use it the way they said?", criteria: "Yes: a public update shows how it was used. No: it went unused or was used for something else. Unclear: not enough information yet." },
+  CUSTOM: { label: "Write my own", domain: "OTHER", question: "", criteria: "" },
+};
+const CHECK_DAYS = [7, 30, 90];
+
+function CheckStep(props: {
+  on: boolean; onToggle: (value: boolean) => void;
+  preset: CheckPresetKey; onPreset: (key: CheckPresetKey) => void;
+  question: string; onQuestion: (value: string) => void;
+  criteria: string; onCriteria: (value: string) => void;
+  days: number; onDays: (value: number) => void;
+  evidence: boolean; onEvidence: (value: boolean) => void;
+  endLocal: string; openNow: boolean; error?: string;
+}) {
+  const end = new Date(props.endLocal);
+  const checkDate = Number.isNaN(end.getTime()) ? null : new Date(end.getTime() + props.days * DAY_MS);
+  return (
+    <section className={`organize-check${props.on ? " is-on" : ""}`} aria-labelledby="organize-check-title">
+      <div className="organize-check__head">
+        <div>
+          <span className="organize-check__tag">AFTER THE TAKE</span>
+          <h3 id="organize-check-title">Schedule a check</h3>
+          <p>Pick a question and a date. After the check date, a TAKE operator records what happened for each person who got the spot. Givers can call it before then. Nothing here changes who gets the spot.</p>
+        </div>
+        <label className="organize-check__switch">
+          <input type="checkbox" checked={props.on} onChange={(event) => props.onToggle(event.target.checked)} />
+          <span>{props.on ? "Check on" : "Add a check"}</span>
+        </label>
+      </div>
+      {props.on ? (
+        <div className="organize-check__body">
+          <div className="organize-check__chips" role="group" aria-label="What to check">
+            {(Object.keys(CHECK_PRESETS) as CheckPresetKey[]).map((key) => (
+              <button key={key} type="button" aria-pressed={props.preset === key} className={props.preset === key ? "is-selected" : ""} onClick={() => props.onPreset(key)}>{CHECK_PRESETS[key].label}</button>
+            ))}
+          </div>
+          <label className="field field--wide">
+            <span>The question</span>
+            <input value={props.question} onChange={(event) => props.onQuestion(event.target.value)} maxLength={500} placeholder="Did they ship what they planned?" />
+          </label>
+          <div className="organize-check__when">
+            <span>Check</span>
+            <div className="organize-check__chips" role="group" aria-label="When to check">
+              {CHECK_DAYS.map((days) => (
+                <button key={days} type="button" aria-pressed={props.days === days} className={props.days === days ? "is-selected" : ""} onClick={() => props.onDays(days)}>{days} days</button>
+              ))}
+            </div>
+            <small>after nominations end{checkDate ? ` · from ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(checkDate)}` : ""}</small>
+          </div>
+          <label className="field field--wide">
+            <span>What counts as yes, no, unclear</span>
+            <textarea value={props.criteria} onChange={(event) => props.onCriteria(event.target.value)} maxLength={5000} />
+          </label>
+          <label className="organize-check__evidence">
+            <input type="checkbox" checked={props.evidence} onChange={(event) => props.onEvidence(event.target.checked)} />
+            <span>Ask for a link as evidence when the outcome is recorded.</span>
+          </label>
+          <p className="organize-check__lock"><Lock size={14} aria-hidden="true" /> Locked when you create the campaign. Nobody can change it later, including you.{props.openNow ? " Nominations open about 3 minutes after you create it, so the check is locked first." : ""}</p>
+          {props.error ? <p className="organize-field-error" role="alert">{props.error}</p> : null}
+        </div>
+      ) : props.error ? <p className="organize-field-error" role="alert">{props.error}</p> : null}
+    </section>
+  );
 }

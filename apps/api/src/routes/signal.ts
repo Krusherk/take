@@ -1,7 +1,8 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { signalDomains } from "@take/shared";
+import { signalCallValues, signalDomains } from "@take/shared";
 import { SignalService } from "../services/signal.js";
+import { SignalCallService } from "../services/signalCalls.js";
 import { assertOrganizationRole, assertTakeOperator, isTakeOperator } from "../services/authorization.js";
 import { GraphService } from "../services/graph.js";
 import { notFound } from "../services/errors.js";
@@ -14,10 +15,24 @@ const evidenceUrl = z.string().url().max(2_000).refine((value) => {
 
 export const signalRoutes: FastifyPluginAsync = async (app) => {
   const signal = new SignalService(app.db);
+  const calls = new SignalCallService(app.db);
   app.get("/me/signal", async (request, reply) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
     reply.header("Cache-Control", "private, no-store");
     return signal.history(request.takeIdentity.protocolIdentityKey);
+  });
+  app.get("/me/signal/calls", async (request, reply) => {
+    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    reply.header("Cache-Control", "private, no-store");
+    return calls.mine(request.takeIdentity.protocolIdentityKey);
+  });
+  app.post<{ Params: { id: string } }>("/campaigns/:id/calls", async (request, reply) => {
+    if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
+    const input = z.object({
+      recipientKey: z.string().regex(/^0x[0-9a-fA-F]{64}$/).transform((value) => value.toLowerCase()),
+      call: z.enum(signalCallValues)
+    }).strict().parse(request.body);
+    return calls.make(id.parse(request.params.id), request.takeIdentity.protocolIdentityKey, input);
   });
   app.get<{ Params: { id: string } }>("/campaigns/:id/after", async (request) => {
     const campaignId = id.parse(request.params.id);
