@@ -1,0 +1,737 @@
+/*
+ * Sky-and-sticker surfaces that were still on the cream grid:
+ * the post-sign-in gate, Organize, the account sheet, Profile,
+ * and the signed-out sections under the hero.
+ * Copy, routes, and actions stay. Lime is an accent, not the page.
+ */
+
+/* ---------- Identity gate ---------- */
+
+.identity-gate {
+  position: relative;
+  isolation: isolate;
+  color-scheme: light;
+  padding: 22px 22px 56px;
+  background:
+    url("/assets/sticker/sky-clouds.jpg") center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 48%, #b9defb 100%);
+  color: #11110f;
+}
+
+.identity-gate .brand--logo .brand__logo {
+  height: 64px;
+  transform: rotate(-8deg);
+}
+
+.identity-gate > section {
+  display: grid;
+  justify-items: start;
+  gap: 0;
+  align-self: center;
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding: 8px 0 12px;
+  border: 0;
+  background: transparent;
+}
+
+.identity-gate > section .eyebrow {
+  display: inline-block;
+  margin: 0;
+  padding: 0.42em 0.75em;
+  border: 4px solid #ffffff;
+  border-radius: 14px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 2px #11110f, 0 8px 16px rgba(14, 44, 86, 0.18);
+  color: #11110f;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  transform: rotate(-2deg);
+}
+
+.identity-gate h1 {
+  max-width: 14ch;
+  margin-top: 22px;
+  padding: 0.08em 0.16em 0.12em;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 42%),
+    #f7f5ee;
+  color: #11110f;
+  font-weight: 860;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  filter: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.16)) drop-shadow(0 10px 16px rgba(14, 44, 86, 0.16));
+}
+
+.identity-gate p {
+  max-width: 36ch;
+  margin-top: 16px;
+  color: rgba(17, 17, 15, 0.82);
+  font-size: 17px;
+}
+
+.identity-gate__line {
+  width: min(100%, 280px);
+  height: 10px;
+  margin-top: 28px;
+  overflow: hidden;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 14px rgba(14, 44, 86, 0.16);
+}
+
+.identity-gate__line::after {
+  width: 36%;
+  height: 100%;
+  border-radius: inherit;
+  background: #11110f;
+  box-shadow: none;
+}
+
+.identity-gate__actions {
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+
+.identity-gate__actions .action {
+  border: 4px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 8px 16px rgba(14, 44, 86, 0.18);
+}
+
+.identity-gate__actions .action--primary {
+  background: #11110f;
+  color: #ffffff;
+}
+
+.identity-gate__actions .action--secondary {
+  background: #ffffff;
+  color: #11110f;
+}
+
+.identity-gate::after {
+  position: absolute;
+  right: max(16px, calc(50% - 380px));
+  bottom: 8vh;
+  z-index: 0;
+  width: clamp(92px, 22vw, 140px);
+  aspect-ratio: 1;
+  background: url("/assets/sticker/mascot-star.webp") center / contain no-repeat;
+  filter: drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  pointer-events: none;
+  content: "";
+}
+
+.identity-gate > * { position: relative; z-index: 1; }
+
+/* ---------- Account sheet ---------- */
+
+.app-header { z-index: 40; }
+
+.account-menu {
+  overflow: auto;
+  border: 4px solid #ffffff;
+  border-radius: 22px;
+  background: #fffef8;
+  color: #11110f;
+  box-shadow: 0 2px 2px rgba(14, 44, 86, 0.12), 0 16px 32px rgba(14, 44, 86, 0.24);
+}
+
+.account-menu__identity {
+  margin: -12px -12px 8px;
+  padding: 14px 14px 12px;
+  border-radius: 16px 16px 12px 12px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 2px #11110f;
+}
+
+.account-menu__identity small { color: #33332e; }
+
+.account-menu__rule { background: rgba(17, 17, 15, 0.12); }
+
+.account-menu > button {
+  border-radius: 12px;
+  color: #11110f;
+  font-weight: 680;
+}
+
+.account-menu > button svg { color: #11110f; }
+
+.account-menu > .account-menu__logout {
+  color: #ad2d26;
+  font-weight: 760;
+}
+
+.account-menu > .account-menu__logout svg { color: #ad2d26; }
+
+@media (max-width: 900px) {
+  .account-menu {
+    position: fixed;
+    top: 76px;
+    right: 12px;
+    left: auto;
+    width: min(320px, calc(100vw - 24px));
+    max-height: calc(100dvh - 76px - 108px - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .account-menu > button:hover { background: #f3f1e6; color: #11110f; }
+  .account-menu > .account-menu__logout:hover { background: #ffe8e4; color: #ad2d26; }
+}
+
+/* ---------- Organize and Profile on the sky ---------- */
+
+.app-shell--sky .organize-page,
+.app-shell--sky .profile-page {
+  width: min(calc(100% - 28px), 760px);
+  padding-top: 8px;
+}
+
+.app-shell--sky .organize-page .page-intro,
+.app-shell--sky .profile-page .section-heading {
+  border: 0;
+  padding-bottom: 8px;
+}
+
+.app-shell--sky .organize-page .page-intro::after { display: none; }
+
+.app-shell--sky .organize-intro .eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  padding: 0.4em 0.7em;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #f7f5ee;
+  color: #11110f;
+  box-shadow: 0 6px 12px rgba(14, 44, 86, 0.14);
+}
+
+.app-shell--sky .organize-intro h1 {
+  max-width: 12ch;
+  font-weight: 860;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.app-shell--sky .organize-intro p {
+  max-width: 42ch;
+  color: rgba(17, 17, 15, 0.82);
+}
+
+.app-shell--sky .organize-steps {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 18px 0 4px;
+  border: 0;
+}
+
+.app-shell--sky .organize-steps li,
+.app-shell--sky .organize-steps li + li {
+  min-height: 0;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 1px 1px rgba(14, 44, 86, 0.12), 0 8px 16px rgba(14, 44, 86, 0.16);
+}
+
+.app-shell--sky .organize-steps li:nth-child(1) { transform: rotate(-0.6deg); }
+.app-shell--sky .organize-steps li:nth-child(2) { transform: rotate(0.5deg); }
+.app-shell--sky .organize-steps li:nth-child(3) { transform: rotate(-0.4deg); }
+
+.app-shell--sky .organize-steps span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 1.5px #11110f;
+  color: #11110f;
+  font-weight: 800;
+}
+
+.app-shell--sky .organize-steps small { color: #55554f; }
+
+.app-shell--sky .organize-studio,
+.app-shell--sky .organize-campaigns,
+.app-shell--sky .organize-next,
+.app-shell--sky .organize-advanced {
+  margin-top: 16px;
+  padding: 20px 18px 22px;
+  border: 0;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 1px rgba(14, 44, 86, 0.12), 0 10px 22px rgba(14, 44, 86, 0.16);
+}
+
+.app-shell--sky .organize-studio h2,
+.app-shell--sky .organize-campaigns header h2,
+.app-shell--sky .organize-next h2 {
+  font-weight: 820;
+  letter-spacing: -0.03em;
+}
+
+.app-shell--sky .organize-page .field input,
+.app-shell--sky .organize-page .field select,
+.app-shell--sky .organize-page .field textarea,
+.app-shell--sky .organize-people__search input,
+.app-shell--sky .organize-people__list,
+.app-shell--sky .organize-campaign {
+  border: 3px solid #ffffff;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #11110f;
+  box-shadow: 0 4px 10px rgba(14, 44, 86, 0.1);
+}
+
+.app-shell--sky .organize-campaign.is-selected {
+  border-color: #11110f;
+  background: #f3ffc4;
+  box-shadow: inset 0 0 0 2px #c6ff31, 0 6px 14px rgba(14, 44, 86, 0.14);
+}
+
+.app-shell--sky .organize-people__list button {
+  border: 2px solid #11110f;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #11110f;
+}
+
+.app-shell--sky .organize-people__list button.is-selected {
+  background: #c6ff31;
+  color: #11110f;
+}
+
+.app-shell--sky .organize-page .action--primary {
+  border: 4px solid #ffffff;
+  border-radius: 999px;
+  background: #11110f;
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(14, 44, 86, 0.2);
+}
+
+.app-shell--sky .organize-page .action--secondary {
+  border: 4px solid #ffffff;
+  border-radius: 999px;
+  background: #f7f5ee;
+  color: #11110f;
+  box-shadow: 0 6px 14px rgba(14, 44, 86, 0.16);
+}
+
+.app-shell--sky .organize-notice,
+.app-shell--sky .organize-error {
+  margin-top: 14px;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 6px 14px rgba(14, 44, 86, 0.14);
+}
+
+.app-shell--sky .organize-community-name {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0.35em 0.7em;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #11110f;
+  box-shadow: 0 4px 10px rgba(14, 44, 86, 0.12);
+}
+
+/* Profile card */
+
+.app-shell--sky .profile-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px 18px;
+  align-items: center;
+  overflow: hidden;
+  margin-top: 8px;
+  padding: 22px 20px 18px;
+  border: 4px solid #ffffff;
+  border-radius: 28px;
+  background: #c6ff31;
+  box-shadow: 0 1px 1px rgba(14, 44, 86, 0.14), 0 14px 28px rgba(14, 44, 86, 0.2);
+  transform: rotate(-0.4deg);
+}
+
+.app-shell--sky .profile-hero > .take-mascot-accent { display: none; }
+
+.app-shell--sky .profile-hero::after {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  z-index: 1;
+  width: 58px;
+  height: 72px;
+  background: url("/assets/sticker/mascot-lime.webp") center / contain no-repeat;
+  pointer-events: none;
+  content: "";
+}
+
+.app-shell--sky .profile-hero__identity { grid-column: 2; padding-right: 52px; }
+.app-shell--sky .profile-hero__identity .eyebrow { color: #11110f; }
+.app-shell--sky .profile-hero__identity h1 {
+  font-size: clamp(40px, 8vw, 64px);
+  font-weight: 860;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+}
+.app-shell--sky .profile-hero__portrait .avatar {
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 7px #11110f;
+}
+
+.app-shell--sky .profile-counts {
+  grid-column: 1 / -1;
+  position: relative;
+  z-index: 2;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  overflow: hidden;
+}
+
+.app-shell--sky .profile-counts > div {
+  border-color: rgba(17, 17, 15, 0.16);
+}
+
+.app-shell--sky .identity-connections { padding-top: 28px; }
+.app-shell--sky .identity-connections__heading {
+  align-items: start;
+  border: 0;
+  padding-bottom: 0;
+}
+@media (max-width: 800px) {
+  .app-shell--sky .identity-connections__heading { flex-direction: column; gap: 8px; }
+}
+
+.app-shell--sky .identity-connections__heading > p,
+.app-shell--sky .profile-history,
+.app-shell--sky .profile-account {
+  color: #11110f;
+}
+
+.app-shell--sky .connection-list {
+  display: grid;
+  gap: 10px;
+  border: 0;
+}
+
+.app-shell--sky .connection-row {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 12px;
+  min-height: 76px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 14px rgba(14, 44, 86, 0.14);
+}
+
+.app-shell--sky .connection-row__state { display: none; }
+
+.app-shell--sky .connection-row__mark {
+  border: 0;
+  border-radius: 12px;
+  background: #f7f5ee;
+}
+
+.app-shell--sky .connection-row > button {
+  min-height: 40px;
+  border: 2px solid #11110f;
+  border-radius: 999px;
+  background: #c6ff31;
+  color: #11110f;
+  box-shadow: none;
+  font-weight: 760;
+}
+
+.app-shell--sky .profile-history,
+.app-shell--sky .profile-account {
+  margin-top: 22px;
+  padding: 18px 16px 8px;
+  border: 0;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 18px rgba(14, 44, 86, 0.14);
+}
+
+.app-shell--sky .profile-account {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding-bottom: 16px;
+  color: #11110f;
+}
+
+.app-shell--sky .profile-account > div:first-child > p,
+.app-shell--sky .profile-account__actions small { color: #55554f; }
+
+.app-shell--sky .profile-account__actions > button {
+  color: #11110f;
+  border-bottom-color: rgba(17, 17, 15, 0.12);
+}
+
+.app-shell--sky .profile-account__actions .is-danger { color: #ad2d26; }
+
+.app-shell--sky .history-filters button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #f7f5ee;
+  color: #11110f;
+}
+
+.app-shell--sky .history-filters button.is-active {
+  background: #11110f;
+  color: #ffffff;
+}
+
+.app-shell--sky .profile-history__list,
+.app-shell--sky .activity-row {
+  border-color: rgba(17, 17, 15, 0.1);
+  color: #11110f;
+}
+
+@media (min-width: 801px) {
+  .app-shell--sky .profile-hero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .app-shell--sky .profile-counts {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .app-shell--sky .profile-counts > div:last-child {
+    grid-column: auto;
+    border-top: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .app-shell--sky .profile-counts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .app-shell--sky .profile-counts > div:nth-child(2),
+  .app-shell--sky .profile-counts > div:last-child {
+    grid-column: auto;
+    border-top: 0;
+    border-right: 1px solid rgba(17, 17, 15, 0.16);
+  }
+  .app-shell--sky .profile-counts > div:last-child { border-right: 0; }
+  .app-shell--sky .profile-counts dd { font-size: 22px; }
+  .app-shell--sky .profile-counts dt { font-size: 10px; }
+  .app-shell--sky .connection-row > button { min-width: 0; padding: 0 12px; }
+}
+
+/* ---------- Signed-out sections, still on the sky ---------- */
+
+.landing-page {
+  background: #7ebdf3;
+}
+
+.landing-page::before {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    url("/assets/sticker/sky-clouds.jpg") center bottom / cover no-repeat,
+    linear-gradient(180deg, #3f9be8 0%, #74b9f2 46%, #b9defb 100%);
+  pointer-events: none;
+  content: "";
+}
+
+.landing-page > * { position: relative; z-index: 1; }
+
+.landing-sky::after { display: none; }
+
+.landing-section__label {
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+  padding: 0.45em 0.8em;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #f7f5ee;
+  color: #11110f;
+  letter-spacing: 0.12em;
+  box-shadow: 0 6px 12px rgba(14, 44, 86, 0.14);
+}
+
+.landing-problem,
+.landing-how,
+.landing-why { border-top: 0; }
+
+.landing-problem__heading h2,
+.landing-section h2,
+.landing-why__lead h2 {
+  letter-spacing: -0.035em;
+}
+
+.landing-choice-contrast {
+  gap: 14px;
+  align-items: stretch;
+  border: 0;
+  background: transparent;
+}
+
+.landing-choice-contrast__usual,
+.landing-choice-contrast__take {
+  border: 4px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 1px 1px rgba(14, 44, 86, 0.12), 0 12px 24px rgba(14, 44, 86, 0.18);
+}
+
+.landing-choice-contrast__usual { background: #ffffff; }
+
+.landing-choice-contrast__take { background: #c6ff31; }
+
+.landing-choice-contrast__turn {
+  background: transparent;
+}
+
+.landing-choice-contrast__turn strong {
+  border: 4px solid #ffffff;
+  background: #11110f;
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(14, 44, 86, 0.2);
+}
+
+.landing-choice-contrast__turn i { background: rgba(17, 17, 15, 0.28); }
+
+.landing-how .landing-steps {
+  gap: 16px;
+  border: 0;
+}
+
+.landing-how .landing-steps::before,
+.landing-how .landing-steps::after { display: none; }
+
+.landing-how .landing-steps li {
+  padding: 18px 18px 22px;
+  border: 4px solid #ffffff;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 20px rgba(14, 44, 86, 0.14);
+}
+
+.landing-how .landing-steps li + li {
+  border-left: 4px solid #ffffff;
+  padding-left: 18px;
+}
+
+.landing-how .landing-steps li > span {
+  margin-bottom: 16px;
+  padding: 0.35em 0.7em;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #c6ff31;
+  color: #11110f;
+  box-shadow: inset 0 0 0 1.5px #11110f;
+}
+
+.landing-how .landing-steps li::before { display: none; }
+
+.landing-pass-strip {
+  width: min(calc(100% - 28px), 1100px);
+  margin: 8px auto;
+  border: 4px solid #ffffff;
+  border-radius: 999px;
+  background: #c6ff31;
+  box-shadow: 0 8px 18px rgba(14, 44, 86, 0.16);
+}
+
+.landing-community-band,
+.landing-trust-band,
+.landing-vision-band {
+  width: min(calc(100% - 28px), 1180px);
+  margin: 18px auto;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  border-radius: 32px;
+  box-shadow: 0 12px 28px rgba(14, 44, 86, 0.18);
+}
+
+.landing-community-band { background: #11110f; }
+.landing-trust-band { background: #c6ff31; }
+.landing-vision-band { background: #11110f; }
+
+.landing-why__statement {
+  border: 4px solid #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 10px 22px rgba(14, 44, 86, 0.16);
+}
+
+.landing-principles { border: 0; display: grid; gap: 12px; margin-top: 28px; }
+
+.landing-principles article {
+  min-height: 0;
+  padding: 16px 18px;
+  border: 0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 6px 14px rgba(14, 44, 86, 0.12);
+}
+
+.landing-opportunity-world {
+  border: 4px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 10px 22px rgba(14, 44, 86, 0.16);
+}
+
+.landing-sides { gap: 16px; }
+
+.landing-side {
+  border: 4px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 10px 22px rgba(14, 44, 86, 0.16);
+}
+
+.landing-side + .landing-side { border-left: 4px solid #ffffff; }
+
+.landing-side > .landing-cta {
+  border-radius: 999px;
+  box-shadow: 0 8px 16px rgba(14, 44, 86, 0.2);
+}
+
+.landing-footer {
+  width: min(calc(100% - 28px), 1180px);
+  margin: 18px auto 36px;
+  border: 4px solid #ffffff;
+  border-radius: 32px;
+  box-shadow: 0 12px 28px rgba(14, 44, 86, 0.2);
+  clip-path: none;
+}
+
+@media (max-width: 900px) {
+  .landing-how .landing-steps { grid-template-columns: 1fr; }
+  .landing-how .landing-steps li + li {
+    margin-top: 0;
+    padding-top: 18px;
+    border-top: 4px solid #ffffff;
+    border-left: 4px solid #ffffff;
+  }
+  .landing-choice-contrast { grid-template-columns: 1fr; }
+  .landing-sides { grid-template-columns: 1fr; }
+  .landing-side + .landing-side { border-top: 4px solid #ffffff; }
+  .landing-why__statement { margin-right: 0; margin-left: 0; }
+  .landing-principles article {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding: 16px;
+  }
+  .landing-section { padding: 56px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identity-gate__line::after { animation: none; width: 42%; transform: none; }
+  .identity-gate .brand--logo .brand__logo,
+  .account-menu,
+  .app-shell--sky .organize-steps li,
+  .app-shell--sky .profile-hero { animation: none; transition: none; }
+  .app-shell--sky .organize-steps li,
+  .app-shell--sky .profile-hero { transform: none; }
+  .landing-pass-strip > div { animation: none; }
+  .identity-gate::after { animation: none; }
+}
