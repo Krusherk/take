@@ -79,4 +79,17 @@ describe("Home sticker page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Explore campaigns" }));
     expect(navigate).toHaveBeenCalledWith("/explore");
   });
+
+  it("leads with the live campaign when the person has no TAKE in it", () => {
+    product.campaigns = [campaign({ viewer: { usedTakes: 0, availableTakes: 0, canParticipate: false, eligibility: null } })];
+    const navigate = vi.fn();
+    render(<HomePage navigate={navigate} currentPerson={person} optimisticGivenCampaigns={[]} optimisticRecipient={null} />);
+
+    expect(screen.getByRole("heading", { name: "TAKE Demo is live." })).toBeInTheDocument();
+    expect(screen.queryByText("NONE ACTIVE")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "No TAKE is waiting." })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Open TAKE Demo" }));
+    expect(navigate).toHaveBeenCalledWith("/campaign/demo");
+  });
 });
+

@@ -287,6 +287,8 @@ export function App() {
 
   if (path === "/" || path === "/onboarding" || inviteId || (publicCampaignDetail && !currentPerson)) {
     if (path === "/onboarding" && (!ready || !authenticated || !currentPerson)) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
+    // Signed-out campaign links get the same sky as the signed-in detail page.
+    if (publicCampaignDetail && !currentPerson) return <div className="app-shell app-shell--sky app-shell--public">{route}</div>;
     return route;
   }
 
