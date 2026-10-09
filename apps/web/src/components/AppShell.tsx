@@ -29,7 +29,7 @@ const mobileItems: Array<{ label: string; path: TakePath; icon: typeof Home }> =
 ];
 
 // Sticker-collage sky. Other routes keep their own surface.
-const skyPaths = new Set<TakePath>(["/home", "/explore", "/signal", "/organize", "/profile"]);
+const skyPaths = new Set<TakePath>(["/home", "/explore", "/signal", "/organize", "/profile", "/notifications", "/takes", "/activity"]);
 
 function NavLink({ label, destination, path, navigate }: { label: string; destination: TakePath; path: TakePath; navigate: (path: TakePath) => void }) {
   const active = path === destination;
