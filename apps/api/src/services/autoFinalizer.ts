@@ -7,7 +7,7 @@ import type { ApiEnv } from "../config/env.js";
 import { AllocationService } from "./allocation.js";
 import { CampaignLifecycleService } from "./campaignLifecycle.js";
 import { ServiceError } from "./errors.js";
-import { ServerWallet } from "./serverWallet.js";
+import { ServerWallet, ServerWalletUnfundedError } from "./serverWallet.js";
 import { QuickNodeIndexer } from "../workers/quicknodeIndexer.js";
 
 const campaignGetterAbi = parseAbi([
@@ -225,11 +225,19 @@ export class AutoFinalizer {
     if (intent.requiredFromAddress && normalizeAddress(intent.requiredFromAddress) !== normalizeAddress(wallet.address)) {
       return step(campaign, "SKIP", "SERVER_WALLET_NOT_AUTHORIZED", `requires ${intent.requiredFromAddress}`);
     }
-    const signed = await wallet.sign({
-      to: intent.transaction.to as Address,
-      data: intent.transaction.data as Hex,
-      chainId: intent.transaction.chainId
-    });
+    let signed: Awaited<ReturnType<ServerWallet["sign"]>>;
+    try {
+      signed = await wallet.sign({
+        to: intent.transaction.to as Address,
+        data: intent.transaction.data as Hex,
+        chainId: intent.transaction.chainId
+      });
+    } catch (error) {
+      if (error instanceof ServerWalletUnfundedError) {
+        return step(campaign, "SKIP", error.code, `fund ${error.address} with testnet MON`);
+      }
+      throw error;
+    }
     const claimed = await this.lifecycle.claimForServerWallet({
       intentId: intent.id,
       transactionHash: signed.hash,

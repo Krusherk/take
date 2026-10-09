@@ -10,6 +10,12 @@ export const authPlugin = fp(async (app) => {
   app.decorateRequest("takeIdentity", null);
 
   app.addHook("preHandler", async (request) => {
+    // /internal/* routes authenticate with the internal token or Vercel Cron's
+    // "Bearer $CRON_SECRET", which is not a Privy session token.
+    if (request.url.startsWith("/internal/")) {
+      return;
+    }
+
     const token = extractBearerToken(request.headers.authorization);
     if (!token) {
       return;
