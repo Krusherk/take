@@ -2,7 +2,7 @@ import { ArrowRight, Mail, Wallet, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLogin, useLoginWithEmail, useLoginWithOAuth, usePrivy } from "@privy-io/react-auth";
 import { LandingHeader } from "../components/landing/LandingHeader";
-import { LandingProductSections } from "../components/landing/LandingProductSections";
+import { LandingStickerSections } from "../components/landing/LandingStickerSections";
 import { LandingSkyStickers } from "../components/landing/LandingSkyStickers";
 import { PaperLabel, Sticker } from "../components/sticker/Sticker";
 import type { Navigate } from "../hooks/usePathRouter";
@@ -140,7 +140,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
         </section>
       </div>
 
-      <LandingProductSections onStartCampaign={() => openAuthentication("/organize")} onExplore={() => openAuthentication("/explore")} />
+      <LandingStickerSections onStartCampaign={() => openAuthentication("/organize")} onExplore={() => openAuthentication("/explore")} />
 
       {dialogOpen ? (
         <div className="landing-auth-layer" role="presentation" onMouseDown={(event) => {
