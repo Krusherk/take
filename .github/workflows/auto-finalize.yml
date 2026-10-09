@@ -1,6 +1,5 @@
 name: TAKE auto-finalize
 
-# Copy to .github/workflows/ (pushing workflow files needs: gh auth refresh -s workflow).
 # Every 10 minutes: indexer catch-up, then close / allocate / finalize ended campaigns
 # through the API's own /internal/cron/finalize route. One repository secret:
 # TAKE_CRON_SECRET (same value as the take-api CRON_SECRET; INTERNAL_API_TOKEN also works).
