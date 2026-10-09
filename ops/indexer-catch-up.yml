@@ -1,0 +1,46 @@
+name: Indexer catch-up
+
+# The API runs on Vercel Functions, so the resident worker (apps/api/src/worker.ts)
+# is not running. This job calls the API's own internal catch-up route on a
+# schedule. It needs one repository secret: TAKE_INTERNAL_API_TOKEN, equal to the
+# API project's INTERNAL_API_TOKEN. Without it the job exits without doing anything.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      calls:
+        description: "Maximum catch-up calls in this run (each scans for up to ~35 s)"
+        default: "12"
+
+concurrency:
+  group: indexer-catch-up
+  cancel-in-progress: false
+
+jobs:
+  catch-up:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      API_BASE_URL: ${{ vars.TAKE_API_BASE_URL || 'https://take-api-sand.vercel.app' }}
+      TOKEN: ${{ secrets.TAKE_INTERNAL_API_TOKEN }}
+      CALLS: ${{ github.event.inputs.calls || '12' }}
+    steps:
+      - name: Run catch-up until the indexer reaches the chain head
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "TAKE_INTERNAL_API_TOKEN is not set; skipping."
+            exit 0
+          fi
+          for i in $(seq 1 "$CALLS"); do
+            body=$(curl -sS --max-time 70 -X POST "$API_BASE_URL/internal/indexer/catch-up" \
+              -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+              -d '{"maxIterations":100}' -w '\n%{http_code}')
+            code=$(echo "$body" | tail -n1)
+            json=$(echo "$body" | sed '$d')
+            echo "call $i: HTTP $code $(echo "$json" | jq -c '{iterations, scanned, caughtUp, to: .lastRun.toBlock, skipped: .lastRun.skipped}' 2>/dev/null)"
+            if [ "$code" != "200" ]; then exit 1; fi
+            if [ "$(echo "$json" | jq -r .caughtUp)" = "true" ]; then break; fi
+          done
+          curl -sS "$API_BASE_URL/health" | jq -c .indexer

@@ -32,8 +32,13 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     const head = "blockNumber" in rpc ? BigInt(rpc.blockNumber) : null;
     const lag = head !== null && cursor
       ? (head > cursor.lastFinalizedBlock ? head - cursor.lastFinalizedBlock : 0n) : null;
-    const fresh = lag !== null && lag <= BigInt(app.env.CHAIN_INDEXER_CONFIRMATIONS + app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE)
-      && Boolean(cursor && Date.now() - cursor.updatedAt.getTime() < 120_000);
+    // A scheduled catch-up (not a resident worker) may sync every few minutes.
+    // Allow the blocks Monad produces inside that window (~400 ms per block).
+    const staleAfterMs = app.env.CHAIN_INDEXER_STALE_AFTER_MS;
+    const allowedLag = BigInt(app.env.CHAIN_INDEXER_CONFIRMATIONS + app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE)
+      + BigInt(Math.ceil(staleAfterMs / 400));
+    const fresh = lag !== null && lag <= allowedLag
+      && Boolean(cursor && Date.now() - cursor.updatedAt.getTime() < staleAfterMs);
     return {
       ok: true,
       api: { ok: true },
@@ -48,7 +53,9 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
         lastSuccessfulSync: cursor?.updatedAt.toISOString() ?? null,
         fresh,
         confirmations: app.env.CHAIN_INDEXER_CONFIRMATIONS,
-        maxBlockRange: app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE
+        maxBlockRange: app.env.CHAIN_INDEXER_MAX_BLOCK_RANGE,
+        parallelRanges: app.env.CHAIN_INDEXER_PARALLEL_RANGES,
+        staleAfterMs
       }
     };
   });

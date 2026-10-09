@@ -69,6 +69,16 @@ The worker exposes two internal controls:
 
 In production, internal controls require `INTERNAL_API_TOKEN`.
 
+## Running On Vercel Functions
+
+The API is deployed as a Vercel Function, which never starts the resident worker in `apps/api/src/worker.ts`. That is why the cursor stopped at block 64,320,382 on 24 Sep 2026: nothing called the indexer after that.
+
+- Each pass fetches `CHAIN_INDEXER_PARALLEL_RANGES` (default 5, max 25) consecutive windows of at most `CHAIN_INDEXER_MAX_BLOCK_RANGE` blocks at the same time, so one `catch-up` call (35 s budget) scans far more blocks. The cursor still advances only after every window in the pass is fetched and persisted.
+- `ops/indexer-catch-up.yml` (copy it to `.github/workflows/`; pushing workflow files needs a GitHub token with the `workflow` scope) calls `POST /internal/indexer/catch-up` every 10 minutes and on manual dispatch. It needs the repository secret `TAKE_INTERNAL_API_TOKEN` (same value as the API's `INTERNAL_API_TOKEN`); without it the job does nothing.
+- `/health` reports `indexer.ok` against `CHAIN_INDEXER_STALE_AFTER_MS` (default 120000). With the 10-minute schedule, set it to `900000` in the API project.
+
+Gives and lifecycle transactions made through the app do not wait for this job: their receipts are indexed directly (receipt fast path).
+
 ## Future Options
 
 - Envio HyperIndex if subscription/API-token constraints change.
