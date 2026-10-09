@@ -5,6 +5,7 @@ import { Avatar } from "../components/Avatar";
 import { CampaignLaunchSigner, type SignerFeedback } from "../components/CampaignLaunchSigner";
 import { OrganizeToast, type OrganizeToastMessage, type ToastTone } from "../components/organize/OrganizeToast";
 import { WheelDateTimePicker, roundTo, toLocal } from "../components/organize/WheelDateTimePicker";
+import { SignupsPanel, joinUrl } from "../components/organize/SignupsPanel";
 import { OrganizerEligibilityWorkspace } from "../components/eligibility/OrganizerEligibilityWorkspace";
 import { EvaluationPlanEditor, TeamReview } from "../components/SignalControls";
 import { ProductError, ProductLoading } from "../components/ProductState";
@@ -37,6 +38,10 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const [creatingCampaign, setCreatingCampaign] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [openNow, setOpenNow] = useState(true);
+  const [collectSignups, setCollectSignups] = useState(true);
+  const [signupDeadlineOn, setSignupDeadlineOn] = useState(true);
+  const [signupDeadlineLocal, setSignupDeadlineLocal] = useState(() => toLocal(roundTo(new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 5)));
+  const [recipientSelfJoin, setRecipientSelfJoin] = useState(false);
   const [startLocal, setStartLocal] = useState(() => toLocal(roundTo(new Date(Date.now() + 60 * 60 * 1000), 5)));
   const [endLocal, setEndLocal] = useState(() => toLocal(roundTo(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 5)));
   const [title, setTitle] = useState("");
@@ -168,6 +173,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       endLocal,
       giverIds,
       recipientIds,
+      signups: collectSignups ? { deadlineLocal: signupDeadlineOn ? signupDeadlineLocal : null, recipientSelfJoin } : null,
       check: checkOn ? { preset: checkPreset, question: checkQuestion, criteria: checkCriteria, days: checkDays, evidenceExpected: checkEvidence } : null,
     });
     setFieldErrors(parsed.errors);
@@ -179,13 +185,19 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
     setCreatingCampaign(true);
     setToast(null);
     try {
-      const created = await request<{ campaignId: string; message: string; stage?: "DRAFT" | "READY_TO_SIGN" }>(`/organizations/${organizationId}/campaigns`, {
+      const created = await request<{ campaignId: string; message: string; stage?: "DRAFT" | "READY_TO_SIGN" | "SIGNUPS"; joinCode?: string }>(`/organizations/${organizationId}/campaigns`, {
         method: "POST",
         body: JSON.stringify(parsed.value),
       });
       setCampaignId(created.campaignId);
-      const useServer = operator && serverSign && Boolean(serverWallet) && created.stage !== "DRAFT";
-      if (created.stage === "DRAFT" || !operator) {
+      const useServer = operator && serverSign && Boolean(serverWallet) && created.stage === "READY_TO_SIGN";
+      if (created.stage === "SIGNUPS" && created.joinCode) {
+        const link = joinUrl(created.joinCode);
+        showToast("success", "Sign-ups are open.", created.message, {
+          label: "Copy join link",
+          onClick: () => { void navigator.clipboard?.writeText(link).catch(() => undefined); },
+        });
+      } else if (created.stage === "DRAFT" || !operator) {
         showToast("action", "Saved as a draft. Not on Monad yet.",
           "This account is not a TAKE operator, so it cannot sign campaigns onto Monad. A TAKE operator has to finish it before Explore lists it.");
       } else if (useServer) {
@@ -326,6 +338,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
               navigate={navigate}
               autoServer={autoServerIds.includes(selectedCampaign.id)}
               onFeedback={onSignerFeedback}
+              onToast={showToast}
             />
           ) : null}
 
@@ -347,19 +360,46 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 <Field label="Number of spots" error={fieldErrors.seats}>
                   <input value={seats} onChange={(event) => { setSeats(event.target.value); clearError("seats", setFieldErrors); }} type="number" min="1" step="1" required />
                 </Field>
+                <label className="organize-open-now organize-signups-toggle">
+                  <input type="checkbox" checked={collectSignups} onChange={(event) => { setCollectSignups(event.target.checked); clearError("people", setFieldErrors); }} />
+                  <span>Let people join with a link first. Share the link, watch givers sign up, then lock the lists and open nominations.</span>
+                </label>
+                {collectSignups ? (
+                  <div className="field field--wide organize-signups-mode">
+                    {signupDeadlineOn ? (
+                      <WheelDateTimePicker
+                        label="Sign-ups close"
+                        value={signupDeadlineLocal}
+                        onChange={(value) => { setSignupDeadlineLocal(value); clearError("signupDeadline", setFieldErrors); }}
+                        error={fieldErrors.signupDeadline}
+                        hint={operator ? "At this time TAKE locks the lists and opens nominations by itself." : "A TAKE operator opens nominations after this."}
+                      />
+                    ) : null}
+                    <label className="organize-open-now">
+                      <input type="checkbox" checked={!signupDeadlineOn} onChange={(event) => { setSignupDeadlineOn(!event.target.checked); clearError("signupDeadline", setFieldErrors); }} />
+                      <span>No deadline. I’ll press “Close sign-ups and open” myself.</span>
+                    </label>
+                    <label className="organize-open-now">
+                      <input type="checkbox" checked={recipientSelfJoin} onChange={(event) => setRecipientSelfJoin(event.target.checked)} />
+                      <span>People can also join as recipients (to be backed), not only as givers.</span>
+                    </label>
+                  </div>
+                ) : null}
                 <div className="field field--wide organize-when">
                   <WheelDateTimePicker
                     label="Nominations end"
                     value={endLocal}
                     onChange={(value) => { setEndLocal(value); clearError("endTime", setFieldErrors); }}
-                    error={fieldErrors.endTime ?? liveTimeError(openNow ? null : startLocal, endLocal, "end")}
+                    error={fieldErrors.endTime ?? liveTimeError(openNow || collectSignups ? null : startLocal, endLocal, "end")}
                   />
                 </div>
+                {collectSignups ? null : (
                 <label className="organize-open-now">
                   <input type="checkbox" checked={openNow} onChange={(event) => setOpenNow(event.target.checked)} />
                   <span>Open as soon as I sign. Leave this on to publish and open nominations in one sitting.</span>
                 </label>
-                {openNow ? null : (
+                )}
+                {openNow || collectSignups ? null : (
                   <div className="field field--wide organize-when">
                     <WheelDateTimePicker
                       label="Nominations open"
@@ -369,7 +409,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                     />
                   </div>
                 )}
-                {operator && serverWallet ? (
+                {operator && serverWallet && !collectSignups ? (
                   <label className="organize-open-now organize-server-sign">
                     <input type="checkbox" checked={serverSign} onChange={(event) => setServerSign(event.target.checked)} />
                     <span>
@@ -383,7 +423,9 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
               <div className="organize-people">
                 <div>
                   <h3>Who is involved?</h3>
-                  <p>A person can give a TAKE or receive one, not both. Givers need a connected wallet.</p>
+                  <p>{collectSignups
+                    ? "Optional. Add people you already know, like the recipients givers can back. Everyone else joins with the link."
+                    : "A person can give a TAKE or receive one, not both. Givers need a connected wallet."}</p>
                 </div>
                 <label className="organize-people__search">
                   <span>Find a TAKE member</span>
@@ -426,8 +468,8 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 error={fieldErrors.check}
               />
 
-              <PrimaryAction type="submit" disabled={creatingCampaign}>{creatingCampaign ? "Creating campaign…" : "Create campaign"}</PrimaryAction>
-              {creatingCampaign ? <p className="organize-wait" role="status">Preparing who can give and receive. This can take a minute, then you sign.</p> : null}
+              <PrimaryAction type="submit" disabled={creatingCampaign}>{creatingCampaign ? "Creating campaign…" : collectSignups ? "Create and open sign-ups" : "Create campaign"}</PrimaryAction>
+              {creatingCampaign ? <p className="organize-wait" role="status">{collectSignups ? "Saving the campaign and making its join link." : "Preparing who can give and receive. This can take a minute, then you sign."}</p> : null}
             </form>
           </section>
 
@@ -465,7 +507,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   );
 }
 
-function CampaignNext({ campaign, phase, operator, request, onChanged, navigate, autoServer, onFeedback }: {
+function CampaignNext({ campaign, phase, operator, request, onChanged, navigate, autoServer, onFeedback, onToast }: {
   campaign: Campaign;
   phase: OrganizePhase;
   operator: boolean;
@@ -474,6 +516,7 @@ function CampaignNext({ campaign, phase, operator, request, onChanged, navigate,
   navigate: (path: TakePath) => void;
   autoServer: boolean;
   onFeedback: (feedback: SignerFeedback) => void;
+  onToast: (tone: ToastTone, title: string, body?: string) => void;
 }) {
   const signable = phase === "SIGN_TO_PUBLISH" || phase === "SIGN_TO_OPEN";
   return (
@@ -481,6 +524,7 @@ function CampaignNext({ campaign, phase, operator, request, onChanged, navigate,
       <span className="eyebrow">NEXT STEP</span>
       <h2>{nextTitle(phase)}</h2>
       <p>{nextDetail(campaign, phase, operator)}</p>
+      {phase === "SIGNUPS" || phase === "SETUP" ? <SignupsPanel key={`signups:${campaign.id}`} campaignId={campaign.id} request={request} onFeedback={onToast} onOpened={onChanged} /> : null}
       {signable && operator ? <CampaignLaunchSigner campaignId={campaign.id} phase={phase} request={request} onChanged={onChanged} autoServer={autoServer} onFeedback={onFeedback} /> : null}
       {phase === "LIVE" ? (
         <div className="organize-next__actions">
@@ -501,6 +545,7 @@ function nextTitle(phase: OrganizePhase) {
     case "SCHEDULED": return "This campaign is scheduled.";
     case "ENDED": return "This window has ended.";
     case "SETUP": return "This draft still needs people.";
+    case "SIGNUPS": return "Sign-ups are open.";
   }
 }
 
@@ -521,8 +566,14 @@ function nextDetail(campaign: Campaign, phase: OrganizePhase, operator: boolean)
       return `${campaign.title} opens ${campaign.starts}. Come back then and sign to open nominations if it is not live yet.`;
     case "ENDED":
       return `${campaign.title} can no longer be opened on Monad. Create a new campaign with an end time that is still ahead.`;
+    case "SIGNUPS":
+      return operator
+        ? `Share the join link. When you close sign-ups, TAKE locks the lists, publishes ${campaign.title} with its server wallet and opens nominations. Nominations end ${campaign.ends}.`
+        : `Share the join link. A TAKE operator locks the lists and opens nominations. Nominations end ${campaign.ends}.`;
     case "SETUP":
-      return "Create a new campaign below and choose the people in the same form. That path ends at the signature, which is what Explore needs.";
+      return operator
+        ? "These lists are saved. Lock them and open nominations here, or create a new campaign below."
+        : "Create a new campaign below and choose the people in the same form. That path ends at the signature, which is what Explore needs.";
   }
 }
 
@@ -545,6 +596,7 @@ function readCampaignForm(input: {
   endLocal: string;
   giverIds: string[];
   recipientIds: string[];
+  signups?: { deadlineLocal: string | null; recipientSelfJoin: boolean } | null;
   check?: { preset: CheckPresetKey; question: string; criteria: string; days: number; evidenceExpected: boolean } | null;
 }) {
   const title = input.title.trim();
@@ -553,7 +605,7 @@ function readCampaignForm(input: {
   const seatCount = Number(input.seats);
   // A scheduled check is locked before nominations can open, so "open now"
   // starts a few minutes after creation instead of in the past.
-  const start = input.openNow ? new Date(Date.now() + (input.check ? CHECK_LEAD_MS : -5 * 60 * 1000)) : new Date(input.startLocal);
+  const start = input.signups ? new Date() : input.openNow ? new Date(Date.now() + (input.check ? CHECK_LEAD_MS : -5 * 60 * 1000)) : new Date(input.startLocal);
   const end = new Date(input.endLocal);
   const errors: Record<string, string> = {};
   if (!input.organizationId) errors.organizationId = "Choose a community.";
@@ -561,16 +613,24 @@ function readCampaignForm(input: {
   if (!resourceName) errors.resourceName = "Name the opportunity.";
   if (!description) errors.description = "Add a short description.";
   if (!Number.isInteger(seatCount) || seatCount < 1) errors.seats = "Spots must be a whole number of at least 1.";
-  if (!input.openNow && (!input.startLocal || Number.isNaN(start.getTime()))) errors.startTime = "Choose when nominations open.";
+  if (!input.openNow && !input.signups && (!input.startLocal || Number.isNaN(start.getTime()))) errors.startTime = "Choose when nominations open.";
   if (!input.endLocal || Number.isNaN(end.getTime())) errors.endTime = "Choose when nominations end.";
   else if (end.getTime() <= Date.now()) errors.endTime = "The end time has to be in the future.";
   else if (!Number.isNaN(start.getTime()) && end <= start) errors.endTime = "The end has to be after the start.";
-  if (!input.giverIds.length || !input.recipientIds.length) errors.people = "Choose at least one person who can give and one person who can receive.";
+  const signupDeadline = input.signups?.deadlineLocal ? new Date(input.signups.deadlineLocal) : null;
+  if (input.signups?.deadlineLocal) {
+    if (!signupDeadline || Number.isNaN(signupDeadline.getTime())) errors.signupDeadline = "Choose when sign-ups close.";
+    else if (signupDeadline.getTime() <= Date.now()) errors.signupDeadline = "Sign-ups have to close in the future.";
+    else if (!Number.isNaN(end.getTime()) && signupDeadline.getTime() > end.getTime() - 5 * 60 * 1000) errors.signupDeadline = "Close sign-ups at least five minutes before nominations end.";
+  }
+  if (input.signups) {
+    if (input.recipientIds.some((id) => input.giverIds.includes(id))) errors.people = "The same person cannot both give and receive.";
+  } else if (!input.giverIds.length || !input.recipientIds.length) errors.people = "Choose at least one person who can give and one person who can receive.";
   else if (input.recipientIds.some((id) => input.giverIds.includes(id))) errors.people = "The same person cannot both give and receive.";
   if (input.check) {
     if (input.check.question.trim().length < 5) errors.check = "Write the question you will check, like “Did they ship?”.";
     else if (input.check.criteria.trim().length < 10) errors.check = "Say what counts as yes, no, and unclear.";
-    else if (!input.openNow && !Number.isNaN(start.getTime()) && start.getTime() <= Date.now() + 60_000) errors.check = "With a check, nominations have to open at least a few minutes from now.";
+    else if (!input.openNow && !input.signups && !Number.isNaN(start.getTime()) && start.getTime() <= Date.now() + 60_000) errors.check = "With a check, nominations have to open at least a few minutes from now.";
   }
   if (Object.keys(errors).length || !input.organizationId) return { value: null, errors };
   const evaluationPlan = input.check ? {
@@ -590,6 +650,7 @@ function readCampaignForm(input: {
       endTime: end.toISOString(),
       giverIdentityIds: input.giverIds,
       recipientIdentityIds: input.recipientIds,
+      ...(input.signups ? { signups: { deadline: signupDeadline ? signupDeadline.toISOString() : null, recipientSelfJoin: input.signups.recipientSelfJoin } } : {}),
       ...(evaluationPlan ? { evaluationPlan } : {}),
     },
     errors,

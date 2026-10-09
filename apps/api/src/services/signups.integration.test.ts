@@ -8,6 +8,7 @@ import { loadApiEnv, type ApiEnv } from "../config/env.js";
 import { OrganizerCampaignService } from "./organizerCampaign.js";
 import { CampaignSignupService, type SignupOpener } from "./signups.js";
 import { GasDripService } from "./gasDrip.js";
+import { CampaignService } from "./campaign.js";
 import type { ServerWallet } from "./serverWallet.js";
 
 const envPath = fileURLToPath(new URL("../../../../.env", import.meta.url));
@@ -99,6 +100,13 @@ describe.sequential("campaign sign-ups", () => {
     await signups.join(code, di, { role: "GIVER" });
     await signups.join(code, eve, { role: "RECIPIENT" });
     expect((await signups.join(code, bo, { role: "RECIPIENT" })).alreadyJoined).toBe(true);
+
+    // Joiners can see the draft they joined; strangers cannot.
+    const campaigns = new CampaignService(db);
+    expect((await campaigns.getCampaignView(created.campaignId, bo.takeIdentityId))?.signups).toMatchObject({ joinedAs: "GIVER", open: true });
+    expect((await campaigns.listCampaigns(bo.takeIdentityId)).some((item) => item.id === created.campaignId)).toBe(true);
+    const outsider = await person("Outsider");
+    expect((await campaigns.listCampaigns(outsider.takeIdentityId)).some((item) => item.id === created.campaignId)).toBe(false);
 
     let organizerView = await signups.organizerView(created.campaignId, actor);
     expect(organizerView.givers.map((item) => item.displayName)).toEqual(["Bo", "Cy", "Di"]);

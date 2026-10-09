@@ -47,7 +47,8 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
       && (
         !request.takeIdentity
         || (!isTakeOperator(app.env, request.takeIdentity)
-          && !(await campaigns.canManageCampaign(request.params.id, request.takeIdentity.takeIdentityId)))
+          && !(await campaigns.canManageCampaign(request.params.id, request.takeIdentity.takeIdentityId))
+          && !campaign.signups?.joinedAs)
       )
     ) {
       return reply.code(404).send({ error: "NOT_FOUND" });

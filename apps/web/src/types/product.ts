@@ -66,6 +66,7 @@ export interface Campaign {
     activeNominationDataHidden: boolean;
   } | null;
   launchApproved?: boolean;
+  signups?: CampaignSignupState | null;
   eligibilityDescription?: string | null;
   onchain?: CampaignOnchainView;
 }
@@ -125,6 +126,7 @@ export interface ApiCampaign {
   } | null;
   viewer: CampaignViewerState | null;
   launchApproved?: boolean;
+  signups?: CampaignSignupState | null;
   eligibilityDescription?: string | null;
   onchain?: CampaignOnchainView;
 }
@@ -135,4 +137,11 @@ export interface ApiPerson {
   username: string | null;
   avatarUrl: string | null;
   joined: boolean;
+}
+
+export interface CampaignSignupState {
+  status: "OPEN" | "CLOSING" | "CLOSED" | "FAILED";
+  open: boolean;
+  deadline: string | null;
+  joinedAs: "GIVER" | "RECIPIENT" | null;
 }

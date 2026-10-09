@@ -13,7 +13,8 @@ export type TakePath =
   | "/profile"
   | "/signal"
   | `/campaign/${string}`
-  | `/invite/${string}`;
+  | `/invite/${string}`
+  | `/join/${string}`;
 
 export type Navigate = (nextPath: TakePath, options?: { replace?: boolean }) => void;
 
@@ -47,6 +48,7 @@ function readPath(): TakePath {
   if (validPaths.has(candidate as TakePath)) return candidate as TakePath;
   if (/^\/campaign\/[^/]+(?:\/(?:give|confirm|pending|success))?$/.test(candidate)) return candidate as TakePath;
   if (/^\/invite\/[^/]+$/.test(candidate)) return candidate as TakePath;
+  if (/^\/join\/[a-z0-9]{6,32}$/i.test(candidate)) return candidate as TakePath;
   return "/";
 }
 

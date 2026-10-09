@@ -72,6 +72,7 @@ describe("Organize page", () => {
 
   it("locks a scheduled check with the new campaign, before nominations can open", async () => {
     render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("checkbox", { name: /Let people join with a link first/ }));
     fireEvent.change(await screen.findByPlaceholderText("Monad community spots"), { target: { value: "Builder Week" } });
     fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "Builder grant" } });
     fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "One grant." } });
@@ -96,6 +97,7 @@ describe("Organize page", () => {
   it("sends no check when the organizer leaves it off", async () => {
     request.mockClear();
     render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("checkbox", { name: /Let people join with a link first/ }));
     fireEvent.change(await screen.findByPlaceholderText("Monad community spots"), { target: { value: "Builder Week" } });
     fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "Builder grant" } });
     fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "One grant." } });
@@ -114,6 +116,7 @@ describe("Organize page", () => {
     render(<OrganizePage navigate={vi.fn()} />);
     expect(await screen.findByRole("spinbutton", { name: "Nominations end, day" })).toBeInTheDocument();
     expect(document.querySelector('input[type="datetime-local"]')).toBeNull();
+    fireEvent.click(await screen.findByRole("checkbox", { name: /Let people join with a link first/ }));
     expect(await screen.findByRole("checkbox", { name: /Let TAKE sign it onto Monad/ })).toBeChecked();
     fireEvent.click(screen.getByRole("checkbox", { name: /Open as soon as I sign/ }));
     expect(screen.getByRole("spinbutton", { name: "Nominations open, hour" })).toBeInTheDocument();
@@ -122,6 +125,7 @@ describe("Organize page", () => {
   it("tells a non-operator, next to the button, that the draft is not on Monad", async () => {
     operatorState.value = false;
     render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("checkbox", { name: /Let people join with a link first/ }));
     fireEvent.change(await screen.findByPlaceholderText("Monad community spots"), { target: { value: "Builder Week" } });
     fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "Builder grant" } });
     fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "One grant." } });
@@ -137,7 +141,28 @@ describe("Organize page", () => {
 
   it("shows form problems as an error toast", async () => {
     render(<OrganizePage navigate={vi.fn()} />);
-    fireEvent.click(await screen.findByRole("button", { name: /Create campaign/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Create and open sign-ups/ }));
     expect(await screen.findByText(/things to fix\./)).toBeInTheDocument();
+  });
+
+  it("creates a sign-ups campaign without people and shows its join link", async () => {
+    request.mockClear();
+    request.mockImplementationOnce(async () => [{ id: "org-1", name: "Monad Devs", slug: "monad-devs", role: "OWNER", joinedAt: "2026-01-01T00:00:00.000Z" }]);
+    render(<OrganizePage navigate={vi.fn()} />);
+    expect(await screen.findByRole("checkbox", { name: /Let people join with a link first/ })).toBeChecked();
+    expect(screen.getByRole("spinbutton", { name: "Sign-ups close, day" })).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /Open as soon as I sign/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("Monad community spots"), { target: { value: "WL round" } });
+    fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "WL spot" } });
+    fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "Back a builder." } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /join as recipients/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Create and open sign-ups/ }));
+    await waitFor(() => expect(request).toHaveBeenCalledWith("/organizations/org-1/campaigns", expect.anything()));
+    const call = request.mock.calls.find(([path]) => path === "/organizations/org-1/campaigns") as unknown as [string, RequestInit];
+    const body = JSON.parse(String(call[1].body));
+    expect(body.giverIdentityIds).toEqual([]);
+    expect(body.signups.recipientSelfJoin).toBe(true);
+    expect(Date.parse(body.signups.deadline)).toBeGreaterThan(Date.now());
+    expect(Date.parse(body.signups.deadline)).toBeLessThan(Date.parse(body.endTime));
   });
 });
