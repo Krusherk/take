@@ -28,7 +28,7 @@ export class CampaignService {
     const fixtureCreatorSet = new Set(fixtureCreators);
     const managedOrganizations = new Set(memberships.map((item) => item.organizationId));
     const joinedDrafts = viewerIdentityId
-      ? new Set((await this.signupMemberships(viewerIdentityId)).keys())
+      ? new Set((await whenSignupsTableMissing(this.signupMemberships(viewerIdentityId), new Map())).keys())
       : new Set<string>();
     const visible = records.filter((campaign) =>
       !fixtureCreatorSet.has(campaign.createdByIdentityId)
@@ -349,8 +349,13 @@ export class CampaignService {
         joinEnabled: schema.campaignSignups.joinEnabled,
         status: schema.campaignSignups.status,
         signupDeadline: schema.campaignSignups.signupDeadline
-      }).from(schema.campaignSignups).where(inArray(schema.campaignSignups.campaignId, campaignIds)),
-      viewerIdentityId ? this.signupMemberships(viewerIdentityId, campaignIds) : Promise.resolve(new Map<string, "GIVER" | "RECIPIENT">())
+      }).from(schema.campaignSignups).where(inArray(schema.campaignSignups.campaignId, campaignIds)).then((rows) => rows, (error: unknown) => {
+        if (isMissingTable(error)) return [];
+        throw error;
+      }),
+      viewerIdentityId
+        ? whenSignupsTableMissing(this.signupMemberships(viewerIdentityId, campaignIds), new Map<string, "GIVER" | "RECIPIENT">())
+        : Promise.resolve(new Map<string, "GIVER" | "RECIPIENT">())
     ]);
     const signupsByCampaign = new Map(signupRows.map((row) => [row.campaignId, row]));
     const [organizations, resources, participantRows, nominationRows, experiments, lifecycleRows, eligibilities] = await Promise.all([
@@ -645,5 +650,24 @@ function eligibilityModeToContract(mode: string): number {
       return 3;
     default:
       throw new Error(`Unsupported eligibility mode: ${mode}`);
+  }
+}
+
+/** Postgres "undefined_table": the sign-ups migration has not been applied yet. */
+export function isMissingTable(error: unknown): boolean {
+  for (let current: unknown = error, depth = 0; current && depth < 4; depth += 1) {
+    if (typeof current === "object" && (current as { code?: unknown }).code === "42P01") return true;
+    current = typeof current === "object" ? (current as { cause?: unknown }).cause : undefined;
+  }
+  return false;
+}
+
+/** Campaign pages keep working on a database that has not been migrated for sign-ups yet. */
+async function whenSignupsTableMissing<T>(query: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await query;
+  } catch (error) {
+    if (isMissingTable(error)) return fallback;
+    throw error;
   }
 }
