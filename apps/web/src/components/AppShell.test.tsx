@@ -41,4 +41,13 @@ describe("authenticated account shell", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "LOG OUT" }));
     await waitFor(() => expect(onLogout).toHaveBeenCalledTimes(1));
   });
+
+  it.each(["/notifications", "/takes", "/activity"] as const)("puts %s on the sky", (path) => {
+    const { container } = render(
+      <AppShell path={path} navigate={vi.fn()} unreadCount={0} currentPerson={personFromMe(xConnectedMe)} onLogout={vi.fn()}>
+        <p>Page</p>
+      </AppShell>,
+    );
+    expect(container.querySelector(".app-shell")).toHaveClass("app-shell--sky");
+  });
 });

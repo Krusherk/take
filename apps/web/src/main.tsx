@@ -17,6 +17,7 @@ import "./signal.css";
 import "./sticker.css";
 import "./landing-sky.css";
 import "./sticker-surfaces.css";
+import "./sticker-feeds.css";
 
 const root = document.getElementById("root");
 
