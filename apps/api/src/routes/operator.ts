@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
+import { signalDomains } from "@take/shared";
 import { CampaignRequestService } from "../services/campaignRequests.js";
 import { OrganizerCampaignService } from "../services/organizerCampaign.js";
 import { assertTakeOperator, isTakeOperator } from "../services/authorization.js";
@@ -28,7 +29,15 @@ const organizerCampaignInput = z.object({
   startTime: z.coerce.date(),
   endTime: z.coerce.date(),
   giverIdentityIds: z.array(z.string().uuid()).min(1).max(100),
-  recipientIdentityIds: z.array(z.string().uuid()).min(1).max(100)
+  recipientIdentityIds: z.array(z.string().uuid()).min(1).max(100),
+  // Optional "what happens after" check. Locked with the campaign, before anyone can give.
+  evaluationPlan: z.object({
+    domain: z.enum(signalDomains),
+    question: z.string().trim().min(5).max(500),
+    criteria: z.string().trim().min(10).max(5_000),
+    evaluateAfter: z.coerce.date(),
+    evidenceExpected: z.boolean()
+  }).strict().optional()
 });
 
 export const operatorRoutes: FastifyPluginAsync = async (app) => {

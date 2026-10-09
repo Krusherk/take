@@ -12,6 +12,8 @@ import { ServiceError } from "./errors.js";
 import { ExperimentService } from "./experiment.js";
 import { MechanismService } from "./mechanism.js";
 import { SelectorEligibilityService } from "./selectorEligibility.js";
+import { SignalService } from "./signal.js";
+import type { SignalDomain } from "@take/shared";
 
 export interface OrganizerCampaignInput {
   organizationId: string;
@@ -23,6 +25,7 @@ export interface OrganizerCampaignInput {
   endTime: Date;
   giverIdentityIds: string[];
   recipientIdentityIds: string[];
+  evaluationPlan?: { domain: SignalDomain; question: string; criteria: string; evaluateAfter: Date; evidenceExpected: boolean };
 }
 
 export class OrganizerCampaignService {
@@ -35,6 +38,14 @@ export class OrganizerCampaignService {
     }
     if (input.endTime <= new Date()) {
       throw new ServiceError("INVALID_CAMPAIGN_TIME", "Campaign end must be in the future", 400);
+    }
+    if (input.evaluationPlan) {
+      if (input.startTime <= new Date()) {
+        throw new ServiceError("EVALUATION_PLAN_TOO_LATE", "A scheduled check has to be locked before nominations open. Pick a start time a few minutes ahead.", 400);
+      }
+      if (input.evaluationPlan.evaluateAfter < input.endTime) {
+        throw new ServiceError("EVALUATION_DATE_INVALID", "Schedule the check after nominations end.", 400);
+      }
     }
     const givers = uniqueIds(input.giverIdentityIds);
     const recipients = uniqueIds(input.recipientIdentityIds);
@@ -62,6 +73,17 @@ export class OrganizerCampaignService {
     const provisioned = await requests.provision(draft.id, actor.takeIdentityId);
     if (!provisioned.campaign?.id) throw new ServiceError("CAMPAIGN_NOT_CREATED", "The campaign could not be created", 500);
     const campaignId = provisioned.campaign.id;
+
+    if (input.evaluationPlan) {
+      // Lock the check while the campaign is still an offchain draft. The
+      // database trigger refuses it after publication or once nominations start.
+      try {
+        await new SignalService(this.db).lockPlan(campaignId, actor.takeIdentityId, input.evaluationPlan);
+      } catch (error) {
+        if (error instanceof ServiceError) throw new ServiceError(error.code, error.message, error.statusCode, { campaignId });
+        throw error;
+      }
+    }
 
     if (!actor.isOperator) {
       return {

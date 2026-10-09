@@ -20,35 +20,33 @@ A community hands out a scarce spot (a grant, a beta seat, an event ticket). Eac
 
 ## Try it
 
-`TODO (infra): fill the placeholders below once the judge campaign and test logins exist.`
-
 1. Open https://takemetropolis.vercel.app on your phone or desktop.
-2. Tap **Sign in**, then **Continue with email**. Use `<JUDGE LOGIN 1 EMAIL>` and code `<JUDGE LOGIN 1 CODE>`. Spare logins: `<JUDGE LOGIN 2>`, `<JUDGE LOGIN 3>`.
+2. Tap **Sign in** (in the menu on a phone), then **Continue with X**. TAKE creates an embedded wallet for you.
 3. Tap **Enter TAKE** on the welcome screen.
-4. Open **Explore** and pick **`<JUDGE CAMPAIGN NAME>`** (campaign `<JUDGE CAMPAIGN ID>`), or go to `https://takemetropolis.vercel.app/campaign/<JUDGE CAMPAIGN UUID>`.
-5. Tap **Give your TAKE**, choose a person, and review.
-6. Tap **Give to …** and approve the transaction in the wallet prompt. The judge wallets already hold testnet MON for gas. TAKE does not pay gas.
-7. Wait for **You gave … your TAKE.** Tap **View receipt** to see the `TakeGiven` event on the explorer.
-8. Open **Signal** to see who you backed.
+4. Browse **Explore** and open **TAKE Demo** (campaign 4): https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. It shows the locked rules, who can give, who can receive, and the Monad links.
+5. Open **Signal** to see who you backed, who got the spot, the scheduled check, and what was recorded after.
+6. Open **Organize** to see how a campaign is created: the opportunity, the giver and recipient lists, an optional check ("In 30 days: did they ship?"), then the signatures.
 
-Each login can give one TAKE in the judge campaign. A second attempt is rejected by the contract.
+Giving needs you to be on that campaign's giver list. The organizer sets the list before the rules are locked, so a new sign-in can browse and verify but cannot give in campaign 4. To see a give end to end, use the transactions below. A give asks for two wallet approvals the first time (register identity, then give) and needs testnet MON for gas. TAKE does not pay gas.
 
 ## Verify onchain
 
-Campaign 4, "TAKE Demo", is live on the contract above.
+Contract source is verified on Sourcify (exact match): https://repo.sourcify.dev/10143/0xc3A0178B31D8844455c49988736d51A2336056e5. Deployed in tx [`0xb8e2945d…332e`](https://testnet.monadvision.com/tx/0xb8e2945deda4874bfbc8c40fd28108cdb880dbb82cc458b5d3117dcd0f42332e) (block 59399034). Build settings: solc 0.8.30, optimizer 200 runs, via_ir, EVM prague. `cd packages/contracts && forge test` runs 16 tests.
+
+Campaign 4, "TAKE Demo", is live on the contract above. Nominations end 13 Oct 2026, 10:49 UTC.
 
 | Step | Transaction |
 |---|---|
 | Publish (rules hash written) | [`0xe13da5ad…a5df`](https://testnet.monadvision.com/tx/0xe13da5adb9cd36ca907cc03054d6494c6ba4d4cf0ae469f5cad9e0b5b6faa5df) |
 | Open nominations | [`0x0b237126…4c8f`](https://testnet.monadvision.com/tx/0x0b2371262ba43176ed3a0e721ca724827495a6958ecca9ba1a8bd9d7e3244c8f) |
 | A TAKE given | [`0x4ee2c55c…9065`](https://testnet.monadvision.com/tx/0x4ee2c55cf2c1e733ae06133582712fb3e66d8822ffd0d3ec078e075189c09065) |
-| Result committed | `<FINALIZE TX>` (TODO, after close) |
+| Result committed | Not yet. `finalizeAllocation` can run after close, from 13 Oct 2026 10:59 UTC (drand round 21456034). `<FINALIZE TX>` |
 
 Public read endpoints:
 
 - `GET /campaigns`: live and published campaigns
 - `GET /campaigns/:id/audit-artifact`: locked config, eligibility roots, randomness commitment
-- `GET /campaigns/:id/mechanism`, `/selector-eligibility`, `/experiment-v0`, `/after`
+- `GET /campaigns/:id/mechanism`, `/selector-eligibility`, `/experiment-v0`, `/after` (recipients, the scheduled check, and recorded outcomes after finalization)
 - `GET /health`: API, database, chain head, indexer lag
 
 Rebuild the rules hash from the public artifact and compare it with the value stored on Monad:
@@ -78,18 +76,21 @@ Works on testnet:
 - One TAKE per eligible identity per campaign, no self-give, and Merkle-checked lists, enforced by the contract.
 - Sign-in with X, email, or wallet; giving from the Privy embedded wallet.
 - Managed campaigns: anyone can draft; a TAKE operator publishes.
-- Signal: who you backed and who backed you.
+- Signal: who you backed and who backed you, with a track from Given → Chosen → Check → Outcome.
+- Checks after the TAKE: an organizer can lock a question and a date ("In 30 days: did they ship?") when creating a campaign. It can't be changed or added after publication. A TAKE operator records the outcome after the date.
+- Call it: a giver can say Yes / Not sure / No on the person they backed until the check date. The split shows after results are committed. No money, no points, no effect on who gets the spot. Needs database migration `0014_signal_calls.sql`; until it runs, Signal hides this.
 
 Not built, or not proven yet:
 
-- No campaign has been finalized onchain yet. Allocation and `finalizeAllocation` are built but not yet run on a live campaign.
+- No campaign has been finalized onchain yet (as of 9 Oct 2026). Allocation and `finalizeAllocation` are built; campaign 4 is the first to finalize, after 13 Oct.
 - Not Sybil-resistant. One TAKE per identity, not per human. Privy links accounts; it does not prove one person.
 - Popular people can still win. One-person-one-TAKE does not fix that.
 - Gives are public on Monad as soon as they are sent. The app only hides running totals.
 - Eligibility evidence: the shipped create form checks the organizer's lists and a connected wallet. X account age, Discord membership, and a GitHub link exist as rules but are not used in a live campaign. Wallet history, social graph, and GitHub activity are not collected.
 - Operator integrity checks: mutual TAKEs (the later one is rejected by a published rule), short cycles, and bursts. Coalition, cross-campaign, and timing-sync checks are designed, not implemented.
-- Signal has no evaluated outcomes yet.
-- Gas is not sponsored. The indexer is behind; new TAKEs are recorded from transaction receipts.
+- Signal has no recorded outcomes yet. No live campaign has a scheduled check; campaign 4 was published before checks were in the create form.
+- Gas is not sponsored.
+- The background indexer is behind (cursor at block 64,320,382 from 24 Sep 2026). The catch-up job is written (`ops/indexer-catch-up.yml`) but not scheduled yet. Gives and lifecycle transactions made in the app are recorded from their receipts right away.
 - The allocation rule in use (`RAW_UNIQUE_SUPPORT@2`) is a baseline. Our own simulations ([docs/mechanism-decision-gate-v0.1.md](docs/mechanism-decision-gate-v0.1.md)) did not find a rule good enough for high-stakes campaigns.
 
 ## Repo map

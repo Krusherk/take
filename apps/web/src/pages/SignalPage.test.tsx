@@ -5,7 +5,7 @@ import { xConnectedMe } from "../test/identityFixture";
 import type { TakeHistory } from "../types/identity";
 import { SignalPage } from "./SignalPage";
 
-const state = vi.hoisted(() => ({ history: { given: [], received: [] } as TakeHistory }));
+const state = vi.hoisted(() => ({ history: { given: [], received: [] } as TakeHistory, request: async () => { throw new Error("Calls are not switched on yet."); } }));
 
 const emptySignal: SignalHistory = {
   counts: { recommendations: 0, evaluated: 0, positive: 0, negative: 0, inconclusive: 0, pending: 0, notPlanned: 0, notSelected: 0 },
@@ -14,7 +14,7 @@ const emptySignal: SignalHistory = {
 };
 
 vi.mock("../context/TakeIdentityContext", () => ({
-  useTakeMe: () => ({ me: xConnectedMe, history: state.history }),
+  useTakeMe: () => ({ me: xConnectedMe, history: state.history, request: state.request }),
 }));
 
 vi.mock("../hooks/useSignal", () => ({

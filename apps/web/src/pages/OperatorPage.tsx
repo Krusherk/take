@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { PrimaryAction, SecondaryAction } from "../components/Actions";
 import { EvaluationPlanEditor, IntegrityObservations, OperatorEvaluations } from "../components/SignalControls";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
+import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import { campaignFromApi } from "../lib/productData";
@@ -178,8 +179,8 @@ export function OperatorPage() {
     finally { setRefreshingWallet(false); }
   }
 
-  if (operator === null && !error) return <div className="page-container"><ProductLoading label="Checking TAKE operator access" /></div>;
-  if (operator === false) return <div className="page-container"><ProductError message="This account is not on the TAKE operator allowlist." onRetry={() => void loadRoot()} /></div>;
+  if (operator === null && !error) return <div className="page-container sticker-page operator-sticker"><ProductLoading label="Checking TAKE operator access" /></div>;
+  if (operator === false) return <div className="page-container sticker-page operator-sticker"><ProductError message="This account is not on the TAKE operator allowlist." onRetry={() => void loadRoot()} /></div>;
   const readiness = getReadiness(campaign, eligibility, mechanism, experiment, allocation);
   const newRequests = requests.filter((item) => item.status === "SUBMITTED");
   const next = getNextAction({ campaign, eligibility, mechanism, experiment, allocation, recipientRosterId, recipientContext, ratings, pendingIntent });
@@ -197,10 +198,16 @@ export function OperatorPage() {
   } : {};
   if (pendingIntent?.status === "WAITING_FOR_WALLET") actions.PENDING = () => lifecycle(pendingIntent.action);
 
-  return <div className="page-container operator-page">
-    <header className="page-intro"><div><span className="eyebrow">TAKE OPERATOR</span><h1>Launch and run campaigns.</h1></div><p>The organizer defines the opportunity and the real people in scope. TAKE checks which of them qualify to give one TAKE. A giver chooses a recipient; the operator does not choose a winner.</p></header>
+  return <div className="page-container sticker-page operator-page operator-sticker">
+    <section className="sticker-feed__stage operator-sticker__stage" aria-labelledby="operator-title">
+      <Sticker tilt={4} className="feed-tag"><span>TAKE OPERATOR</span></Sticker>
+      <MascotSticker kind="star" tilt={-10} delay={240} className="sticker-feed__mascot sticker-feed__mascot--star" />
+      <div className="sticker-feed__headline">
+        <h1 id="operator-title"><PaperLabel size="lg" tilt={-2} delay={60}>Run campaigns.</PaperLabel></h1>
+        <PaperLabel size="sm" tilt={1.5} delay={120}>You sign each step. Givers choose. You never pick who wins.</PaperLabel>
+      </div>
+    </section>
     {error ? <div className="organize-error" role="alert"><CircleAlert size={17} />{error}</div> : null}
-    <OperatorEvaluations request={request} />
     {newRequests.length ? <section className="operator-requests"><header><span className="eyebrow">CAMPAIGN REQUESTS</span><h2>Ready for setup</h2></header>
       {newRequests.map((item) => <article key={item.id}><div><strong>{item.title}</strong><p>{item.organizationName} · {item.resourceName} · {item.seatCount} spots</p></div><PrimaryAction onClick={() => void provision(item.id)} disabled={busy === `provision:${item.id}`}>{busy === `provision:${item.id}` ? "PROVISIONING" : "START SETUP"}</PrimaryAction></article>)}
     </section> : null}
@@ -211,6 +218,7 @@ export function OperatorPage() {
       {campaign ? <>
         <div className="operator-campaign-summary"><div><span className="eyebrow">{productState(campaign, mechanism)}</span><h2>{campaign.title}</h2><p>{campaign.resource} · {campaign.spots} spots · {campaign.organizer}</p><p>{eligibility?.counts.eligible ?? 0} qualified to give one TAKE · {recipientContext.recipients.length} can receive it</p></div><span className="operator-state">{productState(campaign, mechanism)}</span></div>
         <section className="operator-next-action" aria-labelledby="operator-next-title">
+          <LifecycleTrack status={campaign.sourceStatus} allocation={allocation} />
           <div><span className="eyebrow">NEXT ACTION</span><h2 id="operator-next-title">{next.title}</h2><p>{next.detail}</p></div>
           {next.blocker ? <div className="operator-blocker"><CircleAlert size={18} /><span>{next.blocker}</span></div> : null}
           {next.key === "ORGANIZER_SETUP" ? <a className="operator-next-link" href="/organize">OPEN ORGANIZER SETUP</a> : null}
@@ -231,7 +239,31 @@ export function OperatorPage() {
         </div></details>
       </> : null}
     </section>
+    <OperatorEvaluations request={request} />
   </div>;
+}
+
+const LIFECYCLE = [
+  { key: "PUBLISH", label: "Publish" },
+  { key: "OPEN", label: "Open" },
+  { key: "CLOSE", label: "Close" },
+  { key: "ALLOCATE", label: "Allocate" },
+  { key: "FINALIZE", label: "Finalize" },
+] as const;
+/** Display only: where this campaign is on Monad. Actions stay in the next-action card. */
+export function lifecycleDone(status: string, allocation: AllocationRun | null) {
+  if (status === "FINALIZED") return 5;
+  if (allocation?.status === "COMPLETED") return 4;
+  if (status === "CLOSED" || status === "ALLOCATING") return 3;
+  if (status === "ACTIVE") return 2;
+  if (status === "CREATED") return 1;
+  return 0;
+}
+function LifecycleTrack({ status, allocation }: { status: string; allocation: AllocationRun | null }) {
+  const done = lifecycleDone(status, allocation);
+  return <ol className="operator-track" aria-label={`Campaign lifecycle: ${done} of ${LIFECYCLE.length} steps done`}>
+    {LIFECYCLE.map((step, index) => <li key={step.key} className={index < done ? "is-done" : index === done ? "is-now" : ""}><i aria-hidden="true">{index < done ? <Check size={12} strokeWidth={3} /> : index + 1}</i><span>{step.label}</span></li>)}
+  </ol>;
 }
 
 function RosterControls({ rosters, selectorAllowlistId, recipientRosterId, mode, onRosterChange, onModeChange }: { rosters: Roster[]; selectorAllowlistId: string | null; recipientRosterId: string; mode: "DISJOINT_SELECTOR_RECIPIENT" | "OVERLAPPING"; onRosterChange: (value: string) => void; onModeChange: (value: "DISJOINT_SELECTOR_RECIPIENT" | "OVERLAPPING") => void }) {

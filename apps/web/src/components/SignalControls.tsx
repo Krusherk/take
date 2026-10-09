@@ -36,11 +36,11 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
       setPlan(result);
     } catch (caught) { setError(message(caught)); } finally { setBusy(false); }
   }
-  return <details className="signal-control"><summary>Post-campaign evaluation · {plan ? "criteria locked" : "optional"}</summary>
-    <p>What should we learn after this opportunity? Define it before publication. This never changes who gets a TAKE or a spot.</p>
+  return <details className="signal-control"><summary>Check after the TAKE · {plan ? `locked, from ${signalDate(plan.evaluateAfter)}` : status !== "DRAFT" ? "none scheduled" : "optional"}</summary>
+    <p>The question checked after the spot is given, and when. It is locked before publication and never changes who gets a TAKE or a spot.</p>
     {error ? <p className="form-error" role="alert">{error}</p> : null}
     {plan ? <div className="signal-plan"><span className="eyebrow">LOCKED {signalDate(plan.lockedAt ?? plan.createdAt)}</span><h3>{plan.question}</h3><p>{plan.criteria}</p><p>{plan.domain.toLowerCase()} · Evaluate from {signalDate(plan.evaluateAfter)}</p><small>{plan.evidenceExpected ? "Evidence required." : "Evidence optional."} Criteria cannot be changed.</small></div>
-      : status !== "DRAFT" ? <p>No evaluation plan was locked before publication. Outcomes cannot be added retroactively.</p>
+      : status !== "DRAFT" ? <p>No check was scheduled before this campaign was published. A check can't be added afterwards, so the question can't change once people have given.</p>
         : loaded ? <form className="signal-form" onSubmit={(event) => void save(event)}>
           <label className="field"><span>CATEGORY</span><select value={domain} onChange={(event) => setDomain(event.target.value as SignalDomain)}>{signalDomains.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="field"><span>WHAT WILL YOU EVALUATE?</span><input required minLength={5} maxLength={500} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What should happen after this opportunity?" /></label>
@@ -64,9 +64,9 @@ export function OperatorEvaluations({ request }: { request: Request }) {
   }, [request]);
   useEffect(() => { void refresh(); }, [refresh]);
   const campaign = campaigns?.find((item) => item.campaignId === selected);
-  return <section className="signal-operator"><header><div><span className="eyebrow">POST-CAMPAIGN SIGNAL</span><h2>Evaluate what happened.</h2></div><SecondaryAction onClick={() => void refresh()}>REFRESH</SecondaryAction></header>
+  return <section className="signal-operator"><header><div><span className="eyebrow">AFTER THE TAKE</span><h2>Record what happened.</h2></div><SecondaryAction onClick={() => void refresh()}>REFRESH</SecondaryAction></header>
     {error ? <p role="alert" className="form-error">{error}</p> : null}
-    {!campaigns ? !error ? <p role="status">Loading evaluation queue…</p> : null : !campaigns.length ? <p>No finalized campaigns with evaluation plans yet.</p> : <>
+    {!campaigns ? !error ? <p role="status">Loading evaluation queue…</p> : null : !campaigns.length ? <p>No finalized campaign has a scheduled check yet.</p> : <>
       <label className="field"><span>CAMPAIGN TO EVALUATE</span><select value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">Choose a campaign</option>{campaigns.map((item) => {
         const pending = item.recipients.filter((recipient) => !recipient.evaluation || recipient.evaluation.status === "PENDING").length;
         const due = item.plan && Date.parse(item.plan.evaluateAfter) <= Date.now();

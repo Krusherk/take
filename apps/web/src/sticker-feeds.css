@@ -642,3 +642,113 @@
 @media (prefers-reduced-motion: reduce) {
   .sticker-flow__progress > span { animation: none; width: 60%; }
 }
+
+/* ---------- Signal: after the TAKE ---------- */
+.signal-card { width: 100%; box-sizing: border-box; }
+.after-track { width: 100%; margin: 4px 0 2px; }
+.after-track__bar {
+  position: relative;
+  height: 10px;
+  margin: 0 12.5%;
+  border-radius: 999px;
+  background: #e9eef4;
+  box-shadow: inset 0 0 0 1.5px #11110f;
+  overflow: hidden;
+}
+.after-track__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 1.5px #11110f;
+}
+.after-track__steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: -16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.after-track__step { display: grid; justify-items: center; gap: 2px; text-align: center; min-width: 0; }
+.after-track__step i {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #e9eef4;
+  box-shadow: 0 0 0 1.5px #11110f;
+}
+.after-track__step strong { font-size: 12.5px; line-height: 1.15; }
+.after-track__step small { color: #55554f; font-size: 11px; line-height: 1.2; overflow-wrap: anywhere; }
+.after-track__step--done i { background: #c6ff31; }
+.after-track__step--now i { background: #11110f; box-shadow: 0 0 0 1.5px #11110f, 0 0 0 6px rgba(198, 255, 49, 0.55); }
+.after-track__step--off { opacity: 0.5; }
+.after-track__step--off i { background: #ffffff; border-style: dashed; }
+
+.signal-card__unplanned {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 2px dashed #9fb8d4;
+  border-radius: 14px;
+  background: #f4f9ff;
+}
+.signal-card__unplanned p { margin: 0; font-size: 13.5px; line-height: 1.45; color: #2c2c28; }
+.signal-card__unplanned a { color: #11110f; font-weight: 750; font-size: 13.5px; text-underline-offset: 3px; }
+
+.call-it {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px 12px;
+  border-radius: 16px;
+  background: #11110f;
+  color: #ffffff;
+}
+.call-it > header { display: grid; gap: 4px; justify-items: start; }
+.call-it__tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #c6ff31;
+  color: #11110f;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+.call-it > header strong { font-size: 16px; line-height: 1.25; }
+.call-it__choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.call-it__choices button {
+  min-height: 40px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #11110f;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.call-it__choices button.is-mine { background: #c6ff31; border-color: #c6ff31; box-shadow: inset 0 0 0 2px #11110f; }
+.call-it__choices button:disabled { opacity: 0.7; cursor: progress; }
+.call-it small { color: rgba(255, 255, 255, 0.72); font-size: 12px; line-height: 1.4; }
+.call-it__closed { margin: 0; font-weight: 700; }
+.call-it__error { margin: 0; color: #ffb4a8; font-size: 13px; }
+.call-split { display: grid; gap: 6px; }
+.call-split__bar { display: flex; height: 14px; overflow: hidden; border: 2px solid #ffffff; border-radius: 999px; background: #33332e; }
+.call-split__bar span { display: block; height: 100%; }
+.call-split__yes { background: #c6ff31; }
+.call-split__unsure { background: #8ec5f0; }
+.call-split__no { background: #ff8a7a; }
+.call-split p { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-size: 12.5px; }
+.call-split p span:nth-child(1)::before,
+.call-split p span:nth-child(2)::before,
+.call-split p span:nth-child(3)::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; }
+.call-split p span:nth-child(1)::before { background: #c6ff31; }
+.call-split p span:nth-child(2)::before { background: #8ec5f0; }
+.call-split p span:nth-child(3)::before { background: #ff8a7a; }
+.call-split p span:nth-child(4) { color: rgba(255, 255, 255, 0.72); }
+.signal-history__lead { max-width: 34ch; text-align: center; }

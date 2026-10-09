@@ -73,7 +73,7 @@ export class SignalService {
     };
   }
 
-  private async committedRecipients(campaign: typeof schema.campaigns.$inferSelect) {
+  async committedRecipients(campaign: typeof schema.campaigns.$inferSelect) {
     if (campaign.status !== "FINALIZED" || !campaign.finalResultHash) return { committed: false, keys: [] as string[] };
     const [run] = await this.db.select().from(schema.allocationRuns).where(and(
       eq(schema.allocationRuns.campaignId, campaign.id), eq(schema.allocationRuns.resultHash, campaign.finalResultHash),
