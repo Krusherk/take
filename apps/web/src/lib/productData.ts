@@ -22,6 +22,7 @@ export function campaignFromApi(source: ApiCampaign): Campaign {
     participants: source.participantCount,
     experiment: source.experiment ?? null,
     launchApproved: source.launchApproved,
+    signups: source.signups ?? null,
     eligibilityDescription: source.eligibilityDescription,
     onchain: source.onchain,
     startsAt: source.startTime,

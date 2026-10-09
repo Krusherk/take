@@ -34,4 +34,10 @@ describe("organizePhase", () => {
       campaign,
     ])).toBe("demo");
   });
+
+  it("shows sign-ups before anything is locked, and keeps it there while opening", () => {
+    expect(organizePhase({ ...campaign, launchApproved: false, signups: { status: "OPEN" } }, now)).toBe("SIGNUPS");
+    expect(organizePhase({ ...campaign, launchApproved: true, signups: { status: "CLOSING" } }, now)).toBe("SIGNUPS");
+    expect(organizePhase({ ...campaign, sourceStatus: "ACTIVE", signups: { status: "CLOSED" } }, now)).toBe("LIVE");
+  });
 });

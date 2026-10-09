@@ -10,7 +10,7 @@ export function rememberPostAuthDestination(destination: PostAuthDestination) {
 
 export function readPostAuthDestination(): PostAuthDestination {
   const destination = window.sessionStorage.getItem(POST_AUTH_DESTINATION_KEY);
-  if (destination === "/organize" || destination === "/explore" || destination === "/operator" || /^\/campaign\/[^/]+$/.test(destination ?? "")) return destination as PostAuthDestination;
+  if (destination === "/organize" || destination === "/explore" || destination === "/operator" || /^\/campaign\/[^/]+$/.test(destination ?? "") || /^\/join\/[a-z0-9]{6,32}$/i.test(destination ?? "")) return destination as PostAuthDestination;
   return "/home";
 }
 

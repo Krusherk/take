@@ -27,11 +27,15 @@ export class CampaignService {
     ]);
     const fixtureCreatorSet = new Set(fixtureCreators);
     const managedOrganizations = new Set(memberships.map((item) => item.organizationId));
+    const joinedDrafts = viewerIdentityId
+      ? new Set((await whenSignupsTableMissing(this.signupMemberships(viewerIdentityId), new Map())).keys())
+      : new Set<string>();
     const visible = records.filter((campaign) =>
       !fixtureCreatorSet.has(campaign.createdByIdentityId)
       && (
         campaign.status !== "DRAFT"
         || Boolean(viewerIdentityId && (campaign.createdByIdentityId === viewerIdentityId || managedOrganizations.has(campaign.organizationId)))
+        || joinedDrafts.has(campaign.id)
       )
     );
     return this.toViews(visible, viewerIdentityId);
@@ -53,6 +57,24 @@ export class CampaignService {
     ]);
     if (campaign && fixtureCreators.includes(campaign.createdByIdentityId)) return undefined;
     return campaign ? (await this.toViews([campaign], viewerIdentityId))[0] : undefined;
+  }
+
+  /** Campaigns whose sign-up lists include this person (they can see the draft they joined). */
+  async signupMemberships(identityId: string, campaignIds?: string[]) {
+    const rows = await this.db.select({
+      campaignId: schema.campaignSignups.campaignId,
+      allowlistId: schema.identityAllowlistMembers.allowlistId,
+      giverAllowlistId: schema.campaignSignups.giverAllowlistId
+    }).from(schema.identityAllowlistMembers)
+      .innerJoin(schema.campaignSignups, or(
+        eq(schema.campaignSignups.giverAllowlistId, schema.identityAllowlistMembers.allowlistId),
+        eq(schema.campaignSignups.recipientAllowlistId, schema.identityAllowlistMembers.allowlistId)
+      ))
+      .where(and(
+        eq(schema.identityAllowlistMembers.takeIdentityId, identityId),
+        campaignIds ? inArray(schema.campaignSignups.campaignId, campaignIds) : undefined
+      ));
+    return new Map(rows.map((row) => [row.campaignId, row.allowlistId === row.giverAllowlistId ? "GIVER" as const : "RECIPIENT" as const]));
   }
 
   async canManageCampaign(campaignId: string, identityId: string) {
@@ -320,6 +342,22 @@ export class CampaignService {
     const campaignIds = campaigns.map((campaign) => campaign.id);
     const organizationIds = [...new Set(campaigns.map((campaign) => campaign.organizationId))];
     const experimentIds = [...new Set(campaigns.flatMap((campaign) => campaign.experimentId ? [campaign.experimentId] : []))];
+    const [signupRows, joined] = await Promise.all([
+      this.db.select({
+        campaignId: schema.campaignSignups.campaignId,
+        joinCode: schema.campaignSignups.joinCode,
+        joinEnabled: schema.campaignSignups.joinEnabled,
+        status: schema.campaignSignups.status,
+        signupDeadline: schema.campaignSignups.signupDeadline
+      }).from(schema.campaignSignups).where(inArray(schema.campaignSignups.campaignId, campaignIds)).then((rows) => rows, (error: unknown) => {
+        if (isMissingTable(error)) return [];
+        throw error;
+      }),
+      viewerIdentityId
+        ? whenSignupsTableMissing(this.signupMemberships(viewerIdentityId, campaignIds), new Map<string, "GIVER" | "RECIPIENT">())
+        : Promise.resolve(new Map<string, "GIVER" | "RECIPIENT">())
+    ]);
+    const signupsByCampaign = new Map(signupRows.map((row) => [row.campaignId, row]));
     const [organizations, resources, participantRows, nominationRows, experiments, lifecycleRows, eligibilities] = await Promise.all([
       this.db
         .select({ id: schema.organizations.id, name: schema.organizations.name, slug: schema.organizations.slug })
@@ -395,7 +433,9 @@ export class CampaignService {
       nominationAggregate: { value: nominationsByCampaign.get(campaign.id) ?? 0 },
       eligibility: eligibilities[index] ?? null,
       experiment: campaign.experimentId ? experimentById.get(campaign.experimentId) : undefined,
-      lifecycle: lifecycleByCampaign.get(campaign.id) ?? []
+      lifecycle: lifecycleByCampaign.get(campaign.id) ?? [],
+      signup: signupsByCampaign.get(campaign.id),
+      joinedAs: joined.get(campaign.id) ?? null
     }));
   }
 
@@ -403,7 +443,7 @@ export class CampaignService {
     campaign: typeof schema.campaigns.$inferSelect,
     viewerIdentityId: string | undefined,
     {
-      organization, resource, participantAggregate, nominationAggregate, eligibility, experiment, lifecycle
+      organization, resource, participantAggregate, nominationAggregate, eligibility, experiment, lifecycle, signup, joinedAs
     }: {
       organization: { id: string; name: string; slug: string } | undefined;
       resource: typeof schema.campaignResources.$inferSelect | undefined;
@@ -412,6 +452,8 @@ export class CampaignService {
       eligibility: Awaited<ReturnType<CampaignService["viewerEligibility"]>> | null;
       experiment: { id: string; version: string; variant: string; status: string } | undefined;
       lifecycle: Array<{ action: string; status: string; transactionHash: string | null }>;
+      signup?: { joinEnabled: boolean; status: string; signupDeadline: Date | null };
+      joinedAs?: "GIVER" | "RECIPIENT" | null;
     }
   ) {
     const usedTakes = Number(nominationAggregate?.value ?? 0);
@@ -480,6 +522,15 @@ export class CampaignService {
         }]))
       },
       launchApproved: Boolean(campaign.launchApprovedAt),
+      signups: signup?.joinEnabled
+        ? {
+            status: signup.status,
+            open: signup.status === "OPEN" && campaign.status === "DRAFT"
+              && (!signup.signupDeadline || signup.signupDeadline.getTime() > Date.now()),
+            deadline: signup.signupDeadline?.toISOString() ?? null,
+            joinedAs: joinedAs ?? null
+          }
+        : null,
       viewer: viewerIdentityId
         ? {
             usedTakes,
@@ -599,5 +650,24 @@ function eligibilityModeToContract(mode: string): number {
       return 3;
     default:
       throw new Error(`Unsupported eligibility mode: ${mode}`);
+  }
+}
+
+/** Postgres "undefined_table": the sign-ups migration has not been applied yet. */
+export function isMissingTable(error: unknown): boolean {
+  for (let current: unknown = error, depth = 0; current && depth < 4; depth += 1) {
+    if (typeof current === "object" && (current as { code?: unknown }).code === "42P01") return true;
+    current = typeof current === "object" ? (current as { cause?: unknown }).cause : undefined;
+  }
+  return false;
+}
+
+/** Campaign pages keep working on a database that has not been migrated for sign-ups yet. */
+async function whenSignupsTableMissing<T>(query: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await query;
+  } catch (error) {
+    if (isMissingTable(error)) return fallback;
+    throw error;
   }
 }

@@ -61,14 +61,16 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
   if (!campaign) return <div className="page-container sticker-page sticker-detail"><ProductError message="This campaign does not exist or is no longer available." onRetry={() => navigate("/explore")} /></div>;
 
   if (!isParticipantCampaign(campaign)) {
+    const joinedAs = campaign.signups?.joinedAs ?? null;
+    const signupDeadline = campaign.signups?.deadline ? new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(campaign.signups.deadline)) : null;
     return (
       <div className="page-container sticker-page sticker-detail campaign-prelaunch-page">
-        <BackSticker label="Organize" onClick={() => navigate("/organize")} />
+        <BackSticker label={joinedAs ? "Explore" : "Organize"} onClick={() => navigate(joinedAs ? "/explore" : "/organize")} />
         <section className="sticker-campaign sticker-detail__hero" aria-labelledby="campaign-title">
           <div className="sticker-campaign__art">
             <CampaignSticker campaign={campaign} tilt={-4} />
             <span className="sticker-campaign__status">
-              <Sticker tilt={-7} delay={140} as="span" className="status-sticker status-sticker--closed"><span>{campaign.sourceStatus === "DRAFT" ? "DRAFT" : campaign.sourceStatus.replaceAll("_", " ")}</span></Sticker>
+              <Sticker tilt={-7} delay={140} as="span" className="status-sticker status-sticker--closed"><span>{joinedAs ? "SIGN-UPS" : campaign.sourceStatus === "DRAFT" ? "DRAFT" : campaign.sourceStatus.replaceAll("_", " ")}</span></Sticker>
             </span>
             <MascotSticker kind="star" tilt={-8} delay={200} className="sticker-campaign__mascot" />
           </div>
@@ -78,18 +80,34 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
           </div>
           {campaign.description ? <PaperLabel size="md" tilt={1} delay={200} className="sticker-campaign__copy">{campaign.description}</PaperLabel> : null}
         </section>
-        <Sticker tilt={-0.6} delay={240} className="sticker-detail__card campaign-prelaunch">
-          <span className="sticker-detail__eyebrow">{campaign.sourceStatus === "DRAFT" ? "OFFCHAIN DRAFT" : campaign.sourceStatus.replaceAll("_", " ")}</span>
-          <dl className="sticker-detail__facts">
-            <div><dt>Opportunity</dt><dd>{campaign.resource}</dd></div>
-            <div><dt>Organizer</dt><dd>{campaign.organizer}</dd></div>
-            <div><dt>Monad</dt><dd>Not published</dd></div>
-            <div><dt>Nominations</dt><dd>Not open</dd></div>
-          </dl>
-          <p className="sticker-detail__muted">This is an organizer preview, not a participant campaign. Finish eligibility and both rosters, then a TAKE operator must lock, publish, and activate it before anyone receives a TAKE.</p>
-        </Sticker>
+        {joinedAs ? (
+          <Sticker tilt={-0.6} delay={240} className="sticker-detail__card campaign-prelaunch">
+            <span className="sticker-detail__eyebrow">YOU’RE IN · {joinedAs === "GIVER" ? "GIVER" : "RECIPIENT"}</span>
+            <dl className="sticker-detail__facts">
+              <div><dt>Opportunity</dt><dd>{campaign.resource}</dd></div>
+              <div><dt>Sign-ups</dt><dd>{campaign.signups?.open ? (signupDeadline ? `Close ${signupDeadline}` : "Open") : "Closed"}</dd></div>
+              <div><dt>Nominations</dt><dd>{campaign.signups?.open ? "Open when sign-ups close" : "Opening now"}</dd></div>
+            </dl>
+            <p className="sticker-detail__muted">{joinedAs === "GIVER"
+              ? "You have one TAKE for this campaign. When nominations open, TAKE notifies you and you can give it to anyone on the list."
+              : "You’re on the list of people givers can back. TAKE notifies you when nominations open."}</p>
+          </Sticker>
+        ) : (
+          <Sticker tilt={-0.6} delay={240} className="sticker-detail__card campaign-prelaunch">
+            <span className="sticker-detail__eyebrow">{campaign.sourceStatus === "DRAFT" ? "OFFCHAIN DRAFT" : campaign.sourceStatus.replaceAll("_", " ")}</span>
+            <dl className="sticker-detail__facts">
+              <div><dt>Opportunity</dt><dd>{campaign.resource}</dd></div>
+              <div><dt>Organizer</dt><dd>{campaign.organizer}</dd></div>
+              <div><dt>Monad</dt><dd>Not published</dd></div>
+              <div><dt>Nominations</dt><dd>Not open</dd></div>
+            </dl>
+            <p className="sticker-detail__muted">This is an organizer preview, not a participant campaign. Finish eligibility and both rosters, then a TAKE operator must lock, publish, and activate it before anyone receives a TAKE.</p>
+          </Sticker>
+        )}
         <Sticker tilt={-1.5} delay={300} className="sticker-cta">
-          <button className="sticker-pill" type="button" onClick={() => navigate("/organize")}>Continue campaign setup</button>
+          {joinedAs
+            ? <button className="sticker-pill" type="button" onClick={() => void refetch()}>Check if nominations are open</button>
+            : <button className="sticker-pill" type="button" onClick={() => navigate("/organize")}>Continue campaign setup</button>}
         </Sticker>
       </div>
     );

@@ -29,6 +29,7 @@ const RecipientViewPage = lazy(() => import("./pages/RecipientViewPage").then((m
 const SuccessPage = lazy(() => import("./pages/SuccessPage").then((m) => ({ default: m.SuccessPage })));
 const TakesPage = lazy(() => import("./pages/TakesPage").then((m) => ({ default: m.TakesPage })));
 const SignalPage = lazy(() => import("./pages/SignalPage").then((m) => ({ default: m.SignalPage })));
+const JoinPage = lazy(() => import("./pages/JoinPage").then((m) => ({ default: m.JoinPage })));
 
 const SELECTION_KEY = "take-selected-recipient";
 const NOTIFICATIONS_READ_KEY = "take-notifications-read";
@@ -99,7 +100,8 @@ export function App() {
     : undefined, [campaignRoute, campaigns]);
   const selectedRecipient = routeCampaign && selection?.campaignId === routeCampaign.id ? selection.person : null;
   const publicCampaignDetail = campaignRoute?.step === "detail";
-  const isPublicPath = path === "/" || path === "/onboarding" || Boolean(inviteId) || publicCampaignDetail;
+  const joinCode = path.startsWith("/join/") ? path.slice("/join/".length) : null;
+  const isPublicPath = path === "/" || path === "/onboarding" || Boolean(inviteId) || publicCampaignDetail || Boolean(joinCode);
 
   useEffect(() => {
     const title = path === "/" ? "TAKE · Give the spot to someone else" : path === "/notifications" ? "Notifications · TAKE" : path === "/activity" ? "Activity · TAKE" : campaignRoute?.step === "success" && selectedRecipient ? `You gave ${selectedRecipient.name} your TAKE` : "TAKE · Give the opportunity forward";
@@ -174,6 +176,9 @@ export function App() {
         throw new Error("Your X account is signed in, but its existing Privy wallet is not connected in this browser. Sign out and back in with the same X account, then try again. Do not create a new wallet. No TAKE was sent.");
       }
       setSubmissionPhase("PREPARING");
+      // New givers get a one-time MON drip from TAKE for gas. It is a no-op when the
+      // wallet already has enough, and never blocks giving if it fails.
+      await request("/me/gas-drip", { method: "POST" }).catch(() => undefined);
       let registration = await request<RegistrationStatus>("/me/registration/status");
       if (!registration.walletAuthorized) {
         if (!registration.transaction) throw new Error(registration.limitation ?? "Your TAKE wallet is not authorized for this campaign manager.");
@@ -272,6 +277,7 @@ export function App() {
   else if (path === "/signal") page = <SignalPage navigate={navigate} />;
   else if (path === "/takes") page = <TakesPage navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
   else if (path === "/profile") page = <ProfilePage navigate={navigate} onLogout={signOut} />;
+  else if (joinCode) page = <JoinPage code={joinCode} navigate={navigate} />;
   else if (inviteId) page = <RecipientViewPage nominationId={inviteId} navigate={navigate} />;
   else if (campaignRoute?.step === "detail") page = <CampaignPage campaignId={campaignRoute.campaignId} navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
   else if (campaignRoute && routeCampaign) {
@@ -285,6 +291,8 @@ export function App() {
 
   const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}><Suspense fallback={<ProductLoading label="Loading page" />}>{page}</Suspense></div>;
 
+  // The join page draws its own sky, signed in or not, so a shared link looks the same for everyone.
+  if (joinCode) return route;
   if (path === "/" || path === "/onboarding" || inviteId || (publicCampaignDetail && !currentPerson)) {
     if (path === "/onboarding" && (!ready || !authenticated || !currentPerson)) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
     // Signed-out campaign links get the same sky as the signed-in detail page.

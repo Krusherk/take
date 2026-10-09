@@ -265,3 +265,133 @@
   .wheel-col--day { min-width: 104px; }
   .wheel-col__scroller li { font-size: 16px; padding: 0 2px; }
 }
+
+/* ---------- Sign-ups (organizer) ---------- */
+
+.signups { display: grid; gap: 14px; margin-top: 4px; }
+.signups-loading { color: var(--take-text-soft, #5d5d58); font-size: 14px; }
+.signups-link {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 22px 16px 14px;
+  border: 2.5px solid #11110f;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 2px 0 #11110f;
+  transform: rotate(-0.4deg);
+}
+.signups-tag {
+  position: absolute;
+  top: -13px;
+  left: 16px;
+  padding: 3px 10px 4px;
+  border: 2px solid #11110f;
+  border-radius: 6px;
+  background: #c6ff31;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  transform: rotate(-3deg);
+  clip-path: polygon(0 0, 100% 4%, 98% 100%, 3% 94%);
+}
+.signups-link__url {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+.signups-link__note, .signups-note, .signups-empty { margin: 0; color: #4b4b46; font-size: 14px; line-height: 1.45; }
+.signups-error { margin: 0; padding: 10px 12px; border: 2px solid #11110f; border-radius: 12px; background: #ffe3dc; font-size: 14px; }
+.signups-counts { display: flex; flex-wrap: wrap; gap: 8px; }
+.signups-counts span {
+  padding: 6px 12px;
+  border: 2px solid #11110f;
+  border-radius: 999px;
+  background: #f7f5ee;
+  font-size: 14px;
+}
+.signups-counts strong { font-size: 16px; }
+.signups-toggle { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.signups-toggle input { width: 20px; height: 20px; accent-color: #11110f; }
+.signups-list { display: grid; gap: 8px; }
+.signups-list h3 { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; font-size: 16px; }
+.signups-list ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.signups-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  border: 2px solid #11110f;
+  border-radius: 16px;
+  background: #ffffff;
+}
+.signups-person { display: grid; min-width: 0; }
+.signups-person strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.signups-person small { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: #5d5d58; font-size: 13px; }
+.signups-brought {
+  padding: 1px 7px;
+  border: 1.5px solid #11110f;
+  border-radius: 6px;
+  background: #ffd84a;
+  color: #11110f;
+  font-style: normal;
+  font-size: 11.5px;
+  font-weight: 600;
+  transform: rotate(-1.5deg);
+}
+.signups-actions { display: flex; gap: 6px; align-items: center; }
+.signups-chip-button {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 2px solid #11110f;
+  border-radius: 999px;
+  background: #c6ff31;
+  color: #11110f;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.signups-list .signups-chip-button { min-height: 36px; padding: 0 10px; background: #f7f5ee; font-size: 13px; }
+.signups-icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #11110f;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #11110f;
+  cursor: pointer;
+}
+.signups-icon-button:disabled { opacity: 0.5; }
+.signups-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: #11110f;
+  box-shadow: 0 0 0 2px #11110f, 0 10px 22px rgba(14, 44, 86, 0.22);
+  color: #ffffff;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.signups-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+.signups-chip-button:focus-visible, .signups-icon-button:focus-visible, .signups-primary:focus-visible { outline: 3px solid #c6ff31; outline-offset: 3px; }
+.organize-signups-mode { display: grid; gap: 12px; }

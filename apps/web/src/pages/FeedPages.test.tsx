@@ -9,8 +9,10 @@ import { TakesPage } from "./TakesPage";
 
 const state = vi.hoisted(() => ({ history: { given: [], received: [] } as TakeHistory, campaigns: [] as Campaign[] }));
 
+const notificationsRequest = vi.hoisted(() => vi.fn(async () => []));
+
 vi.mock("../context/TakeIdentityContext", () => ({
-  useTakeMe: () => ({ me: xConnectedMe, history: state.history }),
+  useTakeMe: () => ({ me: xConnectedMe, history: state.history, request: notificationsRequest }),
 }));
 
 vi.mock("../context/TakeProductContext", () => ({

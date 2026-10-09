@@ -47,7 +47,8 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
       && (
         !request.takeIdentity
         || (!isTakeOperator(app.env, request.takeIdentity)
-          && !(await campaigns.canManageCampaign(request.params.id, request.takeIdentity.takeIdentityId)))
+          && !(await campaigns.canManageCampaign(request.params.id, request.takeIdentity.takeIdentityId))
+          && !campaign.signups?.joinedAs)
       )
     ) {
       return reply.code(404).send({ error: "NOT_FOUND" });
@@ -159,7 +160,8 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
         .catch(() => undefined);
 
       if (receipt?.status === "success") {
-        return reply.send(await nominations.markChainConfirmed(nomination.id, receipt.blockNumber));
+        // The row carries bigint columns (block number), which JSON cannot encode.
+        return reply.send(jsonSafe(await nominations.markChainConfirmed(nomination.id, receipt.blockNumber)));
       }
       return reply.send(nomination);
     }
@@ -201,3 +203,7 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
     }
   );
 };
+
+function jsonSafe<T extends Record<string, unknown>>(row: T) {
+  return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, typeof value === "bigint" ? value.toString() : value]));
+}
