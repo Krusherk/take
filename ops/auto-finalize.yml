@@ -1,0 +1,38 @@
+name: TAKE auto-finalize
+
+# Copy to .github/workflows/ (pushing workflow files needs: gh auth refresh -s workflow).
+# Every 10 minutes: indexer catch-up, then close / allocate / finalize ended campaigns
+# through the API's own /internal/cron/finalize route. One repository secret:
+# TAKE_INTERNAL_API_TOKEN (same value as the take-api INTERNAL_API_TOKEN, or its CRON_SECRET).
+# Without it the job exits without doing anything.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: take-auto-finalize
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API_BASE_URL: ${{ vars.TAKE_API_BASE_URL || 'https://take-api-sand.vercel.app' }}
+      TOKEN: ${{ secrets.TAKE_INTERNAL_API_TOKEN }}
+    steps:
+      - name: Run the finalizer
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "TAKE_INTERNAL_API_TOKEN is not set; skipping."
+            exit 0
+          fi
+          body=$(curl -sS --max-time 70 -X POST "$API_BASE_URL/internal/cron/finalize" \
+            -H "Authorization: Bearer $TOKEN" -w '\n%{http_code}')
+          code=$(echo "$body" | tail -n1)
+          json=$(echo "$body" | sed '$d')
+          echo "HTTP $code"
+          echo "$json" | jq -c '{serverWallet, indexer: {caughtUp: .indexer.caughtUp, to: .indexer.lastRun.toBlock}, steps: [.steps[] | select(.action != "WAIT" or .transactionHash)]}' || echo "$json" | head -c 500
+          [ "$code" = "200" ]

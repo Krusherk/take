@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { decodeEventLog, type Address, type Hex } from "viem";
 import { createMonadPublicClient, loadChainConfig, takeCampaignManagerAbi, buildFinalizeAllocationCall } from "@take/chain";
 import type { Database } from "@take/database";
@@ -184,6 +184,81 @@ export class CampaignLifecycleService {
       }).onConflictDoNothing({ target: schema.chainTransactions.transactionHash });
     });
     return this.reconcileIntent(intent.id);
+  }
+
+  /**
+   * Records a transaction the TAKE server wallet signed for an unsigned intent,
+   * before it is broadcast. Only one caller can claim an intent, so concurrent
+   * cron runs never broadcast two transactions for the same action.
+   */
+  async claimForServerWallet(input: {
+    intentId: string;
+    transactionHash: Hex;
+    fromAddress: string;
+    actorIdentityId: string;
+  }) {
+    const now = new Date();
+    return this.db.transaction(async (tx) => {
+      const [claimed] = await tx.update(schema.campaignLifecycleIntents).set({
+        transactionHash: input.transactionHash.toLowerCase(),
+        status: "SUBMITTED",
+        submittedAt: now,
+        updatedAt: now
+      }).where(and(
+        eq(schema.campaignLifecycleIntents.id, input.intentId),
+        eq(schema.campaignLifecycleIntents.status, "WAITING_FOR_WALLET"),
+        isNull(schema.campaignLifecycleIntents.transactionHash),
+        or(
+          isNull(schema.campaignLifecycleIntents.requiredFromAddress),
+          eq(schema.campaignLifecycleIntents.requiredFromAddress, normalizeAddress(input.fromAddress))
+        )
+      )).returning();
+      if (!claimed) return null;
+      await tx.insert(schema.chainTransactions).values({
+        chainId: claimed.chainId,
+        transactionHash: input.transactionHash.toLowerCase(),
+        campaignId: claimed.campaignId,
+        lifecycleIntentId: claimed.id,
+        action: claimed.action,
+        submittedByIdentityId: input.actorIdentityId,
+        fromAddress: normalizeAddress(input.fromAddress),
+        toAddress: claimed.contractAddress,
+        status: "SUBMITTED"
+      }).onConflictDoNothing({ target: schema.chainTransactions.transactionHash });
+      return claimed;
+    });
+  }
+
+  /** An unsigned intent bound to another wallet is replaced so the server wallet can sign it. */
+  async discardUnsignedIntent(intentId: string, reason: string) {
+    const [updated] = await this.db.update(schema.campaignLifecycleIntents).set({
+      status: "FAILED", errorCode: reason, errorMessage: "Replaced by a TAKE server wallet transaction", updatedAt: new Date()
+    }).where(and(
+      eq(schema.campaignLifecycleIntents.id, intentId),
+      eq(schema.campaignLifecycleIntents.status, "WAITING_FOR_WALLET"),
+      isNull(schema.campaignLifecycleIntents.transactionHash)
+    )).returning();
+    return Boolean(updated);
+  }
+
+  /** A server-signed transaction that never reached Monad is released for a retry. */
+  async releaseLostSubmission(intentId: string) {
+    const [updated] = await this.db.update(schema.campaignLifecycleIntents).set({
+      status: "FAILED", errorCode: "SERVER_BROADCAST_LOST",
+      errorMessage: "The server wallet transaction was not found on Monad", updatedAt: new Date()
+    }).where(and(
+      eq(schema.campaignLifecycleIntents.id, intentId),
+      eq(schema.campaignLifecycleIntents.status, "SUBMITTED")
+    )).returning();
+    return Boolean(updated);
+  }
+
+  async reconcile(intentId: string) {
+    return this.reconcileIntent(intentId);
+  }
+
+  async findIntentRecord(campaignId: string, action: LifecycleAction) {
+    return this.findIntent(campaignId, action);
   }
 
   async getCampaignIntents(campaignId: string) {

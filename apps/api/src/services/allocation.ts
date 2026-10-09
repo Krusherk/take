@@ -41,14 +41,17 @@ export class AllocationService {
     this.randomness = new RandomnessService(db, env);
   }
 
-  async run(campaignId: string, actorIdentityId: string) {
+  async run(campaignId: string, actorIdentityId: string, options: { system?: boolean } = {}) {
     const [campaign] = await this.db
       .select()
       .from(schema.campaigns)
       .where(eq(schema.campaigns.id, campaignId))
       .limit(1);
     if (!campaign) notFound("Campaign not found");
-    await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    // The scheduled finalizer runs on behalf of the campaign's approving operator.
+    if (!options.system) {
+      await assertOrganizationRole(this.db, campaign.organizationId, actorIdentityId, ["OWNER", "ADMIN"]);
+    }
     if (campaign.status !== "CLOSED") {
       throw new ServiceError("CAMPAIGN_NOT_CLOSED", "Allocation requires a closed campaign", 409);
     }
