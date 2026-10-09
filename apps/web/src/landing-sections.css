@@ -1,0 +1,323 @@
+/*
+ * Signed-out page below the hero: stickers on the same photo sky.
+ * Torn-paper headline strips, paper labels, die-cut white stickers with
+ * real white rims, the generated mascots and ticket, one black pill.
+ * No dark or lime slabs: lime is only a sticker accent.
+ */
+
+.landing-page {
+  --sticker-white: #ffffff;
+  --sticker-paper: #f7f5ee;
+  --sticker-ink: #11110f;
+  --sticker-shadow: 0 1px 1px rgba(14, 44, 86, 0.18), 0 8px 18px rgba(14, 44, 86, 0.2);
+  --sticker-drop: drop-shadow(0 1px 1px rgba(14, 44, 86, 0.2)) drop-shadow(0 8px 14px rgba(14, 44, 86, 0.2));
+  --sticker-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ls {
+  display: grid;
+  gap: clamp(64px, 10vw, 128px);
+  width: min(calc(100% - 36px), 1080px);
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px) 0 40px;
+  color: var(--sticker-ink);
+}
+
+.ls-section {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  min-width: 0;
+  text-align: center;
+  scroll-margin-top: 90px;
+}
+
+.ls-kicker .paper-label__paper { letter-spacing: 0.08em; text-transform: uppercase; }
+
+.ls-note { max-width: min(100%, 40ch); }
+.ls-note .paper-label__paper { padding: 0.6em 1em 0.7em; line-height: 1.35; }
+
+/* ---------- Torn paper headline strips ---------- */
+
+.ls-strip {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin: 0;
+  font: inherit;
+}
+.ls-strip__line { max-width: 100%; filter: var(--sticker-drop); }
+.ls-strip__line > span {
+  display: block;
+  max-width: 100%;
+  padding: 0.12em 0.34em 0.17em;
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(32px, 5.4vw, 72px);
+  font-weight: 880;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  overflow-wrap: normal;
+  text-wrap: balance;
+  clip-path: polygon(
+    0% 5%, 4% 0%, 20% 3%, 38% 0%, 56% 2.5%, 74% 0%, 90% 3%, 100% 0.5%,
+    99% 28%, 100% 55%, 98.8% 80%, 100% 100%,
+    82% 97%, 64% 100%, 46% 97%, 28% 100%, 12% 97.5%, 0.5% 100%,
+    1.2% 72%, 0% 46%, 1% 22%
+  );
+}
+.ls-strip__line--paper > span {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 45%), var(--sticker-paper);
+  color: var(--sticker-ink);
+}
+.ls-strip__line--ink { margin-left: clamp(16px, 6vw, 80px); }
+.ls-strip__line--ink > span { background: var(--sticker-ink); color: var(--sticker-white); }
+
+/* ---------- Die-cut chips ---------- */
+
+.ls-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 4px solid var(--sticker-white);
+  border-radius: 999px;
+  background: var(--sticker-paper);
+  box-shadow: var(--sticker-shadow);
+  color: var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(15px, 1.6vw, 19px);
+  font-weight: 780;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.ls-chip svg { width: 18px; height: 18px; flex: none; }
+
+/* ---------- The problem ---------- */
+
+.ls-problem__board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, 3vw, 40px);
+  width: min(100%, 860px);
+  margin-top: 8px;
+}
+.ls-problem__noise {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-problem__noise .ls-chip { background: rgba(255, 255, 255, 0.82); color: #5c5c56; }
+.ls-problem__arrow { width: clamp(56px, 7vw, 92px); height: auto; filter: var(--sticker-drop); }
+.ls-problem__one { display: grid; justify-items: center; width: 100%; }
+.ls-problem__one .campaign-sticker--lg { width: min(100%, 340px); }
+
+/* ---------- How it works ---------- */
+
+.ls-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 2.4vw, 28px);
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  padding: 26px 18px 22px;
+  border-radius: 26px;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+}
+.ls-step__num {
+  position: absolute;
+  top: -16px;
+  left: -10px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--sticker-white);
+  border-radius: 50%;
+  background: #c6ff31;
+  box-shadow: var(--sticker-shadow), inset 0 0 0 2px var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  transform: rotate(-10deg);
+}
+.ls-step__art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: clamp(130px, 15vw, 170px);
+  margin-bottom: 6px;
+}
+.ls-step__art .campaign-sticker--lg { width: min(86%, 230px); }
+.ls-step__art--pass { grid-auto-flow: column; gap: 4px; }
+.ls-step__mascot { width: clamp(64px, 8vw, 96px); }
+.ls-step__mascot--big { width: clamp(96px, 12vw, 140px); }
+.ls-step__art--chosen { position: relative; }
+.ls-step__badge { position: absolute; right: 12%; bottom: 4%; }
+.ls-step__badge > span { font-size: 15px; }
+.ls-step__arrow { width: 46px; height: 32px; filter: var(--sticker-drop); }
+.ls-step strong {
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(20px, 2vw, 25px);
+  font-weight: 860;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.ls-step small {
+  color: #55554f;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 13px;
+}
+
+/* ---------- What you can give ---------- */
+
+.ls-give__cloud {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 12px;
+  max-width: 760px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-give__cloud .ls-chip:nth-child(3n + 1) { background: var(--sticker-white); }
+
+/* ---------- Why it's hard to game ---------- */
+
+.ls-fair__rows {
+  display: grid;
+  gap: 14px;
+  width: min(100%, 560px);
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ls-fair__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 18px;
+  border-radius: 22px;
+  background: var(--sticker-white);
+  box-shadow: var(--sticker-shadow);
+  text-align: left;
+}
+.ls-fair__who {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.ls-fair__who svg { width: 22px; height: 22px; flex: none; color: #55554f; }
+.ls-fair__sign {
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+}
+.ls-fair__gets {
+  padding: 6px 12px;
+  border: 3px solid var(--sticker-white);
+  border-radius: 12px;
+  background: #c6ff31;
+  box-shadow: inset 0 0 0 2px var(--sticker-ink);
+  font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  white-space: nowrap;
+  transform: rotate(-3deg);
+}
+.sr-equals {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Final call ---------- */
+
+.ls-final { padding-top: 40px; }
+.ls-final__art {
+  position: relative;
+  width: min(100%, 520px);
+  height: clamp(110px, 16vw, 160px);
+}
+.ls-final__mascot { position: absolute; bottom: -12px; }
+.ls-final__mascot--lime { left: 10%; width: clamp(96px, 14vw, 140px); }
+.ls-final__mascot--star { right: 12%; bottom: 10px; width: clamp(80px, 11vw, 116px); }
+.ls-final .ls-strip__line > span { font-size: clamp(34px, 6vw, 80px); }
+.ls-final__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px 18px;
+  margin-top: 6px;
+}
+.ls-final__actions .landing-sky__secondary { cursor: pointer; }
+
+.ls-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px 0 8px;
+  color: rgba(17, 17, 15, 0.7);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.ls-footer img { width: 34px; height: auto; transform: rotate(-8deg); }
+
+/* ---------- Phone ---------- */
+
+@media (max-width: 760px) {
+  .ls { gap: 72px; }
+  .ls-strip__line > span { font-size: clamp(28px, 9.4vw, 44px); }
+  .ls-final .ls-strip__line > span { font-size: clamp(30px, 9.8vw, 46px); }
+  .ls-strip__line--ink { margin-left: 12px; }
+  .ls-problem__board { grid-template-columns: 1fr; justify-items: center; gap: 10px; }
+  .ls-problem__arrow { width: 56px; transform: rotate(90deg); }
+  .ls-problem__one .campaign-sticker--lg { width: min(78%, 280px); }
+  .ls-steps { grid-template-columns: 1fr; gap: 26px; width: min(100%, 360px); }
+  .ls-step { grid-template-columns: 1fr; padding: 22px 16px 18px; }
+  .ls-step__art { min-height: 120px; }
+  .ls-step__art .campaign-sticker--lg { width: min(70%, 200px); }
+  .ls-chip { padding: 8px 13px; font-size: 15px; }
+  .ls-fair__row { gap: 8px; padding: 8px 10px 8px 14px; }
+  .ls-fair__who { gap: 8px; font-size: 16px; }
+  .ls-fair__who svg { width: 18px; height: 18px; }
+  .ls-fair__sign { font-size: 22px; }
+  .ls-fair__gets { padding: 5px 9px; font-size: 14px; }
+  .ls-final__actions { display: grid; width: 100%; gap: 12px; }
+  .ls-final__actions > .sticker { display: block; }
+  .ls-final__actions .landing-sky__primary { width: 100%; max-width: none; min-height: 58px; font-size: 19px; }
+  .ls-final__actions .landing-sky__secondary { justify-content: center; width: 100%; min-height: 52px; font-size: 16px; }
+}
+
+@media (max-width: 340px) {
+  .ls-fair__who svg { display: none; }
+}

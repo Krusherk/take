@@ -40,4 +40,31 @@ describe("LoginPage (signed out)", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /Continue with email/ }));
     expect(within(dialog).getByLabelText("Your email")).toBeInTheDocument();
   });
+
+  it("tells the rest of the story as sticker sections, not the old marketing panels", () => {
+    const { container } = render(<LoginPage navigate={vi.fn()} />);
+
+    for (const name of ["Likes are endless.A TAKE is one.", "One TAKE.Pass it on.", "Any scarce spot.", "Reach doesn’tadd power.", "Who would yougive your TAKE to?"]) {
+      expect(screen.getByRole("heading", { level: 2, name })).toBeInTheDocument();
+    }
+    for (const id of ["how-it-works", "use-cases", "why-take", "about"]) expect(container.querySelector(`#${id}`)).not.toBeNull();
+    expect(screen.getAllByText("1 TAKE")).toHaveLength(3);
+    expect(container.querySelector(".landing-principles, .landing-trust-band, .landing-vision-band, .landing-footer--final")).toBeNull();
+    expect(container.querySelector('img[src*="take-mascot-"]')).toBeNull();
+  });
+
+  it("uses the same sign-in for the final call to action", () => {
+    render(<LoginPage navigate={vi.fn()} />);
+    const final = screen.getByRole("region", { name: "Who would yougive your TAKE to?" });
+
+    fireEvent.click(within(final).getByRole("button", { name: "Start a campaign" }));
+    expect(screen.getByRole("dialog", { name: "Join as yourself." })).toBeInTheDocument();
+    expect(window.sessionStorage.getItem("take-post-auth-destination")).toBe("/organize");
+    fireEvent.click(screen.getByRole("button", { name: "Close sign in" }));
+
+    fireEvent.click(within(final).getByRole("button", { name: "Explore campaigns" }));
+    expect(screen.getByRole("dialog", { name: "Join as yourself." })).toBeInTheDocument();
+    expect(window.sessionStorage.getItem("take-post-auth-destination")).toBe("/explore");
+  });
 });
+
