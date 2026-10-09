@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { keccak256, toHex, type Address, type Hex } from "viem";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDatabaseClient, schema, type Database } from "@take/database";
@@ -184,6 +184,39 @@ describe.sequential("campaign sign-ups", () => {
     expect(view.canOpen).toBe(false);
     await expect(signups.requestClose(draft.campaignId, { takeIdentityId: owner.takeIdentityId, isOperator: false }, opener))
       .rejects.toMatchObject({ code: "OPERATOR_REQUIRED" });
+  });
+});
+
+describe.sequential("scheduled sign-up deadline", () => {
+  it("the scheduled run opens operator-approved campaigns at their deadline, and only those", async () => {
+    const operator = await person("Cron operator");
+    const owner = await person("Cron owner");
+    const orgId = await organization(operator.takeIdentityId);
+    await db.insert(schema.organizationMembers).values({ organizationId: orgId, takeIdentityId: owner.takeIdentityId, role: "ADMIN" });
+    const organizer = new OrganizerCampaignService(db, env);
+    const signups = new CampaignSignupService(db, env);
+    const base = {
+      organizationId: orgId, description: "Cron", resourceName: "Seat", seatCount: 1,
+      startTime: new Date(), endTime: new Date(Date.now() + 3_600_000), giverIdentityIds: [], recipientIdentityIds: [],
+      signups: { deadline: new Date(Date.now() + 600_000), recipientSelfJoin: true }
+    };
+    const approved = await organizer.create({ ...base, title: "Approved" }, { takeIdentityId: operator.takeIdentityId, isOperator: true });
+    const unapproved = await organizer.create({ ...base, title: "Unapproved" }, { takeIdentityId: owner.takeIdentityId, isOperator: false });
+    for (const created of [approved, unapproved]) {
+      const code = (created as { joinCode: string }).joinCode;
+      await signups.join(code, await person("Giver"), { role: "GIVER" });
+      await signups.join(code, await person("Recipient"), { role: "RECIPIENT" });
+    }
+    const { opener, calls } = recordingOpener();
+    // Before the deadline nothing happens.
+    expect((await signups.runDue(opener)).steps.filter((step) => [approved.campaignId, unapproved.campaignId].includes(step.campaignId))).toEqual([]);
+    await db.update(schema.campaignSignups).set({ signupDeadline: new Date(Date.now() - 1_000) })
+      .where(inArray(schema.campaignSignups.campaignId, [approved.campaignId, unapproved.campaignId]));
+    const run = await signups.runDue(opener);
+    expect(run.steps.filter((step) => step.campaignId === approved.campaignId)).toEqual([{ campaignId: approved.campaignId, outcome: "OPEN" }]);
+    expect(run.steps.some((step) => step.campaignId === unapproved.campaignId)).toBe(false);
+    expect(calls).toEqual([approved.campaignId]);
+    expect((await signups.joinView((unapproved as { joinCode: string }).joinCode, null, null)).open).toBe(false);
   });
 });
 
