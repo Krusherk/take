@@ -25,3 +25,5 @@ broadcast/
 indexer/envio/generated/
 indexer/envio/.env
 *.log
+.vercel
+.env*

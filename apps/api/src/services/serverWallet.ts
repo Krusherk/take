@@ -39,13 +39,15 @@ export class ServerWallet {
   /** Signs locally so the hash is known (and can be recorded) before broadcast. */
   async sign(call: ServerWalletCall): Promise<SignedServerTransaction> {
     if (call.chainId !== this.chainId) throw new Error("Server wallet chain does not match the prepared transaction");
-    const [nonce, gasEstimate, fees] = await Promise.all([
+    const [nonce, gasEstimate, fees, balance] = await Promise.all([
       this.client.getTransactionCount({ address: this.account.address, blockTag: "pending" }),
       this.client.estimateGas({ account: this.account.address, to: call.to, data: call.data }),
-      this.client.estimateFeesPerGas()
+      this.client.estimateFeesPerGas(),
+      this.client.getBalance({ address: this.account.address })
     ]);
     // Monad bills the gas limit, so keep the margin small.
     const gas = (gasEstimate * 12n) / 10n;
+    if (balance < gas * fees.maxFeePerGas) throw new ServerWalletUnfundedError(this.account.address);
     const serialized = await this.account.signTransaction({
       type: "eip1559",
       chainId: call.chainId,
@@ -74,5 +76,13 @@ export class ServerWallet {
 
   async balance() {
     return this.client.getBalance({ address: this.account.address });
+  }
+}
+
+export class ServerWalletUnfundedError extends Error {
+  readonly code = "SERVER_WALLET_UNFUNDED";
+  constructor(readonly address: Address) {
+    super(`Server wallet ${address} does not have enough MON for gas`);
+    this.name = "ServerWalletUnfundedError";
   }
 }

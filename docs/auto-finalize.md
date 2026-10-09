@@ -27,6 +27,6 @@ There are no roles, owner, or organizer transfer. To let the server finalize a c
 - `FINALIZER_PRIVATE_KEY`: the server wallet key (0x + 64 hex). Never logged or returned; `/operator/server-wallet` shows only the address and balance.
 - `CRON_SECRET`: Vercel Cron sends it as a bearer token. The project's `vercel.json` schedules a daily run (Hobby plans allow daily crons only).
 - `AUTO_FINALIZE_ENABLED=false` turns the campaign steps off (the indexer pass still runs).
-- For a 10-minute schedule use `ops/auto-finalize.yml` (GitHub Actions) with the repository secret `TAKE_INTERNAL_API_TOKEN`.
+- For a 10-minute schedule use `ops/auto-finalize.yml` (GitHub Actions) with the repository secret `TAKE_CRON_SECRET` (the take-api `CRON_SECRET` value).
 
 Gas (Monad bills the gas limit; the wallet uses estimate × 1.2): close ≈ 41k, finalize ≈ 65k, activate ≈ 42k, publish ≈ 186k gas. At ~102 gwei: ≈ 0.011 MON to close and finalize a campaign, ≈ 0.023 MON more when the server also publishes and activates it (≈ 0.035 MON in total).
