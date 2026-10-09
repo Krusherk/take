@@ -160,7 +160,7 @@ export function IdentityConnections({ me }: { me: TakeMe }) {
           <span className="eyebrow">CONNECTED IDENTITIES</span>
           <h2 id="connections-heading">Where people know you.</h2>
         </div>
-        <p>Social identity stays in front. Wallets remain underneath.</p>
+        <p>A campaign checks these only if its rules say so. Your wallet signs your TAKE.</p>
       </header>
 
       <div className="connection-list">

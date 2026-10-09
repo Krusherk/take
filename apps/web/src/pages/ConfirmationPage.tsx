@@ -1,10 +1,8 @@
-import { ArrowLeft, Check, Copy, LockKeyhole, Wallet } from "lucide-react";
+import { ArrowRight, Check, Copy, LockKeyhole, Wallet } from "lucide-react";
 import { useState } from "react";
-import { PrimaryAction, SecondaryAction } from "../components/Actions";
-import { Avatar } from "../components/Avatar";
-import { HandoffPair } from "../components/Handoff";
 import { ProductError } from "../components/ProductState";
-import { TakeMascotAccent } from "../components/TakeMascotAccent";
+import { FlowBack, FlowHandoff } from "../components/sticker/FlowParts";
+import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { campaignPath } from "../lib/productData";
@@ -41,24 +39,38 @@ export function ConfirmationPage({ campaignId, recipient, navigate, onConfirm, s
     }
   }
 
+  const back = () => navigate(campaignPath(campaign, "/give") as TakePath);
   return (
-    <div className="page-container confirmation-page">
-      <button className="back-link" type="button" onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}><ArrowLeft size={17} />CHANGE PERSON</button>
-      <section className="commitment">
-        <header className="commitment__heading">
-          <span className="eyebrow">REVIEW YOUR CHOICE</span>
-          <div className="commitment__recipient"><Avatar person={recipient} size="lg" /><div><span>YOU’RE GIVING YOUR TAKE TO</span><strong>{recipient.name}</strong>{recipient.handle ? <small>{recipient.handle}</small> : null}</div></div>
-          <h1>Make this person count.</h1>
-          <p>This is a person-to-person choice. Check it once, then commit it.</p>
-        </header>
-
-        <div className="commitment__handoff"><TakeMascotAccent character="handoff" className="mascot-confirmation" /><HandoffPair from={currentPerson} to={recipient} /></div>
-        <dl className="commitment__facts"><div><dt>CAMPAIGN</dt><dd>{campaign.title}</dd></div><div><dt>OPPORTUNITY</dt><dd>{campaign.resource}</dd></div><div><dt>RECIPIENT</dt><dd>{recipient.name}{recipient.handle ? ` · ${recipient.handle}` : ""}</dd></div></dl>
-        <div className="commitment__notice"><LockKeyhole size={19} strokeWidth={1.7} /><div><strong>This choice can’t be changed.</strong><span>You won’t have another TAKE in this campaign.</span></div></div>
-        {import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS !== "true" ? <div className="pilot-gas-notice"><div className="pilot-gas-notice__icon"><Wallet size={20} /></div><div className="pilot-gas-notice__copy"><strong>Your TAKE wallet needs Monad testnet MON.</strong><span>This pilot does not currently sponsor gas. Fund this embedded wallet before confirming.</span><code title={walletAddress ?? undefined}>{walletAddress ?? "Wallet unavailable"}</code>{copyError ? <small role="alert">Could not copy automatically. Select the address above and copy it manually.</small> : null}</div>{walletAddress ? <button className="pilot-gas-notice__button" type="button" onClick={() => void copyWalletAddress()} aria-label="Copy embedded wallet address">{copied ? <Check size={16} /> : <Copy size={16} />}<span>{copied ? "Copied" : "Copy wallet"}</span></button> : null}</div> : null}
-        {error ? <p className="form-error" role="alert">{error}</p> : null}
-        <div className="commitment__actions"><PrimaryAction full onClick={onConfirm} disabled={submitting}>{submitting ? "PREPARING…" : `GIVE TO ${recipient.name.toUpperCase()}`}</PrimaryAction><SecondaryAction full arrow="back" onClick={() => navigate(campaignPath(campaign, "/give") as TakePath)}>GO BACK</SecondaryAction></div>
+    <div className="page-container sticker-page sticker-feed sticker-flow confirmation-page">
+      <FlowBack label="Change person" onClick={back} />
+      <section className="sticker-feed__stage" aria-labelledby="confirm-heading">
+        <Sticker tilt={4} className="feed-tag"><span>REVIEW</span></Sticker>
+        <MascotSticker kind="star" tilt={-10} delay={240} className="sticker-feed__mascot sticker-feed__mascot--star" />
+        <div className="sticker-feed__headline">
+          <h1 id="confirm-heading"><PaperLabel size="lg" tilt={-2} delay={60}>{`Give your TAKE to ${recipient.name}?`}</PaperLabel></h1>
+          <PaperLabel size="sm" tilt={1.5} delay={120}>You can’t change it after you sign. It goes on Monad as a public transaction.</PaperLabel>
+        </div>
+        <FlowHandoff from={currentPerson} to={recipient} label={`You are giving your TAKE to ${recipient.name}`} />
       </section>
+
+      <Sticker tilt={-0.4} delay={200} className="sticker-flow__card">
+        <dl className="sticker-flow__facts"><div><dt>Campaign</dt><dd>{campaign.title}</dd></div><div><dt>Opportunity</dt><dd>{campaign.resource}</dd></div><div><dt>Recipient</dt><dd>{recipient.name}{recipient.handle ? ` · ${recipient.handle}` : ""}</dd></div></dl>
+        <p className="sticker-flow__note"><LockKeyhole size={17} aria-hidden="true" /><span><strong>One TAKE in this campaign.</strong> You won’t get another.</span></p>
+        {import.meta.env.VITE_PRIVY_SPONSOR_TRANSACTIONS !== "true" ? (
+          <div className="sticker-flow__gas">
+            <p><Wallet size={17} aria-hidden="true" /><span><strong>Your TAKE wallet needs Monad testnet MON for gas.</strong> TAKE doesn’t pay gas yet.</span></p>
+            <code title={walletAddress ?? undefined}>{walletAddress ?? "Wallet unavailable"}</code>
+            {copyError ? <small role="alert">Could not copy automatically. Select the address above and copy it.</small> : null}
+            {walletAddress ? <button className="sticker-pill sticker-pill--paper sticker-pill--sm" type="button" onClick={() => void copyWalletAddress()} aria-label="Copy embedded wallet address">{copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}<span>{copied ? "Copied" : "Copy wallet"}</span></button> : null}
+          </div>
+        ) : null}
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
+      </Sticker>
+
+      <div className="sticker-flow__dock sticker-flow__dock--two">
+        <button className="sticker-pill" type="button" onClick={onConfirm} disabled={submitting}><span>{submitting ? "Preparing…" : `Give to ${recipient.name}`}</span><ArrowRight aria-hidden="true" /></button>
+        <button className="sticker-pill sticker-pill--paper sticker-pill--sm" type="button" onClick={back}>Go back</button>
+      </div>
     </div>
   );
 }

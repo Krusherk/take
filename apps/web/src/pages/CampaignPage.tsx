@@ -154,8 +154,8 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
         <h2 className="sticker-detail__eyebrow">How a TAKE works here</h2>
         <ul className="sticker-detail__points">
           <li><strong>Who can give</strong><span>{giverRule(campaign.nominatorEligibilityMode)}. {campaign.nominationLimit === 1 ? "Each of them has one TAKE." : `Each of them has up to ${campaign.nominationLimit} TAKEs.`}</span></li>
-          <li><strong>Who can receive</strong><span>{recipientRule(campaign.recipientEligibilityMode)}. They can be chosen whether or not they already use TAKE.</span></li>
-          <li><strong>What you can see</strong><span>{campaign.nominationVisibilityMode === "PUBLIC" ? "The record is public." : "Choices stay private until the campaign closes."} The final recipients are published at the end, and the result stays verifiable.</span></li>
+          <li><strong>Who can receive</strong><span>{recipientRule(campaign.recipientEligibilityMode)}.{campaign.recipientEligibilityMode === "EXTERNAL_ALLOWED" ? " They can be chosen before they join TAKE." : ""}</span></li>
+          <li><strong>What you can see</strong><span>Each TAKE is a public Monad transaction as soon as it is sent. TAKE doesn’t show running totals. Recipients appear after the campaign closes and the organizer commits the result onchain.</span></li>
         </ul>
       </Sticker>
 
@@ -188,7 +188,7 @@ function BackSticker({ label, onClick }: { label: string; onClick: () => void })
 
 function campaignFactLine(campaign: Campaign) {
   const when = campaign.status === "UPCOMING" ? `opens ${campaign.starts}` : campaign.status === "CLOSED" ? `ended ${campaign.ends}` : `ends ${campaign.ends}`;
-  const crowd = campaign.participants === null ? "participation hidden until close" : `${campaign.participants.toLocaleString("en-US")} participating`;
+  const crowd = campaign.participants === null ? "totals after close" : `${campaign.participants.toLocaleString("en-US")} participating`;
   return `${campaign.resource} · ${when} · ${crowd}`;
 }
 
@@ -212,12 +212,12 @@ function takeBody(campaign: Campaign, available: boolean, given: boolean) {
 
 function giverRule(mode: string): string {
   if (mode === "OPEN_REGISTERED") return "Registered TAKE members";
-  if (mode === "MERKLE_ALLOWLIST") return "Campaign allowlist";
-  return "Organizer-approved participants";
+  if (mode === "MERKLE_ALLOWLIST") return "Only people on the organizer’s giver list";
+  return "Only people the organizer approved";
 }
 
 function recipientRule(mode: string): string {
   if (mode === "EXTERNAL_ALLOWED") return "Anyone with a social identity";
   if (mode === "OPEN_REGISTERED") return "TAKE members";
-  return "Campaign-approved people";
+  return "Only people on the organizer’s recipient list";
 }

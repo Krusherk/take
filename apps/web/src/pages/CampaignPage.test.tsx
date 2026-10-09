@@ -121,6 +121,13 @@ describe("Campaign detail sticker page", () => {
     expect(state.login).toHaveBeenCalledTimes(1);
   });
 
+  it("says gives are public onchain and who can give", () => {
+    renderPage();
+    expect(screen.getByText(/Each TAKE is a public Monad transaction as soon as it is sent/)).toBeInTheDocument();
+    expect(screen.queryByText(/stay private/i)).toBeNull();
+    expect(screen.queryByText(/participation hidden/i)).toBeNull();
+  });
+
   it("keeps the onchain record and transaction links", () => {
     renderPage();
     expect(screen.getByText("Onchain record")).toBeInTheDocument();

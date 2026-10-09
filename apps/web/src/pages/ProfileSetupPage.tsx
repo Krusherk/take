@@ -1,9 +1,8 @@
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useCreateWallet, useUser, useWallets } from "@privy-io/react-auth";
 import { Avatar } from "../components/Avatar";
-import { Brand } from "../components/Brand";
-import { PrimaryAction } from "../components/Actions";
+import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import type { TakePath } from "../hooks/usePathRouter";
 import { personFromMe } from "../lib/currentIdentity";
@@ -46,42 +45,34 @@ export function ProfileSetupPage({ navigate }: ProfileSetupPageProps) {
   if (!person || !me) return null;
 
   return (
-    <main className="onboarding-page">
-      <div className="onboarding-page__rail" aria-hidden="true" />
-      <header className="onboarding-header">
-        <Brand light />
-        <span>PROFILE / 01</span>
-      </header>
-      <section className="profile-setup">
-        <div className="profile-setup__preview">
-          <span className="profile-setup__marker">THIS IS YOU</span>
-          <Avatar person={person} size="hero" />
-          <div>
-            <strong>{person.name}</strong>
-            {person.handle ? <span>{person.handle}</span> : <span>TAKE MEMBER</span>}
+    <div className="app-shell app-shell--sky app-shell--public">
+      <main className="page-container sticker-page sticker-feed onboarding-sticker">
+        <section className="sticker-feed__stage profile-sticker__stage" aria-labelledby="onboarding-title">
+          <Sticker tilt={4} className="feed-tag"><span>WELCOME</span></Sticker>
+          <MascotSticker kind="lime" tilt={8} delay={240} className="sticker-feed__mascot sticker-feed__mascot--lime" />
+          <Sticker tilt={-4} delay={40} className="profile-sticker__avatar"><Avatar person={person} size="xl" /></Sticker>
+          <div className="sticker-feed__headline profile-sticker__headline">
+            <h1 id="onboarding-title"><PaperLabel size="lg" tilt={-2} delay={60}>{`Hi, ${person.name}.`}</PaperLabel></h1>
+            <PaperLabel size="sm" tilt={1.5} delay={120}>This is how people see you when you give or receive a TAKE.</PaperLabel>
           </div>
-        </div>
-        <div className="profile-form">
-          <div className="profile-form__intro">
-            <span className="eyebrow">YOUR TAKE IDENTITY</span>
-            <h1>This is how people find you.</h1>
-            <p>Your connected social identity will appear whenever you give or receive a TAKE.</p>
-          </div>
-          <dl className="profile-source">
-            <div><dt>DISPLAY NAME</dt><dd>{person.name}</dd></div>
-            {person.handle ? <div><dt>SOCIAL HANDLE</dt><dd>{person.handle}</dd></div> : null}
-            <div><dt>PROFILE SOURCE</dt><dd>{me.socials.twitter.connected ? "X" : me.socials.github.connected ? "GITHUB" : me.socials.discord.connected ? "DISCORD" : "PRIVY"}</dd></div>
+        </section>
+
+        <Sticker tilt={-0.6} delay={200} className="profile-sticker__card onboarding-sticker__card">
+          <dl className="onboarding-sticker__facts">
+            <div><dt>Name</dt><dd>{person.name}</dd></div>
+            {person.handle ? <div><dt>Handle</dt><dd>{person.handle}</dd></div> : null}
+            <div><dt>Signed in with</dt><dd>{me.socials.twitter.connected ? "X" : me.socials.github.connected ? "GitHub" : me.socials.discord.connected ? "Discord" : "Email or wallet"}</dd></div>
           </dl>
-          <div className="profile-form__assurance">
+          <p className="onboarding-sticker__wallet">
             <Check size={16} aria-hidden="true" />
-            <span>{hasEmbeddedWallet ? "Your TAKE wallet is ready. Your social profile remains your visible identity." : "A private wallet will be created for product actions. Your profile stays social."}</span>
-          </div>
+            <span>{hasEmbeddedWallet ? "Your TAKE wallet is ready. It signs your TAKE on Monad." : "TAKE will create a wallet for you. It signs your TAKE on Monad."}</span>
+          </p>
           {error ? <p className="form-error" role="alert">{error}</p> : null}
-          <PrimaryAction full type="button" disabled={saving} onClick={() => void completeProfile()}>
-            {saving ? "SETTING UP…" : "ENTER TAKE"}
-          </PrimaryAction>
-        </div>
-      </section>
-    </main>
+          <button className="sticker-pill onboarding-sticker__go" type="button" disabled={saving} onClick={() => void completeProfile()}>
+            <span>{saving ? "Setting up…" : "Enter TAKE"}</span><ArrowRight aria-hidden="true" />
+          </button>
+        </Sticker>
+      </main>
+    </div>
   );
 }

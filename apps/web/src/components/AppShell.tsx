@@ -30,8 +30,8 @@ const mobileItems: Array<{ label: string; path: TakePath; icon: typeof Home }> =
 
 // Sticker-collage sky. Other routes keep their own surface.
 const skyPaths = new Set<TakePath>(["/home", "/explore", "/signal", "/organize", "/profile", "/notifications", "/takes", "/activity"]);
-/** Campaign detail (/campaign/:id) sits on the sky; the give flow steps keep their own frame. */
-const campaignDetailPath = /^\/campaign\/[^/]+$/;
+/** Campaign detail (/campaign/:id) and its give flow steps sit on the sky. */
+const campaignDetailPath = /^\/campaign\/[^/]+(\/(give|confirm|pending|success))?$/;
 
 function isSkyPath(path: TakePath) {
   return skyPaths.has(path) || campaignDetailPath.test(path);

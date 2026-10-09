@@ -1,132 +1,127 @@
+<p align="center"><img src="docs/brand/take-logo-1024.png" alt="TAKE" width="160" /></p>
+
 # TAKE
 
-TAKE is a social allocation system for scarce opportunities. Each eligible participant gets one TAKE to give to somebody else. The organization decides the rules; the community nominates who they believe should receive the opportunity.
+A community hands out a scarce spot (a grant, a beta seat, an event ticket). Each person on the giver list gets one TAKE. They give it to one other person, never themselves. The rules are locked on Monad before anyone gives, and the result is committed on Monad when the campaign is finalized.
 
-The repository includes the protocol, API, and indexer.
+- Live app: https://takemetropolis.vercel.app (Monad testnet)
+- Live API: https://take-api-sand.vercel.app
+- Contract: [`0xc3A0178B31D8844455c49988736d51A2336056e5`](https://testnet.monadvision.com/address/0xc3A0178B31D8844455c49988736d51A2336056e5) (`TakeCampaignManager`, Monad testnet, chain 10143)
+- Demo video: `<DEMO VIDEO LINK>` (TODO)
+- Pitch video: `<PITCH VIDEO LINK>` (TODO)
 
-## Post-campaign Signal
+## How it works
 
-Every canonical TAKE creates a historical recommendation: **person → person → opportunity**.
+1. An organizer creates a campaign: the opportunity, the giver list, the recipient list, and the end time. TAKE locks these rules and writes their hash to Monad (`createCampaign`, then `activateCampaign`).
+2. Each person on the giver list gets one TAKE for that campaign.
+3. A giver picks one person from the recipient list and signs `giveTake` from their wallet. The contract rejects a second TAKE, a TAKE to yourself, and anyone not in the locked lists.
+4. The campaign closes at its end time. The operator runs the allocation and commits the result hash to Monad (`finalizeAllocation`).
+5. Signal shows each person who they backed and who backed them.
 
-`/signal` shows your real recommendation history, outcomes, and category breakdown—not a reputation score. Failed attempts do not count. Recommendations without an evaluation plan are labeled separately from evaluations that are still pending.
+## Try it
 
-Organizers can optionally define and lock an evaluation question, criteria, category, date, and evidence requirement before preparing publication. Locked criteria cannot be rewritten. After finalization and the evaluation date, a TAKE operator can record a positive, negative, or inconclusive outcome for a recipient of the committed allocation. Evidence and notes are public only when the operator explicitly marks them public. No outcomes are generated automatically.
+`TODO (infra): fill the placeholders below once the judge campaign and test logins exist.`
 
-Profile links to Signal; finalized campaigns show recipients, canonical recommendations, and their evaluation plan where enabled. Operator integrity observations are context only, not a fraud score or an allocation input.
+1. Open https://takemetropolis.vercel.app on your phone or desktop.
+2. Tap **Sign in**, then **Continue with email**. Use `<JUDGE LOGIN 1 EMAIL>` and code `<JUDGE LOGIN 1 CODE>`. Spare logins: `<JUDGE LOGIN 2>`, `<JUDGE LOGIN 3>`.
+3. Tap **Enter TAKE** on the welcome screen.
+4. Open **Explore** and pick **`<JUDGE CAMPAIGN NAME>`** (campaign `<JUDGE CAMPAIGN ID>`), or go to `https://takemetropolis.vercel.app/campaign/<JUDGE CAMPAIGN UUID>`.
+5. Tap **Give your TAKE**, choose a person, and review.
+6. Tap **Give to …** and approve the transaction in the wallet prompt. The judge wallets already hold testnet MON for gas. TAKE does not pay gas.
+7. Wait for **You gave … your TAKE.** Tap **View receipt** to see the `TakeGiven` event on the explorer.
+8. Open **Signal** to see who you backed.
 
-Signal does **not** change eligibility, voting power, or `RAW_UNIQUE_SUPPORT@2`. One eligible participant still gets one TAKE. Portable curation signals for other protocols are a future possibility; universal reputation scoring, popularity bias, and complete Sybil resistance are not solved.
+Each login can give one TAKE in the judge campaign. A second attempt is rejected by the contract.
 
-The feature uses additive migration `0013_post_campaign_signal.sql`. Apply pending migrations with the existing migration command and server-only `DATABASE_MIGRATION_URL` before running this version. Never run seed scripts against the real pilot database.
+## Verify onchain
 
-## Stack
+Campaign 4, "TAKE Demo", is live on the contract above.
 
-- TypeScript
-- Fastify API
-- PostgreSQL
-- Drizzle ORM
-- Foundry / Solidity
-- viem
-- Monad
-- Privy
-- QuickNode
+| Step | Transaction |
+|---|---|
+| Publish (rules hash written) | [`0xe13da5ad…a5df`](https://testnet.monadvision.com/tx/0xe13da5adb9cd36ca907cc03054d6494c6ba4d4cf0ae469f5cad9e0b5b6faa5df) |
+| Open nominations | [`0x0b237126…4c8f`](https://testnet.monadvision.com/tx/0x0b2371262ba43176ed3a0e721ca724827495a6958ecca9ba1a8bd9d7e3244c8f) |
+| A TAKE given | [`0x4ee2c55c…9065`](https://testnet.monadvision.com/tx/0x4ee2c55cf2c1e733ae06133582712fb3e66d8822ffd0d3ec078e075189c09065) |
+| Result committed | `<FINALIZE TX>` (TODO, after close) |
 
-## Repository Layout
+Public read endpoints:
 
-```text
-apps/api              API server and backend services
-packages/shared       Domain types, schemas, hashes, constants
-packages/mechanism    Pure eligibility, graph, Merkle, randomness, allocation
-packages/mechanism-simulator  Deterministic adversarial simulation and reports
-packages/database     Drizzle schema, migrations, seed data
-packages/chain        Monad/QuickNode viem configuration
-packages/contracts    Foundry smart contracts and tests
-docs                  Architecture and operating documents
-scripts               Local utility scripts
+- `GET /campaigns`: live and published campaigns
+- `GET /campaigns/:id/audit-artifact`: locked config, eligibility roots, randomness commitment
+- `GET /campaigns/:id/mechanism`, `/selector-eligibility`, `/experiment-v0`, `/after`
+- `GET /health`: API, database, chain head, indexer lag
+
+Rebuild the rules hash from the public artifact and compare it with the value stored on Monad:
+
+```bash
+git clone https://github.com/Krusherk/take && cd take
+pnpm install
+pnpm verify:rules 30e8b781-9143-4b84-8905-eadf13b92029
 ```
 
-## Local Development
+Expected output ends with `MATCH: the rules on Monad are the rules in the public artifact.` The script ([`scripts/verify-rules-hash.mjs`](scripts/verify-rules-hash.mjs)) reads `/campaigns/:id/audit-artifact` and `/campaigns/:id/selector-eligibility`, rebuilds `configHash` and `rulesHash`, then reads `campaigns(4)` from Monad over public RPC.
 
-1. Copy environment values:
+## Architecture
 
-   ```bash
-   cp .env.example .env
-   ```
+- `packages/contracts`: `TakeCampaignManager.sol` (Foundry). Campaigns, Merkle giver and recipient lists, one TAKE per identity, no self-give, result hash.
+- `apps/web`: React + Vite. Privy for sign-in (X, email, wallet) and the embedded wallet that signs.
+- `apps/api`: Fastify on Vercel. Campaign setup, eligibility snapshots, Merkle proofs, allocation, Signal.
+- Postgres (Supabase) through Drizzle (`packages/database`).
+- `packages/mechanism`: eligibility rules, Merkle trees, graph checks, allocation, hashing.
+- Monad testnet through viem (`packages/chain`). Receipts reconciled from RPC.
 
-2. Install dependencies:
+## What works / what's not built yet
 
-   ```bash
-   pnpm install
-   ```
+Works on testnet:
 
-3. Start Postgres:
+- Rules locked and hashed on Monad before anyone gives; reproducible with `pnpm verify:rules`.
+- One TAKE per eligible identity per campaign, no self-give, and Merkle-checked lists, enforced by the contract.
+- Sign-in with X, email, or wallet; giving from the Privy embedded wallet.
+- Managed campaigns: anyone can draft; a TAKE operator publishes.
+- Signal: who you backed and who backed you.
 
-   ```bash
-   docker-compose up -d postgres
-   ```
+Not built, or not proven yet:
 
-4. Generate and apply database migrations:
+- No campaign has been finalized onchain yet. Allocation and `finalizeAllocation` are built but not yet run on a live campaign.
+- Not Sybil-resistant. One TAKE per identity, not per human. Privy links accounts; it does not prove one person.
+- Popular people can still win. One-person-one-TAKE does not fix that.
+- Gives are public on Monad as soon as they are sent. The app only hides running totals.
+- Eligibility evidence: the shipped create form checks the organizer's lists and a connected wallet. X account age, Discord membership, and a GitHub link exist as rules but are not used in a live campaign. Wallet history, social graph, and GitHub activity are not collected.
+- Operator integrity checks: mutual TAKEs (the later one is rejected by a published rule), short cycles, and bursts. Coalition, cross-campaign, and timing-sync checks are designed, not implemented.
+- Signal has no evaluated outcomes yet.
+- Gas is not sponsored. The indexer is behind; new TAKEs are recorded from transaction receipts.
+- The allocation rule in use (`RAW_UNIQUE_SUPPORT@2`) is a baseline. Our own simulations ([docs/mechanism-decision-gate-v0.1.md](docs/mechanism-decision-gate-v0.1.md)) did not find a rule good enough for high-stakes campaigns.
 
-   ```bash
-   pnpm db:generate
-   pnpm db:migrate
-   ```
+## Repo map
 
-5. Seed deterministic demo data:
+```text
+apps/web                      React app (takemetropolis.vercel.app)
+apps/api                      Fastify API and workers
+packages/contracts            Solidity contract and Foundry tests
+packages/mechanism            Eligibility, Merkle, graph, allocation, hashing
+packages/mechanism-simulator  Adversarial simulations and reports
+packages/database             Drizzle schema and migrations
+packages/chain                Monad config and transaction builders
+packages/shared               Shared types and schemas
+scripts                       Deploy and verify scripts
+docs                          Design, mechanism, security, brand assets
+```
 
-   ```bash
-   pnpm db:seed
-   ```
+## Run locally
 
-6. Run API tests:
+```bash
+cp .env.example .env          # fill in Postgres, Privy, Monad RPC
+pnpm install
+docker-compose up -d postgres
+pnpm db:migrate
+pnpm dev:api                  # API
+pnpm dev:web                  # web app
+pnpm test                     # all package tests
+pnpm contracts:test           # Foundry tests (needs forge)
+```
 
-   ```bash
-   pnpm test
-   ```
+`pnpm db:seed` loads demo data into a local database only. Never run it against the pilot database.
 
-7. Run contract tests:
+## More docs
 
-   ```bash
-   pnpm contracts:test
-   ```
-
-8. Deploy to Monad testnet after funding `DEPLOYER_ADDRESS`:
-
-   ```bash
-   bash scripts/deploy-monad-testnet.sh
-   ```
-
-9. Start the API:
-
-   ```bash
-   pnpm dev:api
-   ```
-
-## Current Documentation Baseline
-
-Read these before changing integrations:
-
-- [Architecture](docs/architecture.md)
-- [Identity](docs/identity.md)
-- [Source of Truth](docs/source-of-truth.md)
-- [State Machine](docs/state-machine.md)
-- [Transactions](docs/transactions.md)
-- [Indexing](docs/indexing.md)
-- [Security](docs/security.md)
-- [Deployment](docs/deployment.md)
-- [Mechanism Constitution](docs/mechanism-constitution.md)
-- [Mechanism V1](docs/mechanism-v1.md)
-- [Evidence and Eligibility](docs/evidence-and-eligibility.md)
-- [Discord Evidence](docs/discord-evidence.md)
-- [Randomness and Allocation](docs/randomness-and-allocation.md)
-- [Mechanism Operations](docs/mechanism-operations.md)
-- [Mechanism Simulation Report](docs/mechanism-simulation.md)
-- [Threat Model](docs/threat-model.md)
-
-## Important Limitations
-
-- Public nomination mode is public. Anyone reading Monad events can reconstruct `giver -> recipient` edges.
-- V0 uses a small QuickNode-backed Postgres indexer instead of Envio HyperIndex because Envio subscription/API-token access is not available right now.
-- TAKE does not use Sybil scores or graph weights. Mechanism V1 records review-only graph signals and explicitly avoids claiming human uniqueness.
-- Existing Monad testnet campaigns remain `LEGACY_V1`. Protected/mainnet campaigns require a separately approved V2 manager and are currently blocked.
-- Monad documentation currently recommends Foundry v1.8+ with the Monad execution network enabled. Local Foundry has been upgraded to v1.8.1 for contract work.
-- Real Privy auth uses Privy's app JWKS via the `@privy-io/node` SDK. `PRIVY_VERIFICATION_KEY` is optional if an environment needs to pin a specific public verification key.
+[Architecture](docs/architecture.md) · [Identity](docs/identity.md) · [Evidence and eligibility](docs/evidence-and-eligibility.md) · [Mechanism V1](docs/mechanism-v1.md) · [Randomness and allocation](docs/randomness-and-allocation.md) · [Threat model](docs/threat-model.md) · [Security](docs/security.md) · [Deployment](docs/deployment.md) · [Where we are](docs/where-we-are.md) · [Brand assets](docs/brand/)

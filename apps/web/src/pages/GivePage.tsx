@@ -1,10 +1,9 @@
-import { ArrowLeft, Search, UsersRound } from "lucide-react";
+import { ArrowRight, Search, UsersRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { PrimaryAction } from "../components/Actions";
-import { Avatar } from "../components/Avatar";
 import { ProductError, ProductLoading, SocialEmpty } from "../components/ProductState";
 import { PersonResult } from "../components/Social";
-import { TakeMascotAccent } from "../components/TakeMascotAccent";
+import { FlowBack, FlowHandoff } from "../components/sticker/FlowParts";
+import { MascotSticker, PaperLabel, Sticker } from "../components/sticker/Sticker";
 import { useTakeMe } from "../context/TakeIdentityContext";
 import { useTakeProduct } from "../context/TakeProductContext";
 import type { TakePath } from "../hooks/usePathRouter";
@@ -64,31 +63,33 @@ export function GivePage({ campaignId, selected, onSelect, navigate, currentPers
   if (!campaign) return <div className="page-container"><ProductError message="This campaign is not available." onRetry={() => navigate("/explore")} /></div>;
 
   return (
-    <div className="page-container give-page">
-      <button className="back-link" type="button" onClick={() => navigate(campaignPath(campaign) as TakePath)}><ArrowLeft size={17} />CAMPAIGN</button>
-      <div className="give-layout">
-        <section className="people-picker" aria-labelledby="people-picker-heading">
-          <header className="people-picker__heading"><span className="eyebrow">{campaign.title}</span><h1 id="people-picker-heading">Who gets your TAKE?</h1><p>Find the person who should get this opportunity. It can’t be you.</p></header>
+    <div className="page-container sticker-page sticker-feed sticker-flow give-page">
+      <FlowBack label="Campaign" onClick={() => navigate(campaignPath(campaign) as TakePath)} />
+      <section className="sticker-feed__stage" aria-labelledby="people-picker-heading">
+        <Sticker tilt={4} className="feed-tag"><span>{campaign.title}</span></Sticker>
+        <MascotSticker kind="lime" tilt={8} delay={240} className="sticker-feed__mascot sticker-feed__mascot--lime" />
+        <div className="sticker-feed__headline">
+          <h1 id="people-picker-heading"><PaperLabel size="lg" tilt={-2} delay={60}>Who gets your TAKE?</PaperLabel></h1>
+          <PaperLabel size="sm" tilt={1.5} delay={120}>Pick one person. It can’t be you.</PaperLabel>
+        </div>
+        <FlowHandoff from={currentPerson} to={selected} label={selected ? `You chose ${selected.name}` : "Choose who gets your TAKE"} />
+      </section>
 
-          <label className="people-search"><Search size={21} strokeWidth={1.7} /><input type="search" value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="Search by name or @handle" autoFocus /><span>{searching ? "…" : results.length.toString().padStart(2, "0")}</span></label>
-          <div className="people-group-heading"><span><UsersRound size={18} />{query.trim() ? "SEARCH RESULTS" : "PEOPLE ON TAKE"}</span><small>REAL TAKE IDENTITIES</small></div>
-          <div className="people-results" aria-live="polite" aria-busy={searching}>
-            {searching && !results.length ? <ProductLoading label="Finding people" /> : null}
-            {searchError ? <ProductError message={searchError} onRetry={() => setQuery((value) => `${value} `)} /> : null}
-            {!searching && !searchError && results.length ? results.map((person) => <PersonResult key={person.id} person={person} selected={selected?.id === person.id} onSelect={onSelect} />) : null}
-            {!searching && !searchError && !results.length ? <SocialEmpty title={query ? "No person found." : "No other people are available yet."}>Try the full X handle, or return when more identities have joined TAKE.</SocialEmpty> : null}
-          </div>
-        </section>
+      <Sticker tilt={-0.4} delay={200} className="sticker-flow__card people-picker">
+        <label className="sticker-flow__search"><Search size={20} strokeWidth={1.8} aria-hidden="true" /><input type="search" aria-label="Search people" value={query} onChange={(event) => setQuery(event.currentTarget.value)} placeholder="Search by name or @handle" autoFocus /><span>{searching ? "…" : results.length}</span></label>
+        <p className="sticker-flow__group"><UsersRound size={16} aria-hidden="true" />{query.trim() ? "Search results" : "People you can choose"}</p>
+        <div className="people-results" aria-live="polite" aria-busy={searching}>
+          {searching && !results.length ? <ProductLoading label="Finding people" /> : null}
+          {searchError ? <ProductError message={searchError} onRetry={() => setQuery((value) => `${value} `)} /> : null}
+          {!searching && !searchError && results.length ? results.map((person) => <PersonResult key={person.id} person={person} selected={selected?.id === person.id} onSelect={onSelect} />) : null}
+          {!searching && !searchError && !results.length ? <SocialEmpty title={query ? "No person found." : "No other people are available yet."}>Try the full X handle, or come back when more people have joined TAKE.</SocialEmpty> : null}
+        </div>
+      </Sticker>
 
-        <aside className={`selection-dock${selected ? " has-selection" : ""}`} aria-live="polite">
-          <TakeMascotAccent character={selected ? "purple" : "green"} className="mascot-selection" />
-          <div className="selection-dock__take"><span className="eyebrow">YOUR TAKE</span><strong>01</strong><span>AVAILABLE</span></div>
-          {selected ? (
-            <><div className="selection-dock__person"><span className="selection-dock__marker">YOU CHOSE</span><Avatar person={selected} size="lg" /><strong>{selected.name}</strong>{selected.handle ? <small>{selected.handle}</small> : null}<p>{selected.joined ? "A TAKE member." : "Connected through X. They can join after you choose them."}</p></div><PrimaryAction full onClick={() => navigate(campaignPath(campaign, "/confirm") as TakePath)}>CONTINUE WITH {selected.name.toUpperCase()}</PrimaryAction></>
-          ) : (
-            <div className="selection-dock__empty"><Avatar person={currentPerson} size="sm" /><p>Select someone to continue.</p><span>ENDS {campaign.ends}</span></div>
-          )}
-        </aside>
+      <div className={`sticker-flow__dock${selected ? "" : " sticker-flow__dock--idle"}`} aria-live="polite">
+        {selected
+          ? <button className="sticker-pill" type="button" onClick={() => navigate(campaignPath(campaign, "/confirm") as TakePath)}><span>Continue with {selected.name}</span><ArrowRight aria-hidden="true" /></button>
+          : <PaperLabel size="sm" tilt={-1}>{`Select someone to continue · ends ${campaign.ends}`}</PaperLabel>}
       </div>
     </div>
   );

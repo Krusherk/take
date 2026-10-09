@@ -203,6 +203,8 @@
   filter: var(--sticker-drop);
 }
 
+.landing-sky__ticket .campaign-sticker--lg { width: 100%; }
+
 .landing-sky__mascot { position: absolute; }
 
 .landing-sky__mascot--lime {
