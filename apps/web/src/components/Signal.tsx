@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { CampaignAfter, RecipientEvaluation, SignalPerson, SignalRecommendation } from "../../../../packages/shared/src/signal";
+import type { BackerSignal, CampaignAfter, RecipientEvaluation, SignalPerson, SignalRecommendation } from "../../../../packages/shared/src/signal";
 import { AfterTimeline, countdown, isReviewed, lowerFirst, shortDate, TeamReviewResult } from "./SignalAfter";
 import { TAKE_API_BASE_URL } from "../lib/takeApi";
 import { useSignal } from "../hooks/useSignal";
@@ -44,9 +44,34 @@ function outcomeSentence(item: SignalRecommendation) {
   if (item.plan) return `The team checks on ${shortDate(item.plan.evaluateAfter)}: ${lowerFirst(item.plan.question)}`;
   return "Waiting to see what happened.";
 }
-export function ProfileSignal({ navigate }: { navigate: (path: TakePath) => void }) {
+/** Public backer score for a handle or wallet. Not transferable. */
+export function useBackerScore(ref: string | null | undefined) {
+  const [score, setScore] = useState<BackerSignal | null>(null);
+  useEffect(() => {
+    const clean = ref?.replace(/^@/, "").trim();
+    if (!clean) return;
+    const controller = new AbortController();
+    void fetch(`${TAKE_API_BASE_URL}/signal/${encodeURIComponent(clean)}`, { signal: controller.signal })
+      .then((response) => response.ok ? response.json() as Promise<BackerSignal> : null)
+      .then((value) => { if (!controller.signal.aborted) setScore(value); })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [ref]);
+  return score;
+}
+export function BackerScore({ score }: { score: BackerSignal | null }) {
+  if (!score) return null;
+  return <div className="profile-signal__score" aria-label={`Signal score ${score.score}`}>
+    <strong>{score.score}</strong>
+    <span>Signal score · {score.reviewedPicks} reviewed {score.reviewedPicks === 1 ? "pick" : "picks"}</span>
+    <small>{score.note}</small>
+  </div>;
+}
+export function ProfileSignal({ navigate, handle }: { navigate: (path: TakePath) => void; handle?: string | null }) {
   const { data, error, reload } = useSignal();
+  const score = useBackerScore(handle);
   return <section className="profile-signal"><div><span className="eyebrow">SIGNAL</span><h2>Who you backed.</h2>
+    <BackerScore score={score} />
     {data ? <p>{data.counts.recommendations ? `You backed ${data.counts.recommendations} ${data.counts.recommendations === 1 ? "person" : "people"}.` : "You have not backed anyone yet."}</p>
       : error ? <button type="button" onClick={reload}>Couldn’t load Signal. Retry</button> : <p role="status">Loading your recommendation history…</p>}</div>
     <a href="/signal" onClick={(event) => { event.preventDefault(); navigate("/signal"); }}>VIEW YOUR SIGNAL →</a>

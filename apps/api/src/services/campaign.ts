@@ -2,7 +2,7 @@ import { and, count, countDistinct, desc, eq, ilike, inArray, or } from "drizzle
 import { buildActivateCampaignCall, buildCloseCampaignCall, buildCreateCampaignCall } from "@take/chain";
 import type { Database } from "@take/database";
 import { schema } from "@take/database";
-import { CampaignStatus, hashJson } from "@take/shared";
+import { CampaignStatus, hashJson, isSandboxCampaign } from "@take/shared";
 import type { z } from "zod";
 import { createCampaignSchema } from "@take/shared";
 import type { Address, Hex } from "viem";
@@ -486,6 +486,7 @@ export class CampaignService {
       nominationVisibilityMode: campaign.nominationVisibilityMode,
       nominatorEligibilityMode: campaign.nominatorEligibilityMode,
       recipientEligibilityMode: campaign.recipientEligibilityMode,
+      sandbox: isSandboxCampaign(campaign),
       resource: resource
         ? {
             id: resource.id,

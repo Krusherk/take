@@ -387,29 +387,20 @@ We currently prefer exposing evidence over pretending we have a perfect fraud sc
 
 ---
 
-## Where TAKE could go next
+## Signal
 
-A TAKE creates a historical recommendation:
+Every TAKE is a public record of who backed whom, for what, and when. Signal turns that record into a score for the giver.
 
-> who backed whom, for what opportunity, and when
+- You earn points when someone you gave a TAKE to received the opportunity and passed the team's follow-up check.
+- The 10 points for a pick are split across everyone who backed that person. Backing someone few others saw is worth more.
+- A failed check costs 2 points. Pending, unclear, not selected and unchecked picks score 0. The score never goes below 0.
+- Signal belongs to your TAKE identity. It cannot be bought, sold or transferred.
+- Signal is information, not voting power. Everyone still gets one TAKE.
+- Sandbox campaigns never count.
 
-That becomes interesting after multiple campaigns.
+Read it at `GET https://take-api-sand.vercel.app/signal/<x-handle-or-wallet>`. It returns the score and the picks behind it. Profiles show the same score.
 
-For example:
-
-Someone may repeatedly identify strong builders before they become widely known.
-
-Someone else might have a strong history of finding creators.
-
-This could eventually become a separate curation or recommendation reputation layer that other protocols can use.
-
-The important distinction is:
-
-**reputation would be information, not extra voting power.**
-
-A person with a strong historical reputation would still get one TAKE in a campaign where everyone else gets one TAKE.
-
-For now, we’re focused on making the core allocation experience work with real people.
+Status: live, but no campaign has a reviewed follow-up check yet, so every score is 0 today. Planned next: publish Signal as attestations on Monad so other protocols can read it onchain.
 
 ---
 
@@ -505,7 +496,8 @@ For now, we’re focused on making the core allocation experience work with real
 - Live app: https://takemetropolis.vercel.app (Monad testnet). Sign in with X; TAKE creates an embedded wallet for you.
 - Join link flow: open a campaign's join link (`/join/<code>`), tap **Sign in with X to join**, then **Join as giver**. TAKE tops up your wallet with a little testnet MON for gas. When sign-ups close you get a notification; open the campaign, pick someone and give.
 - Organizers: **Organize** creates a campaign (opportunity, sign-ups or fixed lists, optional member list, end time, and an optional check after the TAKE).
-- Judges: without a join link, open **TAKE Demo** from Explore: https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. Its lists were locked before you signed in, so you can inspect it but not give there. The full walkthrough is at https://takemetropolis.vercel.app/how-it-works.
+- Judges: open the **Judge Sandbox** campaign in Explore (marked SANDBOX). Sign in with X, open it, tap **Give your TAKE**, pick any TAKE member except yourself, and approve. TAKE sends you a little testnet MON for gas, up to a daily cap. The sandbox is open to everyone, so its results don't count toward Signal or the proof section.
+- Judges can also open **TAKE Demo** from Explore: https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. Its lists were locked before you signed in, so you can inspect it but not give there. The full walkthrough is at https://takemetropolis.vercel.app/how-it-works.
 
 ## Verify onchain
 
@@ -527,4 +519,4 @@ pnpm verify:rules 30e8b781-9143-4b84-8905-eadf13b92029
 - Demo video: `<DEMO VIDEO LINK>`
 - Pitch video: `<PITCH VIDEO LINK>`
 
-**Status:** campaigns publish, open and record TAKEs on Monad testnet today. Close, allocation and result-hash finalization run automatically after a campaign ends; the TAKE Demo campaign ends 13 Oct 2026 and its result has not been finalized onchain yet.
+**Status:** campaigns publish, open and record TAKEs on Monad testnet today. Close, allocation and result-hash finalization run automatically after a campaign ends; the TAKE Demo campaign ends 13 Oct 2026 and its result has not been finalized onchain yet. Open sandbox campaigns and the Signal score API are live. Signal scores are 0 until a campaign's follow-up check is reviewed. Signal attestations on Monad are planned, not built.

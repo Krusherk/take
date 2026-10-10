@@ -1,5 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
+import { and, eq, sql } from "drizzle-orm";
+import { schema } from "@take/database";
 import { evaluationTemplates, signalDomains } from "@take/shared";
 import { configuredEvaluationChains } from "../services/evaluationAuto.js";
 import { SignalService } from "../services/signal.js";
@@ -19,6 +21,20 @@ export const signalRoutes: FastifyPluginAsync = async (app) => {
     if (!request.takeIdentity) return reply.code(401).send({ error: "UNAUTHORIZED" });
     reply.header("Cache-Control", "private, no-store");
     return signal.history(request.takeIdentity.protocolIdentityKey);
+  });
+  // Public, non-transferable backer score for an X handle or wallet address.
+  app.get<{ Params: { ref: string } }>("/signal/:ref", async (request, reply) => {
+    const ref = z.string().trim().min(1).max(128).parse(request.params.ref).replace(/^@/, "");
+    const [row] = /^0x[0-9a-fA-F]{40}$/.test(ref)
+      ? await app.db.select({ key: schema.takeIdentities.protocolIdentityKey }).from(schema.wallets)
+          .innerJoin(schema.takeIdentities, eq(schema.takeIdentities.id, schema.wallets.takeIdentityId))
+          .where(eq(sql`lower(${schema.wallets.address})`, ref.toLowerCase())).limit(1)
+      : await app.db.select({ key: schema.takeIdentities.protocolIdentityKey }).from(schema.socialAccounts)
+          .innerJoin(schema.takeIdentities, eq(schema.takeIdentities.id, schema.socialAccounts.takeIdentityId))
+          .where(and(eq(sql`lower(${schema.socialAccounts.username})`, ref.toLowerCase()), eq(schema.socialAccounts.isActive, true))).limit(1);
+    if (!row) notFound("No TAKE account for that handle or wallet");
+    reply.header("Cache-Control", "public, max-age=60");
+    return signal.backerScore(row.key);
   });
   // The campaign team: TAKE operators and the organizer (organization OWNER or ADMIN).
   // The same people who may lock the check may record what happened.

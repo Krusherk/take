@@ -16,4 +16,12 @@ describe("HowItWorksPage eligibility stack", () => {
     for (const gone of ["not yet in create flow", "currently reports unavailable", "coming next", "planned"]) expect(text).not.toContain(gone);
     vi.unstubAllGlobals();
   });
+  it("explains the sandbox and Signal honestly", () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ campaigns: [] }))));
+    render(<HowItWorksPage navigate={vi.fn()} signedIn={false} />);
+    expect(screen.getByText("Sandbox campaigns")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Signal" })).toBeInTheDocument();
+    expect(screen.getByText(/every score is 0 today/)).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
 });

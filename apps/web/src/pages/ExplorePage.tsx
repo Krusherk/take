@@ -114,6 +114,7 @@ function FeaturedCampaign({ campaign, currentPerson, recipient, navigate }: {
       <div className="sticker-campaign__title">
         <h2 id={`campaign-${campaign.id}-title`}><PaperLabel size="lg" tilt={3} delay={90}>{campaign.title}</PaperLabel></h2>
         <PaperLabel size="sm" tilt={-2} delay={150}>by {campaign.organizer}</PaperLabel>
+        {campaign.sandbox ? <p className="sandbox-note"><strong>SANDBOX</strong> Open to everyone. Results don't count.</p> : null}
       </div>
 
       {currentPerson ? (
