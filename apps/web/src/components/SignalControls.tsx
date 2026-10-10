@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { signalDomains, type CampaignAfter, type EvaluationPlan, type EvaluationTemplateParams, type EvaluationTemplateType, type SignalDomain } from "../../../../packages/shared/src/signal";
-import { EVALUATION_TEMPLATES, chainName, templatePreset } from "../lib/evaluationTemplates";
+import { EVALUATION_TEMPLATES, chainName, evaluationDate, templatePreset } from "../lib/evaluationTemplates";
+import { WheelDateTimePicker, roundTo, toLocal, parseLocal } from "./organize/WheelDateTimePicker";
 import type { TakeApiClient } from "../lib/takeApi";
 import { PrimaryAction, SecondaryAction } from "./Actions";
 import { SignalPersonLabel, signalDate } from "./Signal";
@@ -9,7 +10,7 @@ import { daysUntil, isReviewed, lowerFirst, TeamReviewResult } from "./SignalAft
 type Request = TakeApiClient["request"];
 const message = (error: unknown) => error instanceof Error ? error.message : "This action could not be completed.";
 
-export function EvaluationPlanEditor({ campaignId, status, request }: { campaignId: string; status: string; request: Request }) {
+export function EvaluationPlanEditor({ campaignId, status, request, endTime }: { campaignId: string; status: string; request: Request; endTime?: string | null }) {
   const [plan, setPlan] = useState<EvaluationPlan | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +18,11 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
   const [domain, setDomain] = useState<SignalDomain>("OTHER");
   const [question, setQuestion] = useState("");
   const [criteria, setCriteria] = useState("");
-  const [date, setDate] = useState("");
+  const campaignEnd = endTime ? new Date(endTime) : null;
+  const baseEnd = campaignEnd ?? roundTo(new Date(Date.now() + 60 * 60 * 1000), 5);
+  const [afterDays, setAfterDays] = useState("30");
+  const [mintLocal, setMintLocal] = useState(() => toLocal(roundTo(baseEnd, 5)));
+  const [date, setDate] = useState(() => toLocal(roundTo(evaluationDate(baseEnd, 30, campaignEnd), 5)));
   const [evidenceExpected, setEvidenceExpected] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
   const [template, setTemplate] = useState<EvaluationTemplateType>("CUSTOM");
@@ -34,8 +39,16 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
       .catch(() => undefined);
     return () => controller.abort();
   }, [template, chains.length, request]);
+  function recompute(next: { template?: EvaluationTemplateType; afterDays?: string; holdDays?: string; mintLocal?: string }) {
+    const type = next.template ?? template;
+    const nft = type === "NFT_HOLD";
+    const base = nft ? parseLocal(next.mintLocal ?? mintLocal) ?? baseEnd : baseEnd;
+    const days = Number(nft ? next.holdDays ?? holdDays : next.afterDays ?? afterDays) || 0;
+    setDate(toLocal(roundTo(evaluationDate(base, days, campaignEnd), 5)));
+  }
   function pickTemplate(next: EvaluationTemplateType) {
     setTemplate(next);
+    recompute({ template: next });
     const preset = templatePreset(next, { pieces: Number(pieces) || 3, holdDays: Number(holdDays) || 30 });
     setDomain(preset.domain);
     setQuestion(preset.question);
@@ -83,13 +96,16 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
           {template === "NFT_HOLD" ? <>
             <label className="field"><span>NFT CONTRACT ADDRESS</span><input required pattern="0x[0-9a-fA-F]{40}" value={nftContract} onChange={(event) => setNftContract(event.target.value.trim())} placeholder="0x…" /></label>
             <label className="field"><span>CHAIN</span><select required value={chainId ?? ""} onChange={(event) => setChainId(Number(event.target.value))}>{chains.length ? chains.map((id) => <option key={id} value={id}>{chainName(id)}</option>) : <option value="">No chain configured yet</option>}</select></label>
-            <label className="field"><span>DAYS AFTER MINT</span><input inputMode="numeric" value={holdDays} onChange={(event) => { setHoldDays(event.target.value.replace(/\D/g, "")); setQuestion(templatePreset("NFT_HOLD", { holdDays: Number(event.target.value) || 1 }).question); }} /></label>
-            <p className="signal-note">Set “Evaluate from” to the mint date plus these days. On that date TAKE reads <code>balanceOf(recipient wallet)</code> over RPC and records Yes or No automatically, with the read as evidence.</p>
+            <label className="field"><span>DAYS AFTER MINT</span><input inputMode="numeric" value={holdDays} onChange={(event) => { const value = event.target.value.replace(/\D/g, ""); setHoldDays(value); recompute({ holdDays: value }); setQuestion(templatePreset("NFT_HOLD", { holdDays: Number(event.target.value) || 1 }).question); }} /></label>
+            <WheelDateTimePicker label="Mint date" value={mintLocal} onChange={(value) => { setMintLocal(value); recompute({ mintLocal: value }); }} />
+            <p className="signal-note">The check date below is the mint date plus these days. On that date TAKE reads <code>balanceOf(recipient wallet)</code> over RPC and records Yes or No automatically, with the read as evidence.</p>
           </> : null}
           <label className="field"><span>CATEGORY</span><select value={domain} onChange={(event) => setDomain(event.target.value as SignalDomain)}>{signalDomains.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="field"><span>WHAT WILL YOU EVALUATE?</span><input required minLength={5} maxLength={500} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What should happen after this opportunity?" /></label>
           <label className="field"><span>ORIGINAL CRITERIA</span><textarea required minLength={10} maxLength={5000} value={criteria} onChange={(event) => setCriteria(event.target.value)} placeholder="Describe what positive, negative, and inconclusive would mean for this opportunity." /></label>
-          <label className="field"><span>EVALUATE FROM (YOUR LOCAL TIME)</span><input required type="datetime-local" value={date} onChange={(event) => setDate(event.target.value)} /></label>
+          {template !== "NFT_HOLD" ? <label className="field"><span>DAYS AFTER THE CAMPAIGN ENDS</span><input inputMode="numeric" value={afterDays} onChange={(event) => { const value = event.target.value.replace(/\D/g, ""); setAfterDays(value); recompute({ afterDays: value }); }} /></label> : null}
+          <WheelDateTimePicker label="Evaluate from" value={date} onChange={setDate} days={730}
+            hint={campaignEnd ? `Campaign ends ${signalDate(campaignEnd.toISOString())}. The check can't be before that.` : "Pick a time after the campaign ends."} />
           <label className="signal-checkbox"><input type="checkbox" checked={evidenceExpected} onChange={(event) => setEvidenceExpected(event.target.checked)} />Require evidence for recorded outcomes</label>
           <label className="signal-checkbox"><input type="checkbox" required checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand these criteria will be locked and cannot be rewritten.</label>
           <PrimaryAction type="submit" disabled={busy || !confirmed || (template === "NFT_HOLD" && (!chainId || !/^0x[0-9a-fA-F]{40}$/.test(nftContract)))}>{busy ? "SAVING…" : "SAVE & LOCK CRITERIA"}</PrimaryAction>

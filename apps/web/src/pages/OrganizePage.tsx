@@ -477,7 +477,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
             <details className="organize-advanced">
               <summary>Older setup tools</summary>
               <p>Use this for a draft that was started before campaigns could be created in one step.</p>
-              <EvaluationPlanEditor key={selectedCampaign.id} campaignId={selectedCampaign.id} status={selectedCampaign.sourceStatus} request={request} />
+              <EvaluationPlanEditor key={selectedCampaign.id} campaignId={selectedCampaign.id} status={selectedCampaign.sourceStatus} request={request} endTime={selectedCampaign.endsAt} />
               <OrganizerEligibilityWorkspace
                 campaign={selectedCampaign}
                 organizationId={organizationId}

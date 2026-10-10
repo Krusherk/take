@@ -41,3 +41,9 @@ export function templatePreset(type: EvaluationTemplateType, options: { pieces?:
       return { domain: "OTHER", question: "", criteria: "", evidenceExpected: true };
   }
 }
+
+/** The check date: a base time (campaign end, or the NFT mint) plus N days, never before the campaign end. */
+export function evaluationDate(base: Date, days: number, campaignEnd?: Date | null) {
+  const date = new Date(base.getTime() + Math.max(0, days) * 24 * 60 * 60 * 1000);
+  return campaignEnd && date < campaignEnd ? new Date(campaignEnd) : date;
+}
