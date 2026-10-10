@@ -94,6 +94,8 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
           </Beat>
         </ol>
 
+        <EvidenceStack />
+
         <ProofSection id="hiw-proof" />
 
         <div className="hiw-cta">
@@ -105,5 +107,67 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
         </div>
       </main>
     </div>
+  );
+}
+
+type Status = "live" | "engine" | "planned";
+const STATUS_LABEL: Record<Status, string> = { live: "live", engine: "in the engine · not yet in create flow", planned: "planned" };
+const EVIDENCE: Array<{ label: string; status: Status; note?: string }> = [
+  { label: "Join link / sign-ups", status: "live" },
+  { label: "Allowlists & member lists (X or wallet)", status: "live" },
+  { label: "X account age", status: "live", note: "when the X API is configured" },
+  { label: "Monad wallet / onchain activity", status: "engine", note: "check currently reports unavailable" },
+  { label: "Discord join date & roles", status: "engine" },
+  { label: "GitHub / building history", status: "engine" },
+  { label: "Manual evidence review", status: "engine" },
+  { label: "Newcomer path", status: "engine" },
+  { label: "Appeals", status: "engine" },
+];
+const INTEGRITY: Array<{ label: string; status: Status }> = [
+  { label: "Mutual TAKEs", status: "live" },
+  { label: "Short cycles", status: "live" },
+  { label: "Timing bursts", status: "live" },
+  { label: "Coalitions", status: "planned" },
+  { label: "Timing sync across groups", status: "planned" },
+  { label: "Cross-campaign coordination", status: "planned" },
+];
+
+function Tag({ status }: { status: Status }) {
+  return <small className={`hiw-tag hiw-tag--${status}`}>{STATUS_LABEL[status]}</small>;
+}
+
+/** Eligibility evidence as a sticker stack with the campaign's threshold line. */
+function EvidenceStack() {
+  return (
+    <section className="hiw-elig" aria-labelledby="elig-heading">
+      <PaperLabel size="sm" tilt={2} className="ls-kicker">eligibility & anti-gaming</PaperLabel>
+      <h2 id="elig-heading" className="ls-strip">
+        <Sticker tilt={-2} as="span" className="ls-strip__line ls-strip__line--paper"><span>Evidence opens the gate.</span></Sticker>
+        <Sticker tilt={1.5} delay={80} as="span" className="ls-strip__line ls-strip__line--ink"><span>It never adds votes.</span></Sticker>
+      </h2>
+      <div className="hiw-stack" role="group" aria-label="Eligibility evidence stack">
+        <ol className="hiw-stack__layers">
+          {EVIDENCE.map((item, index) => (
+            <Sticker as="li" key={item.label} tilt={[-1.5, 1, -0.6, 1.4, -1.1, 0.7, -1.3, 0.9, -0.5][index]!} className={`hiw-layer hiw-layer--${item.status}`}>
+              <span className="hiw-layer__row"><b>{item.label}</b><Tag status={item.status} /></span>
+              {item.note ? <span className="hiw-layer__note">{item.note}</span> : null}
+            </Sticker>
+          ))}
+        </ol>
+        <div className="hiw-threshold" aria-hidden="true"><span>campaign threshold</span></div>
+        <div className="hiw-stack__result">
+          <Sticker tilt={-3} as="span" className="hiw-name hiw-name--lime"><span>eligible = 1 TAKE</span></Sticker>
+          <small>Same one TAKE whether you clear the line by a little or a lot. No evidence? TAKE shows <b>NO DATA</b>, not an invented score. Established history counts over activity created to farm.</small>
+        </div>
+      </div>
+
+      <div className="hiw-integrity">
+        <strong>Integrity is separate from eligibility and allocation.</strong>
+        <p>Operators see these on the nomination graph to investigate. They never secretly change anyone’s TAKE.</p>
+        <ul>{INTEGRITY.map((item) => <li key={item.label}>{item.label} <Tag status={item.status} /></li>)}</ul>
+        <PaperLabel size="md" tilt={-1} className="ls-note">Social closeness is context. Repeated advantageous coordination is evidence.</PaperLabel>
+        <p>Rules and rosters are locked onchain before anyone gives. The contract blocks giving to yourself, giving twice, and givers who aren’t on the locked list.</p>
+      </div>
+    </section>
   );
 }

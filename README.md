@@ -284,6 +284,49 @@ They do not secretly multiply or reduce someone’s TAKE.
 
 ---
 
+## Eligibility and anti-gaming
+
+Status labels: **live** = usable in the create flow today; **engine** = built in the eligibility engine, not yet enabled in the create flow; **planned** = designed, not built.
+
+### The Eligibility Evidence Stack
+
+A campaign decides who is eligible from several kinds of existing evidence, preferring established history over activity created to farm a campaign:
+
+| Evidence | Status |
+|---|---|
+| Join link / sign-ups, organizer can remove people | live |
+| Campaign allowlists and member lists (X handles or wallets) | live |
+| X account age | live when the X API is configured |
+| Monad wallet / onchain activity | engine (the automated check currently reports evidence unavailable) |
+| Community participation: Discord join date and roles | engine (needs the Discord bot configured) |
+| GitHub / building history | engine |
+| Manual evidence review | engine |
+| Newcomer path (alternative qualification) | engine |
+| Appeals | engine |
+
+Where TAKE has no evidence, it shows **NO DATA** instead of inventing a score.
+
+### A threshold, never a weight
+
+Eligibility is a gate per campaign. Passing it gives you exactly one TAKE; more evidence never gives you more TAKEs. One eligible person = one TAKE.
+
+### Integrity is separate
+
+Integrity observations are separate from both eligibility and allocation. Operators see:
+
+- mutual TAKEs (direct reciprocity), short cycles and timing bursts: **live** (computed on the nomination graph)
+- coalitions, timing synchronisation across groups, cross-campaign coordination: **planned**
+
+> **Social closeness is context. Repeated advantageous coordination is evidence.**
+
+Observations are for investigation. They never secretly change anyone's weight.
+
+### Locked onchain
+
+The rules and the giver and recipient rosters are locked and hashed onchain before anyone gives. The contract blocks giving to yourself, giving twice, and givers who are not on the locked list.
+
+---
+
 ## Newcomers
 
 A system based entirely on historical evidence would naturally favor people who have been in crypto for years.
