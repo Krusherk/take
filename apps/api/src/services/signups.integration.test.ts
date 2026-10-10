@@ -272,3 +272,46 @@ describe.sequential("gas drip", () => {
     expect(sent).toHaveLength(1);
   });
 });
+
+describe.sequential("members-only join link", () => {
+  it("only lets listed X handles or wallets join, and reports matches to the organizer", async () => {
+    const operator = await person("Operator");
+    const orgId = await organization(operator.takeIdentityId);
+    const actor = { takeIdentityId: operator.takeIdentityId, isOperator: true };
+    const recipient = await person("Rae", { handle: `rae${randomUUID().slice(0, 6)}` });
+    const created = await new OrganizerCampaignService(db, env).create({
+      organizationId: orgId, title: "Members round", description: "Members only", resourceName: "Beta seat", seatCount: 1,
+      startTime: new Date(), endTime: new Date(Date.now() + 3 * 3_600_000),
+      giverIdentityIds: [], recipientIdentityIds: [recipient.takeIdentityId],
+      signups: { deadline: null, recipientSelfJoin: false }
+    }, actor);
+    const code = (created as { joinCode: string }).joinCode;
+    const signups = new CampaignSignupService(db, env);
+    const handle = `Mem${randomUUID().slice(0, 8)}`;
+    const member = await person("Member", { handle });
+    const walletMember = await person("Wallet member");
+    const outsider = await person("Outsider", { handle: `out${randomUUID().slice(0, 8)}` });
+
+    const report = await signups.setMemberList(created.campaignId, actor, {
+      community: "Monad Builders",
+      entries: `@${handle.toUpperCase()}\n${walletMember.primaryWalletAddress!.toUpperCase().replace("0X", "0x")}, nobody_here\nnot a handle!`
+    });
+    expect(report).toMatchObject({ community: "Monad Builders", total: 3, matched: 2, joined: 0 });
+
+    const deniedView = await signups.joinView(code, outsider.takeIdentityId, null);
+    expect(deniedView.membersOnly).toEqual({ community: "Monad Builders", viewerIsMember: false });
+    await expect(signups.join(code, outsider, { role: "GIVER" })).rejects.toMatchObject({
+      code: "MEMBERS_ONLY", message: "This campaign is for Monad Builders members only."
+    });
+    expect((await signups.joinView(code, member.takeIdentityId, null)).membersOnly?.viewerIsMember).toBe(true);
+    await signups.join(code, member, { role: "GIVER" });
+    await signups.join(code, walletMember, { role: "GIVER" });
+
+    const view = await signups.organizerView(created.campaignId, actor);
+    expect(view.memberList).toMatchObject({ matched: 2, joined: 2 });
+    expect(view.memberList!.entries.find((entry) => entry.value === "@nobody_here")).toMatchObject({ hasTakeAccount: false, joined: false });
+
+    expect(await signups.setMemberList(created.campaignId, actor, null)).toBeNull();
+    await signups.join(code, outsider, { role: "GIVER" });
+  });
+});

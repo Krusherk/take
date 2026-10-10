@@ -71,6 +71,8 @@ export const apiEnvSchema = z.object({
   MONAD_NETWORK: z.enum(["testnet", "mainnet"]).default("testnet"),
   MONAD_TESTNET_RPC_URL: optionalUrl,
   MONAD_MAINNET_RPC_URL: optionalUrl,
+  /** Extra EVM RPCs for objective checks after the TAKE: "1=https://...,8453=https://...". */
+  EVALUATION_RPC_URLS: optionalNonEmptyString,
   TAKE_CAMPAIGN_MANAGER_ADDRESS: optionalAddress,
   GAS_DRIP_ENABLED: z.preprocess(
     (value) => value === undefined || value === "" ? true : !["false", "0", "off"].includes(String(value).toLowerCase()),

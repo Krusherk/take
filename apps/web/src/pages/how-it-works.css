@@ -1,0 +1,26 @@
+.hiw { display: grid; gap: clamp(36px, 6vw, 64px); width: min(calc(100% - 32px), 980px); margin: 0 auto; padding: 18px 0 64px; color: var(--sticker-ink); }
+.hiw-top { display: flex; }
+.hiw-hero { display: grid; justify-items: center; gap: 18px; text-align: center; }
+.hiw-graph { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 10px; }
+.hiw-graph__arrow { width: 44px; height: 30px; filter: var(--sticker-drop); }
+.hiw-graph__ticket { width: min(46vw, 200px); }
+.hiw-graph__ticket .campaign-sticker--lg { width: 100%; }
+.hiw-name > span { display: inline-block; padding: 10px 16px; border-radius: 14px; background: var(--sticker-white); box-shadow: var(--sticker-shadow); font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif; font-size: clamp(20px, 4vw, 28px); font-weight: 900; }
+.hiw-name--lime > span { background: #c6ff31; }
+.hiw-beats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 30px 20px; margin: 0; padding: 0; list-style: none; }
+.hiw-beat { position: relative; display: grid; align-content: start; gap: 8px; padding: 36px 18px 18px; border-radius: 24px; background: var(--sticker-white); box-shadow: var(--sticker-shadow); text-align: left; }
+.hiw-beat__kicker { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #55554f; }
+.hiw-beat strong { font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif; font-size: clamp(19px, 2vw, 23px); font-weight: 860; letter-spacing: -0.02em; line-height: 1.12; }
+.hiw-beat__body { display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }
+.hiw-beat__body p { margin: 0; }
+.hiw-beat__body code { padding: 1px 5px; border-radius: 6px; background: #f1eedf; font-size: 0.88em; word-break: break-word; }
+.hiw-beat__art { display: grid; place-items: center; }
+.hiw-beat__pass { display: flex; align-items: center; gap: 4px; }
+.hiw-templates, .hiw-limits { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.hiw-templates li, .hiw-limits li { padding: 7px 10px; border-radius: 12px; background: #f4f1e6; font-size: 14px; }
+.hiw-templates b { display: block; }
+.hiw-cta { display: flex; justify-content: center; }
+@media (prefers-reduced-motion: reduce) { .hiw-beat { transform: none !important; } }
+.hiw-beat__inner { display: grid; gap: 8px; }
+.hiw-beat__inner > strong { display: block; }
+.hiw .ls-section { content-visibility: visible; }

@@ -5,6 +5,7 @@ import type { ApiEnv } from "../config/env.js";
 import { assertOrganizationRole } from "./authorization.js";
 import { ServiceError } from "./errors.js";
 import { OrganizerCampaignService } from "./organizerCampaign.js";
+import { isMissingTable } from "./campaign.js";
 
 type SignupRow = typeof schema.campaignSignups.$inferSelect;
 type Role = "GIVER" | "RECIPIENT";
@@ -60,9 +61,15 @@ export class CampaignSignupService {
         interested: Boolean(interest)
       };
     }
+    const memberList = await this.memberList(campaign.id);
+    const membersOnly = memberList ? {
+      community: memberList.communityLabel,
+      viewerIsMember: viewerIdentityId ? await this.isListedMember(memberList, viewerIdentityId) : null
+    } : null;
     return {
       code: signup.joinCode,
       open: this.isOpen(signup, campaign.status),
+      membersOnly,
       campaign: {
         id: campaign.id,
         title: campaign.title,
@@ -92,6 +99,11 @@ export class CampaignSignupService {
     }
     if (input.role === "RECIPIENT" && !signup.recipientSelfJoin) {
       throw new ServiceError("RECIPIENT_JOIN_DISABLED", "This campaign only takes givers through its link.", 403);
+    }
+    const memberList = await this.memberList(campaign.id);
+    if (memberList && !(await this.isListedMember(memberList, identity.takeIdentityId))) {
+      throw new ServiceError("MEMBERS_ONLY", `This campaign is for ${memberList.communityLabel} members only.`, 403,
+        { community: memberList.communityLabel });
     }
     const members = await this.members(signup);
     const asGiver = members.givers.find((member) => member.takeIdentityId === identity.takeIdentityId);
@@ -129,6 +141,91 @@ export class CampaignSignupService {
     return { interested: true };
   }
 
+  // ------------------------------------------------------------- member list
+
+  /** The campaign's member list, or null when there is none (or the migration is not applied yet). */
+  async memberList(campaignId: string) {
+    try {
+      const [row] = await this.db.select().from(schema.campaignMemberLists)
+        .where(eq(schema.campaignMemberLists.campaignId, campaignId)).limit(1);
+      return row ?? null;
+    } catch (error) {
+      if (isMissingTable(error)) return null;
+      throw error;
+    }
+  }
+
+  /** X handles (case-insensitive) and wallets linked to a TAKE identity. */
+  private async linkedHandlesAndWallets(takeIdentityIds: string[]) {
+    const handles = new Map<string, string[]>();
+    const wallets = new Map<string, string[]>();
+    if (!takeIdentityIds.length) return { handles, wallets };
+    const socials = await this.db.select({ id: schema.socialAccounts.takeIdentityId, username: schema.socialAccounts.username })
+      .from(schema.socialAccounts).where(and(inArray(schema.socialAccounts.takeIdentityId, takeIdentityIds),
+        eq(schema.socialAccounts.provider, "twitter"), eq(schema.socialAccounts.isActive, true)));
+    for (const row of socials) if (row.username) handles.set(row.id, [...(handles.get(row.id) ?? []), row.username.toLowerCase()]);
+    const walletRows = await this.db.select({ id: schema.wallets.takeIdentityId, address: schema.wallets.address })
+      .from(schema.wallets).where(and(inArray(schema.wallets.takeIdentityId, takeIdentityIds), eq(schema.wallets.isActive, true)));
+    for (const row of walletRows) wallets.set(row.id, [...(wallets.get(row.id) ?? []), row.address.toLowerCase()]);
+    return { handles, wallets };
+  }
+
+  private async isListedMember(list: MemberListRow, takeIdentityId: string) {
+    const { handles, wallets } = await this.linkedHandlesAndWallets([takeIdentityId]);
+    return (handles.get(takeIdentityId) ?? []).some((handle) => list.xHandles.includes(handle))
+      || (wallets.get(takeIdentityId) ?? []).some((address) => list.walletAddresses.includes(address));
+  }
+
+  async setMemberList(campaignId: string, actor: Actor, input: { community: string; entries: string } | null) {
+    const { signup, campaign } = await this.authorize(campaignId, actor);
+    this.assertEditable(signup, campaign.status);
+    try {
+      if (!input) {
+        await this.db.delete(schema.campaignMemberLists).where(eq(schema.campaignMemberLists.campaignId, campaignId));
+        return this.memberListReport(campaignId);
+      }
+      const parsed = parseMemberEntries(input.entries);
+      if (!parsed.handles.length && !parsed.wallets.length) {
+        throw new ServiceError("MEMBER_LIST_EMPTY", "Add at least one X handle or wallet address.", 400);
+      }
+      const values = { campaignId, communityLabel: input.community.trim(), xHandles: parsed.handles,
+        walletAddresses: parsed.wallets, updatedByIdentityId: actor.takeIdentityId, updatedAt: new Date() };
+      await this.db.insert(schema.campaignMemberLists).values(values)
+        .onConflictDoUpdate({ target: schema.campaignMemberLists.campaignId, set: values });
+    } catch (error) {
+      if (isMissingTable(error)) throw new ServiceError("MEMBER_LIST_UNAVAILABLE", "Member lists are not switched on yet on this TAKE server.", 503);
+      throw error;
+    }
+    return this.memberListReport(campaignId);
+  }
+
+  /** Which list entries match a TAKE account, and whether that person has joined. */
+  async memberListReport(campaignId: string) {
+    const list = await this.memberList(campaignId);
+    if (!list) return null;
+    const handleRows = list.xHandles.length ? await this.db.select({ id: schema.socialAccounts.takeIdentityId, username: schema.socialAccounts.username })
+      .from(schema.socialAccounts).where(and(eq(schema.socialAccounts.provider, "twitter"), eq(schema.socialAccounts.isActive, true),
+        inArray(sql`lower(${schema.socialAccounts.username})`, list.xHandles))) : [];
+    const walletRows = list.walletAddresses.length ? await this.db.select({ id: schema.wallets.takeIdentityId, address: schema.wallets.address })
+      .from(schema.wallets).where(and(eq(schema.wallets.isActive, true), inArray(sql`lower(${schema.wallets.address})`, list.walletAddresses))) : [];
+    const [signup] = await this.db.select().from(schema.campaignSignups).where(eq(schema.campaignSignups.campaignId, campaignId)).limit(1);
+    const joined = new Set(signup ? [...(await this.members(signup)).givers, ...(await this.members(signup)).recipients].map((m) => m.takeIdentityId) : []);
+    const byHandle = new Map(handleRows.filter((row) => row.username).map((row) => [row.username!.toLowerCase(), row.id]));
+    const byWallet = new Map(walletRows.map((row) => [row.address.toLowerCase(), row.id]));
+    const entries = [
+      ...list.xHandles.map((value) => ({ kind: "X" as const, value: `@${value}`, identity: byHandle.get(value) ?? null })),
+      ...list.walletAddresses.map((value) => ({ kind: "WALLET" as const, value, identity: byWallet.get(value) ?? null }))
+    ].map((entry) => ({ kind: entry.kind, value: entry.value, hasTakeAccount: Boolean(entry.identity), joined: Boolean(entry.identity && joined.has(entry.identity)) }));
+    return {
+      community: list.communityLabel,
+      total: entries.length,
+      matched: entries.filter((entry) => entry.hasTakeAccount).length,
+      joined: entries.filter((entry) => entry.joined).length,
+      entries,
+      updatedAt: list.updatedAt.toISOString()
+    };
+  }
+
   // ----------------------------------------------------------- organizer view
 
   async organizerView(campaignId: string, actor: Actor) {
@@ -161,6 +258,7 @@ export class CampaignSignupService {
       lastError: signup.lastError,
       closeReport: signup.closeReport,
       interestCount: interest?.count ?? 0,
+      memberList: await this.memberListReport(campaignId),
       givers: members.givers.map(view),
       recipients: members.recipients.map(view)
     };
@@ -539,6 +637,23 @@ export class CampaignSignupService {
     }
     return map;
   }
+}
+
+type MemberListRow = typeof schema.campaignMemberLists.$inferSelect;
+
+/** One X handle or EVM address per line, or comma/semicolon separated (CSV). */
+export function parseMemberEntries(text: string) {
+  const handles = new Set<string>();
+  const wallets = new Set<string>();
+  for (const raw of text.split(/[\n,;\t]+/)) {
+    const value = raw.trim().replace(/^"|"$/g, "").trim();
+    if (!value) continue;
+    if (/^0x[0-9a-fA-F]{40}$/.test(value)) { wallets.add(value.toLowerCase()); continue; }
+    const handle = value.replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/^@/, "").split(/[/?#]/)[0]!;
+    if (/^[A-Za-z0-9_]{1,15}$/.test(handle)) handles.add(handle.toLowerCase());
+  }
+  if (handles.size + wallets.size > 20_000) throw new ServiceError("MEMBER_LIST_TOO_LARGE", "Keep the member list under 20,000 entries.", 400);
+  return { handles: [...handles], wallets: [...wallets] };
 }
 
 type Member = { takeIdentityId: string; via: string; referredByIdentityId: string | null; addedAt: Date };

@@ -35,6 +35,7 @@ export type FinalizerReport = {
   serverWallet: string | null;
   indexer: unknown;
   signups?: unknown;
+  evaluations?: unknown;
   steps: FinalizerStep[];
   /** Stage-level failures (indexer, sign-ups, campaign lookup). Step failures are in steps. */
   errors?: Array<{ stage: string; code: string }>;

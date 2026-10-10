@@ -1,8 +1,10 @@
 import { ArrowRight, Heart, Megaphone, Repeat2, UserPlus, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
+import { ProofSection } from "./ProofSection";
 import { CampaignSticker, MascotSticker, PaperLabel, PassArrow, Sticker } from "../sticker/Sticker";
 
 interface LandingStickerSectionsProps {
+  onHowItWorks?: () => void;
   onStartCampaign: () => void;
   onExplore: () => void;
 }
@@ -29,7 +31,7 @@ const GIVEABLES = ["grants", "hackathon tickets", "builder spots", "allowlist sp
  * sky: the problem, how it works, what you can give, why it is hard to game,
  * and the same sign-in actions as the hero.
  */
-export function LandingStickerSections({ onStartCampaign, onExplore }: LandingStickerSectionsProps) {
+export function LandingStickerSections({ onHowItWorks, onStartCampaign, onExplore }: LandingStickerSectionsProps) {
   return (
     <div className="ls">
       <section className="ls-section ls-problem" aria-labelledby="problem-heading">
@@ -80,6 +82,11 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
             <small>The organizer commits the result onchain.</small>
           </Sticker>
         </ol>
+        {onHowItWorks ? (
+          <Sticker tilt={1} className="landing-sky__secondary-wrap">
+            <a className="landing-sky__secondary" href="/how-it-works" onClick={(event) => { event.preventDefault(); onHowItWorks(); }}>The full story, step by step <ArrowRight aria-hidden="true" size={16} /></a>
+          </Sticker>
+        ) : null}
       </section>
 
       <section id="use-cases" className="ls-section ls-give" aria-labelledby="give-heading">
@@ -100,6 +107,8 @@ export function LandingStickerSections({ onStartCampaign, onExplore }: LandingSt
         </ul>
         <PaperLabel size="md" tilt={-1} className="ls-note">Rules are locked onchain before anyone gives. You can’t give your TAKE to yourself.</PaperLabel>
       </section>
+
+      <ProofSection />
 
       <section id="about" className="ls-section ls-final" aria-labelledby="final-heading">
         <div className="ls-final__art" aria-hidden="true">

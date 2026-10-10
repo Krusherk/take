@@ -17,6 +17,7 @@ import { campaignLifecycleRoutes } from "./routes/campaignLifecycle.js";
 import { ServiceError } from "./services/errors.js";
 import { ZodError } from "zod";
 import { signalRoutes } from "./routes/signal.js";
+import { proofRoutes } from "./routes/proof.js";
 import { cronRoutes } from "./routes/cron.js";
 import { signupRoutes } from "./routes/signups.js";
 
@@ -30,7 +31,7 @@ export async function buildApp() {
     origin: app.env.WEB_ORIGIN ?? (app.env.NODE_ENV === "development" ? true : false),
     // Reuse successful browser preflights; authenticated responses are not cached.
     maxAge: 600,
-    methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"]
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
   });
   await app.register(rateLimit, {
     global: false,
@@ -74,6 +75,7 @@ export async function buildApp() {
   await app.register(operatorRoutes);
   await app.register(campaignLifecycleRoutes);
   await app.register(signalRoutes);
+  await app.register(proofRoutes);
   await app.register(cronRoutes);
   await app.register(signupRoutes);
 

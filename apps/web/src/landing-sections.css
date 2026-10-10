@@ -356,3 +356,21 @@
     .ls-final { --ls-h: 511px; }
   }
 }
+
+/* ---------- Campaigns run on TAKE ---------- */
+.ls-proof__list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; width: 100%; margin: 0; padding: 0; list-style: none; text-align: left; }
+.ls-proof__card { display: grid; gap: 8px; padding: 18px; border-radius: 22px; background: var(--sticker-white); box-shadow: var(--sticker-shadow); }
+.ls-proof__title { font-family: "Inter Tight Variable", "Inter Tight", Inter, sans-serif; font-size: 21px; font-weight: 860; letter-spacing: -0.02em; line-height: 1.1; }
+.ls-proof__meta { color: #55554f; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
+.ls-proof__inner { display: grid; gap: 8px; }
+.ls-proof__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; margin: 4px 0; }
+.ls-proof__stats div { padding: 8px; border-radius: 12px; background: #f4f1e6; }
+.ls-proof__stats dt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #55554f; }
+.ls-proof__stats dd { margin: 0; font-size: 22px; font-weight: 900; }
+.ls-proof__stats dd span { font-size: 14px; color: #55554f; }
+.ls-proof__winners, .ls-proof__check { margin: 0; font-size: 14px; line-height: 1.35; }
+.ls-proof__tx { justify-self: start; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border: 2px solid var(--sticker-ink); border-radius: 999px; background: #c6ff31; color: var(--sticker-ink); font-weight: 800; font-size: 13px; text-decoration: none; }
+.ls-proof__placeholder { width: min(100%, 360px); height: 180px; border-radius: 22px; background: rgba(255, 255, 255, 0.45); }
+@supports (content-visibility: auto) {
+  .ls-proof { --ls-h: 520px; }
+}

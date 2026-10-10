@@ -37,6 +37,8 @@ export interface JoinView {
   counts: { givers: number; recipients: number };
   for: JoinPerson | null;
   viewer: { joinedAs: "GIVER" | "RECIPIENT" | null; removed: boolean; interested: boolean } | null;
+  /** Set when the organizer limited the link to a member list (X handles / wallets). */
+  membersOnly?: { community: string; viewerIsMember: boolean | null } | null;
 }
 
 const FOR_KEY = (code: string) => `take-join-for:${code}`;
@@ -194,6 +196,11 @@ export function JoinPage({ code, navigate }: { code: string; navigate: (path: Ta
             deadline={deadline}
             onOpen={() => navigate(`/campaign/${view.campaign.id}`)}
           />
+        ) : view.membersOnly && view.membersOnly.viewerIsMember === false ? (
+          <>
+            <h2 className="join-card__title">This campaign is for {view.membersOnly.community} members only.</h2>
+            <p className="join-card__body">The organizer listed who can join by X handle or wallet. Your linked X account and wallets aren’t on that list. If you think that’s a mistake, ask {view.campaign.organizationName ?? "the organizer"} to add you.</p>
+          </>
         ) : view.viewer?.removed ? (
           <>
             <h2 className="join-card__title">You’re not on this list</h2>
@@ -223,6 +230,7 @@ export function JoinPage({ code, navigate }: { code: string; navigate: (path: Ta
               {backing ? ` You can give yours to ${backing.name} or anyone else on the list.` : ""}
             </p>
             <ul className="join-card__facts">
+              {view.membersOnly ? <li><strong>For {view.membersOnly.community} members</strong> (checked against your X handle and wallets)</li> : null}
               <li><strong>{deadline ? `Sign-ups close ${deadline}` : "Sign-ups close when the organizer opens nominations"}</strong></li>
               <li>{view.counts.givers} {view.counts.givers === 1 ? "giver" : "givers"} · {view.counts.recipients} {view.counts.recipients === 1 ? "person" : "people"} to back</li>
               <li>TAKE covers the gas for your first TAKE.</li>

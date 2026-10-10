@@ -395,3 +395,19 @@
 .signups-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 .signups-chip-button:focus-visible, .signups-icon-button:focus-visible, .signups-primary:focus-visible { outline: 3px solid #c6ff31; outline-offset: 3px; }
 .organize-signups-mode { display: grid; gap: 12px; }
+
+/* Members-only join link */
+.signups-gate { display: grid; gap: 8px; padding: 12px; border: 2px dashed rgba(17, 17, 17, 0.35); border-radius: 14px; background: rgba(255, 255, 255, 0.55); }
+.signups-gate h3 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 16px; }
+.signups-gate__form, .signups-gate__age { display: grid; gap: 8px; }
+.signups-gate__age { grid-template-columns: 1fr auto; align-items: end; }
+.signups-gate__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.signups-gate__upload { position: relative; overflow: hidden; justify-self: start; }
+.signups-gate__upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.signups-gate__entries { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.signups-gate__entries li { display: grid; padding: 5px 9px; border: 2px solid #111; border-radius: 10px; background: #fff; font-size: 13px; line-height: 1.2; }
+.signups-gate__entries li small { font-size: 11px; opacity: 0.7; }
+.signups-gate__entries li.is-joined { background: #c6ff31; }
+.signups-gate__entries li.is-matched { background: #fff6c2; }
+.signups-gate__entries li.is-unmatched { background: #f2f2f2; border-style: dashed; }
+.signups-primary--sm { min-height: 42px; font-size: 15px; }

@@ -29,6 +29,7 @@ const RecipientViewPage = lazy(() => import("./pages/RecipientViewPage").then((m
 const SuccessPage = lazy(() => import("./pages/SuccessPage").then((m) => ({ default: m.SuccessPage })));
 const TakesPage = lazy(() => import("./pages/TakesPage").then((m) => ({ default: m.TakesPage })));
 const SignalPage = lazy(() => import("./pages/SignalPage").then((m) => ({ default: m.SignalPage })));
+const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage").then((m) => ({ default: m.HowItWorksPage })));
 const JoinPage = lazy(() => import("./pages/JoinPage").then((m) => ({ default: m.JoinPage })));
 
 const SELECTION_KEY = "take-selected-recipient";
@@ -101,7 +102,8 @@ export function App() {
   const selectedRecipient = routeCampaign && selection?.campaignId === routeCampaign.id ? selection.person : null;
   const publicCampaignDetail = campaignRoute?.step === "detail";
   const joinCode = path.startsWith("/join/") ? path.slice("/join/".length) : null;
-  const isPublicPath = path === "/" || path === "/onboarding" || Boolean(inviteId) || publicCampaignDetail || Boolean(joinCode);
+  const howItWorks = path === "/how-it-works";
+  const isPublicPath = howItWorks || path === "/" || path === "/onboarding" || Boolean(inviteId) || publicCampaignDetail || Boolean(joinCode);
 
   useEffect(() => {
     const title = path === "/" ? "TAKE · Give the spot to someone else" : path === "/notifications" ? "Notifications · TAKE" : path === "/activity" ? "Activity · TAKE" : campaignRoute?.step === "success" && selectedRecipient ? `You gave ${selectedRecipient.name} your TAKE` : "TAKE · Give the opportunity forward";
@@ -277,6 +279,7 @@ export function App() {
   else if (path === "/signal") page = <SignalPage navigate={navigate} />;
   else if (path === "/takes") page = <TakesPage navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
   else if (path === "/profile") page = <ProfilePage navigate={navigate} onLogout={signOut} />;
+  else if (howItWorks) page = <HowItWorksPage navigate={navigate} signedIn={Boolean(currentPerson)} />;
   else if (joinCode) page = <JoinPage code={joinCode} navigate={navigate} />;
   else if (inviteId) page = <RecipientViewPage nominationId={inviteId} navigate={navigate} />;
   else if (campaignRoute?.step === "detail") page = <CampaignPage campaignId={campaignRoute.campaignId} navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
@@ -292,7 +295,7 @@ export function App() {
   const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}><Suspense fallback={<ProductLoading label="Opening TAKE" />}>{page}</Suspense></div>;
 
   // The join page draws its own sky, signed in or not, so a shared link looks the same for everyone.
-  if (joinCode) return route;
+  if (joinCode || howItWorks) return route;
   if (path === "/" || path === "/onboarding" || inviteId || (publicCampaignDetail && !currentPerson)) {
     if (path === "/onboarding" && (!ready || !authenticated || !currentPerson)) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
     // Signed-out campaign links get the same sky as the signed-in detail page.
