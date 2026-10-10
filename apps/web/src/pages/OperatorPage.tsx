@@ -214,7 +214,7 @@ export function OperatorPage() {
     <section className="operator-control">
       <div className="operator-control-head"><label className="field"><span>MANAGED CAMPAIGN</span><select value={campaignId} onChange={(event) => setCampaignId(event.target.value)}><option value="">Choose a campaign</option>{campaigns.map((item) => <option key={item.id} value={item.id}>{item.title} · {humanStatus(item.sourceStatus)}</option>)}</select></label><SecondaryAction onClick={() => void refresh()} disabled={busy !== null}><RefreshCw size={16} />REFRESH</SecondaryAction></div>
       {!campaignId && !campaigns.length ? <SocialEmpty title="No managed campaigns yet.">Provision a submitted organizer request to create the first offchain campaign.</SocialEmpty> : null}
-      {campaignId && !campaign ? <ProductLoading label="Loading campaign readiness" /> : null}
+      {campaignId && !campaign ? <ProductLoading label="Checking campaign readiness" /> : null}
       {campaign ? <>
         <div className="operator-campaign-summary"><div><span className="eyebrow">{productState(campaign, mechanism)}</span><h2>{campaign.title}</h2><p>{campaign.resource} · {campaign.spots} spots · {campaign.organizer}</p><p>{eligibility?.counts.eligible ?? 0} qualified to give one TAKE · {recipientContext.recipients.length} can receive it</p></div><span className="operator-state">{productState(campaign, mechanism)}</span></div>
         <section className="operator-next-action" aria-labelledby="operator-next-title">

@@ -48,12 +48,12 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
     return (
       <div className="page-container sticker-page sticker-detail campaign-page" aria-busy="true">
         <BackSticker label="Explore" onClick={() => navigate("/explore")} />
-        <section className="sticker-campaign sticker-detail__hero" aria-label="Loading campaign">
+        <section className="sticker-campaign sticker-detail__hero" aria-label="Opening the campaign">
           <div className="sticker-campaign__art">
             <CampaignSticker campaign={{ title: "Campaign" }} face={LOADING_FACE} tilt={-4} />
           </div>
         </section>
-        <ProductLoading label="Loading campaign" />
+        <ProductLoading label="Opening the campaign" />
       </div>
     );
   }

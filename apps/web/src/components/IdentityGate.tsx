@@ -11,7 +11,7 @@ interface IdentityGateProps {
 
 export function IdentityGate({ status, error, onRetry, onSignOut }: IdentityGateProps) {
   const isError = status === "profile-error";
-  const label = status === "privy-initializing" ? "PRIVY INITIALIZING" : "PROFILE LOADING";
+  const label = status === "privy-initializing" ? "SIGNING YOU IN" : "OPENING YOUR TAKE";
 
   return (
     <main className="identity-gate" aria-live="polite">
@@ -25,7 +25,7 @@ export function IdentityGate({ status, error, onRetry, onSignOut }: IdentityGate
             <PrimaryAction onClick={onRetry}>TRY AGAIN</PrimaryAction>
             <SecondaryAction onClick={onSignOut}>LOG OUT</SecondaryAction>
           </div>
-        ) : <span className="identity-gate__line" aria-hidden="true" />}
+        ) : <span className="take-loader__dots identity-gate__dots" aria-hidden="true"><i /><i /><i /></span>}
       </section>
     </main>
   );

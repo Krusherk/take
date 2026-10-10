@@ -254,7 +254,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
     });
   }
 
-  if (state === "loading") return <div className="page-container"><ProductLoading label="Loading your campaigns" /></div>;
+  if (state === "loading") return <div className="page-container"><ProductLoading label="Gathering your campaigns" /></div>;
   if (state === "error") return <div className="page-container"><ProductError message={error ?? "Organizer access could not load."} onRetry={() => void loadOrganizations()} /></div>;
 
   const organization = manageableOrganizations.find((item) => item.id === organizationId) ?? null;

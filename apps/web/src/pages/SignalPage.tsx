@@ -19,7 +19,7 @@ export function SignalPage({ navigate }: { navigate: (path: TakePath) => void })
   const giver = featured ? personFromHistoryPerson(featured.person, `${featured.id}:giver`) : null;
 
   return <div className="page-container sticker-page sticker-signal">
-    {error ? <ProductError message={error} onRetry={reload} /> : !data || (me && !history) ? <ProductLoading label="Loading your Signal" /> : (
+    {error ? <ProductError message={error} onRetry={reload} /> : !data || (me && !history) ? <ProductLoading label="Reading your Signal" /> : (
       <>
         <section className="sticker-signal__stage" aria-labelledby="signal-title">
           <Sticker tilt={4} className="signal-tag"><span>YOUR SIGNAL</span></Sticker>
