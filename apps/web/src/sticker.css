@@ -1089,3 +1089,44 @@ a.brand--logo:active .brand__logo { transform: scale(0.92); }
 .sticker-explore__list { display: grid; gap: 12px; width: 100%; margin: 6px 0 0; padding: 0; list-style: none; }
 .sticker-explore__none { margin: 6px 0 0; }
 .campaign-sticker__badge--mark > span:first-child { font-size: 4.4cqw; letter-spacing: 0.02em; }
+
+/* ---------- Loading and error states: stickers on the sky, no boxed card ---------- */
+.take-loader {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 240px;
+  padding: 28px 12px 36px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+.take-loader__mascot { width: 92px; }
+/* Bob a little quicker than the decorative mascots, starting at once. */
+.take-loader__mascot img { animation-duration: 1.6s; animation-delay: 0ms; }
+.take-loader__mascot--still img { animation: none; }
+.take-loader__label { max-width: min(100%, 34ch); }
+.take-loader__label .paper-label__paper { padding: 0.55em 1em 0.65em; line-height: 1.35; }
+.take-loader__kicker .paper-label__paper { letter-spacing: 0.08em; text-transform: uppercase; }
+.take-loader__dots { display: inline-flex; gap: 8px; }
+.take-loader__dots i {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #11110f;
+  box-shadow: 0 3px 6px rgba(14, 44, 86, 0.22);
+  animation: take-loader-dot 1.2s ease-in-out infinite;
+}
+.take-loader__dots i:nth-child(2) { animation-delay: 150ms; }
+.take-loader__dots i:nth-child(3) { animation-delay: 300ms; background: #c6ff31; }
+@keyframes take-loader-dot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+.take-loader__retry { display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; }
+.identity-gate__dots { margin-top: 28px; }
+@media (prefers-reduced-motion: reduce) {
+  .take-loader__dots i { animation: none; }
+}

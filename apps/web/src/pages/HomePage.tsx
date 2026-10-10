@@ -45,7 +45,7 @@ export function HomePage({ navigate, currentPerson, optimisticGivenCampaigns, op
         <p className="sticker-home__line">People lift people. Your next choice starts here.</p>
       </section>
 
-      {status === "loading" || status === "idle" ? <ProductLoading label="Loading your opportunities" /> : null}
+      {status === "loading" || status === "idle" ? <ProductLoading label="Finding your TAKEs" /> : null}
       {status === "error" ? <ProductError message={error ?? "Campaigns are unavailable."} onRetry={() => void refetch()} /> : null}
 
       {status === "ready" ? (

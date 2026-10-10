@@ -14,6 +14,7 @@ const auth = vi.hoisted(() => ({
 
 vi.mock("../lib/privy", () => ({
   usePrivy: () => ({ ...auth.state, getAccessToken: auth.getAccessToken }),
+  privyNeededNow: () => true,
 }));
 
 function Probe() {
@@ -28,6 +29,44 @@ function Probe() {
 }
 
 describe("TakeIdentityProvider", () => {
+  it("shows a returning visitor's cached identity while Privy starts, then refreshes it", async () => {
+    window.localStorage.setItem("take:last-session:v1", JSON.stringify({
+      privyUserId: "did:privy:alice", savedAt: Date.now(),
+      me: identityFor("did:privy:alice", "Cached Alice"), history: { given: [], received: [] },
+    }));
+    auth.state.ready = false;
+    auth.state.user = null;
+    const view = render(<TakeIdentityProvider><Probe /></TakeIdentityProvider>);
+    expect(screen.getByText("Cached Alice")).toBeInTheDocument();
+    expect(screen.getByText("ready")).toBeInTheDocument();
+
+    auth.state.ready = true;
+    auth.state.user = { id: "did:privy:alice" };
+    view.rerender(<TakeIdentityProvider><Probe /></TakeIdentityProvider>);
+    await waitFor(() => expect(screen.getByText("Alice")).toBeInTheDocument());
+    expect(JSON.parse(window.localStorage.getItem("take:last-session:v1")!).me.user.displayName).toBe("Alice");
+    view.unmount();
+    window.localStorage.clear();
+  });
+
+  it("drops the cached identity when Privy says the session is gone", async () => {
+    window.localStorage.setItem("take:last-session:v1", JSON.stringify({
+      privyUserId: "did:privy:alice", savedAt: Date.now(),
+      me: identityFor("did:privy:alice", "Cached Alice"), history: { given: [], received: [] },
+    }));
+    auth.state.ready = false;
+    auth.state.user = null;
+    const view = render(<TakeIdentityProvider><Probe /></TakeIdentityProvider>);
+    expect(screen.getByText("Cached Alice")).toBeInTheDocument();
+    auth.state.ready = true;
+    auth.state.authenticated = false;
+    view.rerender(<TakeIdentityProvider><Probe /></TakeIdentityProvider>);
+    await waitFor(() => expect(screen.getByText("unauthenticated")).toBeInTheDocument());
+    expect(screen.queryByText("Cached Alice")).not.toBeInTheDocument();
+    expect(window.localStorage.getItem("take:last-session:v1")).toBeNull();
+    view.unmount();
+  });
+
   beforeEach(() => {
     auth.state.ready = true;
     auth.state.authenticated = true;

@@ -144,7 +144,7 @@ export function JoinPage({ code, navigate }: { code: string; navigate: (path: Ta
   if (loadError && !view) {
     return <JoinFrame><ProductError message={loadError} onRetry={() => void load()} /></JoinFrame>;
   }
-  if (!view) return <JoinFrame><ProductLoading label="Loading join link" /></JoinFrame>;
+  if (!view) return <JoinFrame><ProductLoading label="Opening the join link" /></JoinFrame>;
 
   const current = me ? personFromMe(me) : null;
   const backing = view.for ? joinPersonToPerson(view.for) : null;

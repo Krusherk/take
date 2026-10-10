@@ -46,7 +46,7 @@ export function ExplorePage({ navigate }: { navigate: (path: TakePath) => void }
         </div>
       </div>
 
-      {status === "loading" || status === "idle" ? <ProductLoading label="Loading opportunities" /> : null}
+      {status === "loading" || status === "idle" ? <ProductLoading label="Finding open TAKEs" /> : null}
       {status === "error" ? <ProductError message={error ?? "Campaigns are unavailable."} onRetry={() => void refetch()} /> : null}
       {status === "ready" ? (
         nothing ? (

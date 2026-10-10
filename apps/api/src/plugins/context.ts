@@ -9,7 +9,8 @@ export const contextPlugin = fp(async (app) => {
   app.decorate("env", env);
   app.decorate("db", database.db);
   app.addHook("onClose", async () => {
-    await database.client.end();
+    // Bounded: a recycled instance must not wait on a connection that never answers.
+    await database.client.end({ timeout: 5 });
   });
 });
 

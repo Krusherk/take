@@ -75,7 +75,7 @@ function readStoredSelection(): StoredSelection | null {
 export function App() {
   const { path, navigate } = usePathRouter();
   const { ready, authenticated, logout } = usePrivy();
-  const { status: identityStatus, me, history, error: identityError, request, refetch, clear } = useTakeMe();
+  const { status: identityStatus, me, history, error: identityError, request, refetch, clear, provisional: identityProvisional } = useTakeMe();
   const { campaigns, refetch: refetchProducts } = useTakeProduct();
   const { sendTransaction } = useSendTransaction();
   const { wallets: connectedWallets, ready: walletsReady } = useWallets();
@@ -286,10 +286,10 @@ export function App() {
     else if (campaignRoute.step === "pending" && selectedRecipient) page = <PendingPage recipient={selectedRecipient} currentPerson={currentPerson!} phase={submissionPhase} transactionHash={transactionHash} nominationId={nominationId} error={submissionError} />;
     else if (campaignRoute.step === "success" && selectedRecipient) page = <SuccessPage campaignId={routeCampaign.id} recipient={selectedRecipient} navigate={navigate} transactionHash={transactionHash} currentPerson={currentPerson!} />;
     else page = <CampaignPage campaignId={routeCampaign.id} navigate={navigate} optimisticGivenCampaigns={optimisticGivenCampaigns} optimisticRecipient={selection?.person ?? null} />;
-  } else if (campaignRoute) page = <div className="page-container"><ProductLoading label="Loading campaign" /></div>;
+  } else if (campaignRoute) page = <div className="page-container"><ProductLoading label="Opening the campaign" /></div>;
   else page = <ExplorePage navigate={navigate} />;
 
-  const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}><Suspense fallback={<ProductLoading label="Loading page" />}>{page}</Suspense></div>;
+  const route = <div className="route-frame" key={path} ref={routeRef} tabIndex={-1}><Suspense fallback={<ProductLoading label="Opening TAKE" />}>{page}</Suspense></div>;
 
   // The join page draws its own sky, signed in or not, so a shared link looks the same for everyone.
   if (joinCode) return route;
@@ -300,7 +300,8 @@ export function App() {
     return route;
   }
 
-  if (!ready || !authenticated || !currentPerson) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
+  // A returning visitor's cached identity renders the app at once; Privy confirms it behind.
+  if (!currentPerson || (!(ready && authenticated) && !identityProvisional)) return <IdentityGate status={identityStatus} error={identityError} onRetry={() => void refetch()} onSignOut={() => void signOut()} />;
 
   const unreadCount = notificationsRead ? 0 : Math.min(9, (history?.received.length ?? 0) + campaigns.filter((campaign) => campaign.status === "LIVE").length);
   return <AppShell path={path} navigate={navigate} unreadCount={unreadCount} currentPerson={currentPerson} onLogout={signOut}>{route}</AppShell>;
