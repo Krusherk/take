@@ -12,22 +12,22 @@ A community hands out a scarce spot (a grant, a beta seat, an event ticket). Eac
 
 ## How it works
 
-1. An organizer creates a campaign: the opportunity, the giver list, the recipient list, and the end time. TAKE locks these rules and writes their hash to Monad (`createCampaign`, then `activateCampaign`).
-2. Each person on the giver list gets one TAKE for that campaign.
-3. A giver picks one person from the recipient list and signs `giveTake` from their wallet. The contract rejects a second TAKE, a TAKE to yourself, and anyone not in the locked lists.
-4. The campaign closes at its end time. The operator runs the allocation and commits the result hash to Monad (`finalizeAllocation`).
-5. Signal shows each person who they backed and who backed them.
+1. **Sign-ups.** An organizer creates a campaign as a draft and shares its join link. People sign in with X and join as givers (or as recipients, if the organizer allows it). The organizer can remove people. Sign-ups stay open until a deadline or until the organizer presses **Close sign-ups and open**.
+2. **Lock and publish.** At close, TAKE locks the giver and recipient lists, writes the rules hash to Monad from the TAKE server wallet (`createCampaign`), and opens nominations (`activateCampaign`). Givers get a notification.
+3. **Give.** Each giver has one TAKE. They pick one person from the recipient list and sign `giveTake` from their wallet. The contract rejects a second TAKE, a TAKE to yourself, and anyone not in the locked lists.
+4. **Close, allocate, finalize.** A scheduled job runs every 10 minutes (cron-job.org, plus a daily Vercel cron and a GitHub Actions workflow as backups). After the end time it closes the campaign; once the committed drand round is out (about 10 minutes later) it runs the allocation and commits the result hash to Monad (`finalizeAllocation`).
+5. **Signal** shows each person who they backed and who backed them.
 
 ## Try it
 
-1. Open https://takemetropolis.vercel.app on your phone or desktop.
-2. Tap **Sign in** (in the menu on a phone), then **Continue with X**. TAKE creates an embedded wallet for you.
-3. Tap **Enter TAKE** on the welcome screen.
-4. Browse **Explore** and open **TAKE Demo** (campaign 4): https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. It shows the locked rules, who can give, who can receive, and the Monad links.
-5. Open **Signal** to see who you backed, who got the spot, when the team checks, and the team's review.
-6. Open **Organize** to see how a campaign is created: the opportunity, the giver and recipient lists, an optional check ("In 30 days: did they ship?"), then the signatures.
+1. Open a campaign's join link on your phone: `https://takemetropolis.vercel.app/join/<code>`. A recipient's share link (`/join/<code>?for=@handle`) shows "Back @handle on TAKE"; you can still give to anyone on the list.
+2. Tap **Sign in with X to join**. TAKE creates an embedded wallet for you. Finish the welcome screen.
+3. Tap **Join as giver**. TAKE sends your wallet a one-time 0.05 MON top-up from the TAKE server wallet to cover gas.
+4. When sign-ups close, nominations open and you get a notification. Open the campaign, pick a recipient and give. The first give asks for two wallet approvals (register identity, then give).
+5. Open **Signal** to see who you backed, who got the spot, and any check the team records later.
+6. Open **Organize** to create a campaign: the opportunity, sign-ups or fixed lists, the end time, and an optional check ("In 30 days: did they ship?").
 
-Giving needs you to be on that campaign's giver list. The organizer sets the list before the rules are locked, so a new sign-in can browse and verify but cannot give in campaign 4. To see a give end to end, use the transactions below. A give asks for two wallet approvals the first time (register identity, then give) and needs testnet MON for gas. TAKE does not pay gas.
+Without a join link you can browse **Explore** and open **TAKE Demo** (campaign 4): https://takemetropolis.vercel.app/campaign/30e8b781-9143-4b84-8905-eadf13b92029. It shows the locked rules, who can give, who can receive, and the Monad links. Its lists were set before sign-ups existed, so a new sign-in cannot give there.
 
 ## Verify onchain
 
@@ -75,21 +75,24 @@ Works on testnet:
 - Rules locked and hashed on Monad before anyone gives; reproducible with `pnpm verify:rules`.
 - One TAKE per eligible identity per campaign, no self-give, and Merkle-checked lists, enforced by the contract.
 - Sign-in with X, email, or wallet; giving from the Privy embedded wallet.
+- Sign-ups through a join link, with recipient share links and a deadline; the TAKE server wallet locks, publishes and opens the campaign.
+- Gas for givers: a one-time 0.05 MON top-up per identity from the server wallet (daily cap 3 MON).
+- Automatic close, allocation and finalization after the end, every 10 minutes.
 - Managed campaigns: anyone can draft; a TAKE operator publishes.
 - Signal: who you backed and who backed you, with a track from Given → Chosen → Check → Outcome.
 - Checks after the TAKE: an organizer can lock a question and a date ("In 30 days: did they ship?") when creating a campaign. It can't be changed or added after publication. After the result is committed and the date arrives, the campaign team (the organizer and TAKE operators) records Yes, No, or Unclear with a note and a link. Signal shows it to everyone.
 
 Not built, or not proven yet:
 
-- No campaign has been finalized onchain yet (as of 9 Oct 2026). Allocation and `finalizeAllocation` are built; campaign 4 is the first to finalize, after 13 Oct.
+- No campaign has been finalized on Monad testnet yet (as of 10 Oct 2026). The full flow (sign-ups → publish → give → close → allocate → finalize) has run end to end on a local fork of Monad testnet.
+- Campaign 4 must be finalized by its organizer after 13 Oct. It was published before the server wallet, so the scheduled job cannot finalize it.
+- People who arrive after sign-ups close cannot give in that campaign. The contract cannot change the lists after publish; the join link offers to notify them about the next campaign.
 - Not Sybil-resistant. One TAKE per identity, not per human. Privy links accounts; it does not prove one person.
 - Popular people can still win. One-person-one-TAKE does not fix that.
 - Gives are public on Monad as soon as they are sent. The app only hides running totals.
 - Eligibility evidence: the shipped create form checks the organizer's lists and a connected wallet. X account age, Discord membership, and a GitHub link exist as rules but are not used in a live campaign. Wallet history, social graph, and GitHub activity are not collected.
 - Operator integrity checks: mutual TAKEs (the later one is rejected by a published rule), short cycles, and bursts. Coalition, cross-campaign, and timing-sync checks are designed, not implemented.
 - Signal has no recorded outcomes yet. No live campaign has a scheduled check; campaign 4 was published before checks were in the create form.
-- Gas is not sponsored.
-- The background indexer is behind (cursor at block 64,320,382 from 24 Sep 2026). The catch-up job is written (`ops/indexer-catch-up.yml`) but not scheduled yet. Gives and lifecycle transactions made in the app are recorded from their receipts right away.
 - The allocation rule in use (`RAW_UNIQUE_SUPPORT@2`) is a baseline. Our own simulations ([docs/mechanism-decision-gate-v0.1.md](docs/mechanism-decision-gate-v0.1.md)) did not find a rule good enough for high-stakes campaigns.
 
 ## Repo map
