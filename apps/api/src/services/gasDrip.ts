@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNull, sql } from "drizzle-orm";
 import type { Address } from "viem";
 import type { Database } from "@take/database";
 import { schema } from "@take/database";
@@ -134,6 +134,17 @@ export class GasDripService {
         eq(schema.eligibilitySnapshots.subject, "NOMINATOR"),
         inArray(schema.campaigns.status, ["CREATED", "ACTIVE"])
       )).limit(1);
-    return giver?.campaignId ?? null;
+    if (giver) return giver.campaignId;
+    // Open sandbox: any TAKE member can give, so any member qualifies once.
+    // The per-identity drip and the daily cap still apply.
+    const [open] = await this.db.select({ campaignId: schema.campaigns.id })
+      .from(schema.campaigns)
+      .where(and(
+        inArray(schema.campaigns.nominatorEligibilityMode, ["OPEN_REGISTERED", "EXTERNAL_ALLOWED"]),
+        isNull(schema.campaigns.mechanismConfigId),
+        inArray(schema.campaigns.status, ["CREATED", "ACTIVE"]),
+        gt(schema.campaigns.endTime, this.now())
+      )).limit(1);
+    return open?.campaignId ?? null;
   }
 }

@@ -95,6 +95,7 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
         </ol>
 
         <EvidenceStack />
+        <SandboxAndSignal />
 
         <ProofSection id="hiw-proof" />
 
@@ -154,6 +155,27 @@ function EvidenceStack() {
         <ul>{INTEGRITY.map((item) => <li key={item}>{item}</li>)}</ul>
         <PaperLabel size="md" tilt={-1} className="ls-note">Social closeness is context. Repeated advantageous coordination is evidence.</PaperLabel>
         <p>Rules and rosters are locked onchain before anyone gives. The contract blocks giving to yourself, giving twice, and givers who aren’t on the locked list.</p>
+      </div>
+    </section>
+  );
+}
+
+/** Judge sandbox and Signal, in plain words. */
+function SandboxAndSignal() {
+  return (
+    <section className="hiw-elig hiw-extra" aria-labelledby="signal-heading">
+      <div className="hiw-integrity">
+        <strong>Sandbox campaigns</strong>
+        <p>A sandbox is open to everyone. Sign in with X, open it, and give your one TAKE to any other member. TAKE covers a little gas, up to a daily cap. Results don’t count toward Signal or the proof section.</p>
+      </div>
+      <PaperLabel size="sm" tilt={2} className="ls-kicker">after the take</PaperLabel>
+      <h2 id="signal-heading" className="ls-strip">
+        <Sticker tilt={-2} as="span" className="ls-strip__line ls-strip__line--paper"><span>Signal</span></Sticker>
+      </h2>
+      <div className="hiw-integrity">
+        <p>Every TAKE is a public record of who backed whom. When someone you backed gets the spot and passes the team’s follow-up check, you earn points. The 10 points are split across everyone who backed them, so an early pick is worth more. A failed check costs 2 points.</p>
+        <p>Signal belongs to your TAKE identity and can’t be transferred. It’s information, not votes: everyone still gets one TAKE. Other apps can read it at <code>/signal/&lt;handle-or-wallet&gt;</code>.</p>
+        <p>No campaign has a reviewed check yet, so every score is 0 today.</p>
       </div>
     </section>
   );

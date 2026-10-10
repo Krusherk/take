@@ -53,6 +53,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
   const [personQuery, setPersonQuery] = useState("");
   const [discordBusy, setDiscordBusy] = useState(false);
   const [checkOn, setCheckOn] = useState(false);
+  const [sandbox, setSandbox] = useState(false);
   const [checkPreset, setCheckPreset] = useState<CheckPresetKey>("SHIP");
   const [checkQuestion, setCheckQuestion] = useState(CHECK_PRESETS.SHIP.question);
   const [checkCriteria, setCheckCriteria] = useState(CHECK_PRESETS.SHIP.criteria);
@@ -173,8 +174,9 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
       endLocal,
       giverIds,
       recipientIds,
-      signups: collectSignups ? { deadlineLocal: signupDeadlineOn ? signupDeadlineLocal : null, recipientSelfJoin } : null,
-      check: checkOn ? { preset: checkPreset, question: checkQuestion, criteria: checkCriteria, days: checkDays, evidenceExpected: checkEvidence } : null,
+      sandbox,
+      signups: collectSignups && !sandbox ? { deadlineLocal: signupDeadlineOn ? signupDeadlineLocal : null, recipientSelfJoin } : null,
+      check: checkOn && !sandbox ? { preset: checkPreset, question: checkQuestion, criteria: checkCriteria, days: checkDays, evidenceExpected: checkEvidence } : null,
     });
     setFieldErrors(parsed.errors);
     if (!parsed.value || !organizationId) {
@@ -360,10 +362,23 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 <Field label="Number of spots" error={fieldErrors.seats}>
                   <input value={seats} onChange={(event) => { setSeats(event.target.value); clearError("seats", setFieldErrors); }} type="number" min="1" step="1" required />
                 </Field>
+                {operator ? (
+                  <label className="organize-open-now organize-sandbox-toggle">
+                    <input type="checkbox" checked={sandbox} onChange={(event) => {
+                      const next = event.target.checked;
+                      setSandbox(next);
+                      if (next) { setCollectSignups(false); setCheckOn(false); setOpenNow(true); }
+                      clearError("people", setFieldErrors);
+                    }} />
+                    <span><strong className="organize-sandbox-tag">SANDBOX</strong> Open to everyone. Any TAKE member can give one TAKE to any other member while it runs. No lists, no check, and results don't count.</span>
+                  </label>
+                ) : null}
+                {sandbox ? null : (
                 <label className="organize-open-now organize-signups-toggle">
                   <input type="checkbox" checked={collectSignups} onChange={(event) => { setCollectSignups(event.target.checked); clearError("people", setFieldErrors); }} />
                   <span>Let people join with a link first. Share the link, watch givers sign up, then lock the lists and open nominations.</span>
                 </label>
+                )}
                 {collectSignups ? (
                   <div className="field field--wide organize-signups-mode">
                     {signupDeadlineOn ? (
@@ -420,6 +435,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 ) : null}
               </div>
 
+              {sandbox ? null : (<>
               <div className="organize-people">
                 <div>
                   <h3>Who is involved?</h3>
@@ -467,6 +483,7 @@ export function OrganizePage({ navigate }: { navigate: (path: TakePath) => void 
                 openNow={openNow}
                 error={fieldErrors.check}
               />
+              </>)}
 
               <PrimaryAction type="submit" disabled={creatingCampaign}>{creatingCampaign ? "Creating campaign…" : collectSignups ? "Create and open sign-ups" : "Create campaign"}</PrimaryAction>
               {creatingCampaign ? <p className="organize-wait" role="status">{collectSignups ? "Saving the campaign and making its join link." : "Preparing who can give and receive. This can take a minute, then you sign."}</p> : null}
@@ -596,6 +613,7 @@ function readCampaignForm(input: {
   endLocal: string;
   giverIds: string[];
   recipientIds: string[];
+  sandbox?: boolean;
   signups?: { deadlineLocal: string | null; recipientSelfJoin: boolean } | null;
   check?: { preset: CheckPresetKey; question: string; criteria: string; days: number; evidenceExpected: boolean } | null;
 }) {
@@ -623,7 +641,9 @@ function readCampaignForm(input: {
     else if (signupDeadline.getTime() <= Date.now()) errors.signupDeadline = "Sign-ups have to close in the future.";
     else if (!Number.isNaN(end.getTime()) && signupDeadline.getTime() > end.getTime() - 5 * 60 * 1000) errors.signupDeadline = "Close sign-ups at least five minutes before nominations end.";
   }
-  if (input.signups) {
+  if (input.sandbox) {
+    // Open sandbox: nobody is listed, everyone with a TAKE account can take part.
+  } else if (input.signups) {
     if (input.recipientIds.some((id) => input.giverIds.includes(id))) errors.people = "The same person cannot both give and receive.";
   } else if (!input.giverIds.length || !input.recipientIds.length) errors.people = "Choose at least one person who can give and one person who can receive.";
   else if (input.recipientIds.some((id) => input.giverIds.includes(id))) errors.people = "The same person cannot both give and receive.";
@@ -648,8 +668,9 @@ function readCampaignForm(input: {
       seatCount,
       startTime: start.toISOString(),
       endTime: end.toISOString(),
-      giverIdentityIds: input.giverIds,
-      recipientIdentityIds: input.recipientIds,
+      giverIdentityIds: input.sandbox ? [] : input.giverIds,
+      recipientIdentityIds: input.sandbox ? [] : input.recipientIds,
+      ...(input.sandbox ? { sandbox: true } : {}),
       ...(input.signups ? { signups: { deadline: signupDeadline ? signupDeadline.toISOString() : null, recipientSelfJoin: input.signups.recipientSelfJoin } } : {}),
       ...(evaluationPlan ? { evaluationPlan } : {}),
     },

@@ -411,3 +411,7 @@
 .signups-gate__entries li.is-matched { background: #fff6c2; }
 .signups-gate__entries li.is-unmatched { background: #f2f2f2; border-style: dashed; }
 .signups-primary--sm { min-height: 42px; font-size: 15px; }
+.organize-sandbox-tag {
+  display: inline-block; margin-right: 6px; padding: 2px 8px; border: 2px solid #11110f; border-radius: 999px;
+  background: #c6ff31; font-size: 12px; letter-spacing: 0.04em;
+}

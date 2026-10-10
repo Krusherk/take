@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { schema, type Database } from "@take/database";
 import type { EvaluationTemplate, EvaluationTemplateParams, EvaluationTemplateType, CampaignAfter, EvaluationPlan, RecipientEvaluation, SignalCounts, SignalDomain, SignalHistory, SignalPerson, SignalRecommendation } from "@take/shared";
+import { isSandboxCampaign, scoreBackerPicks, type BackerSignal } from "@take/shared";
 import { ServiceError, notFound } from "./errors.js";
 import { isMissingTable } from "./campaign.js";
 
@@ -165,6 +166,7 @@ export class SignalService {
     const opportunities = new Map<string, Awaited<ReturnType<SignalService["opportunity"]>>>();
     const history: SignalRecommendation[] = [];
     for (const row of rows) {
+      if (isSandboxCampaign(row.campaign)) continue;
       const key = row.edge.canonicalRecipientKey;
       if (!people.has(key)) people.set(key, await this.person(key));
       if (!allocations.has(row.campaign.id)) allocations.set(row.campaign.id, await this.committedRecipients(row.campaign));
@@ -180,6 +182,30 @@ export class SignalService {
     }
     const domains = [...new Set(history.flatMap((item) => item.domain ? [item.domain] : []))];
     return { counts: counts(history), domains: domains.map((domain) => ({ domain, counts: counts(history.filter((item) => item.domain === domain)) })), history };
+  }
+
+  /** Public backer score for one canonical giver key. Sandbox campaigns never count. */
+  async backerScore(giverKey: string): Promise<BackerSignal & { person: SignalPerson }> {
+    const { history } = await this.history(giverKey);
+    const backers = new Map<string, number>();
+    for (const item of history) {
+      if (item.state !== "POSITIVE" && item.state !== "NEGATIVE") continue;
+      const pair = `${item.campaign.id}:${item.recipient.key}`;
+      if (backers.has(pair)) continue;
+      const rows = await this.db.selectDistinct({ giver: schema.nominationEdges.canonicalGiverKey }).from(schema.nominationEdges)
+        .where(and(eq(schema.nominationEdges.campaignId, item.campaign.id),
+          eq(schema.nominationEdges.canonicalRecipientKey, item.recipient.key),
+          eq(schema.nominationEdges.validity, "VALID"), eq(schema.nominationEdges.finalityStatus, "FINALIZED")));
+      backers.set(pair, Math.max(1, rows.length));
+    }
+    const scored = scoreBackerPicks(history.map((item) => ({
+      campaignId: item.campaign.id,
+      campaignTitle: item.campaign.title,
+      recipientName: item.recipient.name,
+      state: item.state,
+      backers: backers.get(`${item.campaign.id}:${item.recipient.key}`) ?? 0
+    })));
+    return { person: await this.person(giverKey), ...scored };
   }
 
   async after(campaignId: string, operator = false): Promise<CampaignAfter> {

@@ -165,4 +165,32 @@ describe("Organize page", () => {
     expect(Date.parse(body.signups.deadline)).toBeGreaterThan(Date.now());
     expect(Date.parse(body.signups.deadline)).toBeLessThan(Date.parse(body.endTime));
   });
+
+  it("lets an operator open a sandbox with no lists and sends sandbox: true", async () => {
+    operatorState.value = true;
+    request.mockClear();
+    render(<OrganizePage navigate={vi.fn()} />);
+    fireEvent.click(await screen.findByRole("checkbox", { name: /SANDBOX/ }));
+    expect(screen.queryByRole("checkbox", { name: /Let people join with a link first/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Can give" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText("Monad community spots"), { target: { value: "Judge sandbox" } });
+    fireEvent.change(screen.getByPlaceholderText("Builder spot"), { target: { value: "Test spot" } });
+    fireEvent.change(screen.getByPlaceholderText("One TAKE each. Give it to someone else."), { target: { value: "Try TAKE." } });
+    fireEvent.click(screen.getByRole("button", { name: /Create campaign/ }));
+    await waitFor(() => expect(request).toHaveBeenCalledWith("/organizations/org-1/campaigns", expect.anything()));
+    const call = request.mock.calls.find(([path]) => path === "/organizations/org-1/campaigns") as unknown as [string, RequestInit];
+    const body = JSON.parse(String(call[1].body));
+    expect(body.sandbox).toBe(true);
+    expect(body.giverIdentityIds).toEqual([]);
+    expect(body.signups).toBeUndefined();
+    expect(body.evaluationPlan).toBeUndefined();
+  });
+
+  it("hides the sandbox option from non-operators", async () => {
+    operatorState.value = false;
+    render(<OrganizePage navigate={vi.fn()} />);
+    await screen.findByRole("checkbox", { name: /Let people join with a link first/ });
+    expect(screen.queryByRole("checkbox", { name: /SANDBOX/ })).not.toBeInTheDocument();
+    operatorState.value = true;
+  });
 });

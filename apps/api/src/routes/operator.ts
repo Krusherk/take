@@ -42,7 +42,8 @@ const organizerCampaignInput = z.object({
     criteria: z.string().trim().min(10).max(5_000),
     evaluateAfter: z.coerce.date(),
     evidenceExpected: z.boolean()
-  }).strict().optional()
+  }).strict().optional(),
+  sandbox: z.boolean().optional()
 });
 
 export const operatorRoutes: FastifyPluginAsync = async (app) => {

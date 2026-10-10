@@ -134,6 +134,7 @@ export function CampaignPage({ campaignId, navigate, optimisticGivenCampaigns, o
         <div className="sticker-campaign__title">
           <h1 id="campaign-title"><PaperLabel size="lg" tilt={3} delay={90}>{campaign.title}</PaperLabel></h1>
           <PaperLabel size="sm" tilt={-2} delay={150}>by {campaign.organizer}</PaperLabel>
+          {campaign.sandbox ? <p className="sandbox-note"><strong>SANDBOX</strong> Open to everyone. Results don't count.</p> : null}
         </div>
 
         {currentPerson ? (

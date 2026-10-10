@@ -14,7 +14,8 @@ import { ExperimentService } from "./experiment.js";
 import { MechanismService } from "./mechanism.js";
 import { SelectorEligibilityService } from "./selectorEligibility.js";
 import { SignalService } from "./signal.js";
-import type { SignalDomain } from "@take/shared";
+import { SANDBOX_ELIGIBILITY_DESCRIPTION, type SignalDomain } from "@take/shared";
+import { CampaignService } from "./campaign.js";
 
 export interface OrganizerCampaignInput {
   organizationId: string;
@@ -29,6 +30,8 @@ export interface OrganizerCampaignInput {
   evaluationPlan?: { domain: SignalDomain; question: string; criteria: string; evaluateAfter: Date; evidenceExpected: boolean };
   /** Phase 1 "Sign-ups": collect people through a join link before anything is locked. */
   signups?: { deadline: Date | null; recipientSelfJoin: boolean };
+  /** Operator-only open sandbox: anyone can give, no lists, results don't count. */
+  sandbox?: boolean;
 }
 
 export type CampaignListIds = { giverAllowlistId: string; recipientAllowlistId: string };
@@ -38,6 +41,7 @@ export class OrganizerCampaignService {
 
   async create(input: OrganizerCampaignInput, actor: { takeIdentityId: string; isOperator: boolean }) {
     await assertOrganizationRole(this.db, input.organizationId, actor.takeIdentityId, ["OWNER", "ADMIN"]);
+    if (input.sandbox) return this.createSandbox(input, actor);
     const now = new Date();
     const signups = input.signups ?? null;
     if (signups?.deadline) {
@@ -151,6 +155,46 @@ export class OrganizerCampaignService {
       campaignId,
       stage: "READY_TO_SIGN" as const,
       message: "The campaign is ready. Sign once to publish it on Monad, then sign again to open nominations. It shows as live in Explore after the second signature."
+    };
+  }
+
+  /**
+   * Open sandbox: open giver and recipient eligibility with empty roots, so the
+   * contract lets any registered TAKE identity give one TAKE to anyone else
+   * while it is active. No lists, snapshots or mechanism are locked.
+   */
+  private async createSandbox(input: OrganizerCampaignInput, actor: { takeIdentityId: string; isOperator: boolean }) {
+    if (!actor.isOperator) throw new ServiceError("OPERATOR_REQUIRED", "Only a TAKE operator can open a sandbox campaign", 403);
+    if (input.signups || input.evaluationPlan) {
+      throw new ServiceError("SANDBOX_OPTIONS", "A sandbox has no sign-ups and no follow-up check", 400);
+    }
+    const now = new Date();
+    if (input.endTime <= now || input.endTime <= input.startTime) {
+      throw new ServiceError("INVALID_CAMPAIGN_TIME", "Campaign end must be in the future and after its start", 400);
+    }
+    const campaign = await new CampaignService(this.db).createDraft({
+      organizationId: input.organizationId,
+      title: input.title,
+      description: input.description,
+      resource: { type: "OPPORTUNITY", name: input.resourceName, quantity: input.seatCount },
+      startTime: input.startTime < now ? now : input.startTime,
+      endTime: input.endTime,
+      nominationLimit: 1,
+      nominatorEligibilityMode: "OPEN_REGISTERED",
+      recipientEligibilityMode: "OPEN_REGISTERED",
+      nominationVisibilityMode: "PUBLIC"
+    }, actor.takeIdentityId);
+    await this.db.update(schema.campaigns).set({
+      eligibilityDescription: SANDBOX_ELIGIBILITY_DESCRIPTION,
+      launchApprovedByIdentityId: actor.takeIdentityId,
+      launchApprovedAt: new Date(),
+      updatedAt: new Date()
+    }).where(eq(schema.campaigns.id, campaign.id));
+    return {
+      campaignId: campaign.id,
+      stage: "READY_TO_SIGN" as const,
+      sandbox: true,
+      message: "Sandbox ready. Publish it on Monad, then open it. Anyone with a TAKE account can give while it runs."
     };
   }
 

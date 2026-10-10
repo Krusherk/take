@@ -33,6 +33,7 @@ export function campaignFromApi(source: ApiCampaign): Campaign {
     nominationVisibilityMode: source.nominationVisibilityMode,
     nominatorEligibilityMode: source.nominatorEligibilityMode,
     recipientEligibilityMode: source.recipientEligibilityMode,
+    sandbox: source.sandbox === true,
     viewer: source.viewer,
     visual: visualForCampaign(source.title),
   };

@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, notInArray, or } from "drizzle-orm";
 import { schema } from "@take/database";
 import { SignalService } from "../services/signal.js";
 
@@ -28,7 +28,9 @@ export const proofRoutes: FastifyPluginAsync = async (app) => {
     reply.header("Vercel-CDN-Cache-Control", "max-age=60, stale-while-revalidate=600");
     const finished = await app.db.select({ campaign: schema.campaigns, organizationName: schema.organizations.name })
       .from(schema.campaigns).innerJoin(schema.organizations, eq(schema.organizations.id, schema.campaigns.organizationId))
-      .where(and(eq(schema.campaigns.status, "FINALIZED"), isNotNull(schema.campaigns.finalResultHash)))
+      .where(and(eq(schema.campaigns.status, "FINALIZED"), isNotNull(schema.campaigns.finalResultHash),
+        // Sandbox campaigns (open eligibility, no locked mechanism) are for trying TAKE and don't count.
+        or(isNotNull(schema.campaigns.mechanismConfigId), notInArray(schema.campaigns.nominatorEligibilityMode, ["OPEN_REGISTERED", "EXTERNAL_ALLOWED"]))))
       .orderBy(desc(schema.campaigns.endTime)).limit(6);
     const campaigns: ProofCampaign[] = [];
     for (const { campaign, organizationName } of finished) {

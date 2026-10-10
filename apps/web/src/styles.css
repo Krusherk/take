@@ -9528,3 +9528,16 @@ body {
   .landing-footer--final .landing-footer__copy { position: absolute; right: 0; bottom: 42px; left: 0; }
   .landing-footer-handoff { position: absolute; top: 230px; right: -18px; left: 8%; height: 300px; }
 }
+
+/* Sandbox campaigns: open to everyone, results don't count. */
+.sandbox-note {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 0; padding: 6px 12px;
+  border: 2px solid #11110f; border-radius: 14px; background: #fffdf4; box-shadow: 3px 3px 0 #11110f;
+  font-size: 14px; transform: rotate(-1.5deg);
+}
+.sandbox-note strong { padding: 1px 8px; border-radius: 999px; background: #c6ff31; border: 2px solid #11110f; font-size: 12px; letter-spacing: 0.04em; }
+.profile-signal__score { display: grid; gap: 2px; margin: 8px 0; }
+.profile-signal__score strong { font-size: 40px; line-height: 1; }
+.profile-signal__score span { font-weight: 600; }
+.profile-signal__score small { color: #4b4b46; font-size: 13px; line-height: 1.4; }
+.hiw-extra { margin-top: 28px; }

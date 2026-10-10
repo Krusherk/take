@@ -59,7 +59,7 @@ export function ProfilePage({ navigate, onLogout }: { navigate: (path: TakePath)
       </Sticker>
 
       <Sticker tilt={0.5} delay={300} className="profile-sticker__card">
-        <ProfileSignal navigate={navigate} />
+        <ProfileSignal navigate={navigate} handle={person.handle} />
       </Sticker>
 
       <section className="sticker-feed__list profile-sticker__history" aria-labelledby="profile-history-title">

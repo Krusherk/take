@@ -56,6 +56,7 @@ export interface Campaign {
   nominationVisibilityMode: string;
   nominatorEligibilityMode: string;
   recipientEligibilityMode: string;
+  sandbox?: boolean;
   viewer: CampaignViewerState | null;
   visual: CampaignVisual;
   experiment?: {
@@ -109,6 +110,7 @@ export interface ApiCampaign {
   nominationVisibilityMode: string;
   nominatorEligibilityMode: string;
   recipientEligibilityMode: string;
+  sandbox?: boolean;
   resource: {
     id: string;
     type: string;
