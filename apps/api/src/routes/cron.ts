@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import { EvaluationAutoChecker } from "../services/evaluationAuto.js";
 import { AutoFinalizer, safeErrorCode, type FinalizerReport } from "../services/autoFinalizer.js";
 
 /**
@@ -34,6 +35,12 @@ export const cronRoutes: FastifyPluginAsync = async (app) => {
       // scheduler keeps calling and the body says why.
       app.log.error({ code: safeErrorCode(error) }, "TAKE auto-finalizer run failed");
       return { ok: false, serverWallet: null, indexer: null, steps: [], errors: [{ stage: "run", code: safeErrorCode(error) }], durationMs: 0 };
+    }
+    // Objective checks after the TAKE (e.g. "still holds the NFT"), when due.
+    try {
+      report.evaluations = await new EvaluationAutoChecker(app.db, app.env).runDue(Date.now() + 8_000);
+    } catch (error) {
+      report.evaluations = { error: safeErrorCode(error) };
     }
     for (const item of report.steps) {
       if (item.action !== "WAIT" || item.transactionHash) {

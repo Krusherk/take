@@ -1,18 +1,19 @@
 import { Menu, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 interface LandingHeaderProps {
   onSignIn: () => void;
+  onNavigate?: (path: "/how-it-works") => void;
 }
 
 const links = [
-  { href: "#how-it-works", label: "How it works" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "#use-cases", label: "Use cases" },
   { href: "#why-take", label: "Why TAKE" },
   { href: "#about", label: "About" },
 ];
 
-export function LandingHeader({ onSignIn }: LandingHeaderProps) {
+export function LandingHeader({ onSignIn, onNavigate }: LandingHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -34,6 +35,12 @@ export function LandingHeader({ onSignIn }: LandingHeaderProps) {
     setMenuOpen(false);
   }
 
+  function follow(event: MouseEvent<HTMLAnchorElement>, href: string) {
+    if (href !== "/how-it-works" || !onNavigate) return;
+    event.preventDefault();
+    onNavigate(href);
+  }
+
   return (
     <header className="landing-header">
       <a className="landing-brand landing-brand--logo" href="#top" aria-label="TAKE home">
@@ -41,7 +48,7 @@ export function LandingHeader({ onSignIn }: LandingHeaderProps) {
       </a>
 
       <nav className="landing-nav" aria-label="Public navigation">
-        {links.map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}
+        {links.map((link) => <a key={link.href} href={link.href} onClick={(event) => follow(event, link.href)}>{link.label}</a>)}
       </nav>
 
       <button className="landing-sign-in" type="button" onClick={onSignIn}>
@@ -65,7 +72,7 @@ export function LandingHeader({ onSignIn }: LandingHeaderProps) {
           if (event.target === event.currentTarget) closeMenu();
         }}>
           <nav id="landing-mobile-nav" className="landing-mobile-nav" aria-label="Mobile navigation">
-            {links.map((link) => <a key={link.href} href={link.href} onClick={closeMenu}>{link.label}</a>)}
+            {links.map((link) => <a key={link.href} href={link.href} onClick={(event) => { closeMenu(); follow(event, link.href); }}>{link.label}</a>)}
             <button type="button" onClick={() => { closeMenu(); onSignIn(); }}>Sign in</button>
           </nav>
         </div>

@@ -1175,3 +1175,22 @@ export const gasDrips = pgTable("gas_drips", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   sentAt: timestamp("sent_at", { withTimezone: true })
 });
+
+export const campaignMemberLists = pgTable("campaign_member_lists", {
+  campaignId: uuid("campaign_id").primaryKey().references(() => campaigns.id, { onDelete: "cascade" }),
+  communityLabel: varchar("community_label", { length: 120 }).notNull(),
+  xHandles: text("x_handles").array().notNull().default(sql`'{}'::text[]`),
+  walletAddresses: text("wallet_addresses").array().notNull().default(sql`'{}'::text[]`),
+  updatedByIdentityId: uuid("updated_by_identity_id").notNull().references(() => takeIdentities.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
+export const evaluationPlanTemplates = pgTable("evaluation_plan_templates", {
+  planId: uuid("plan_id").primaryKey().references(() => campaignEvaluationPlans.id, { onDelete: "cascade" }),
+  template: varchar("template", { length: 24 }).notNull(),
+  params: jsonb("params").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+  autoCheckedAt: timestamp("auto_checked_at", { withTimezone: true }),
+  autoCheckReport: jsonb("auto_check_report"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});

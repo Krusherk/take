@@ -117,7 +117,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
   return (
     <main id="top" className="landing-page">
       <div className="landing-first-view landing-sky">
-        <LandingHeader onSignIn={() => openAuthentication("/home")} />
+        <LandingHeader onSignIn={() => openAuthentication("/home")} onNavigate={navigate} />
 
         <section className="landing-sky__hero" aria-labelledby="landing-heading">
           <div className="landing-sky__copy">
@@ -133,7 +133,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
                 </button>
               </Sticker>
               <Sticker tilt={1.5} delay={320} className="landing-sky__secondary-wrap">
-                <a className="landing-sky__secondary" href="#how-it-works">See how TAKE works</a>
+                <a className="landing-sky__secondary" href="/how-it-works" onClick={(event) => { event.preventDefault(); navigate("/how-it-works"); }}>See how TAKE works</a>
               </Sticker>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function LoginPage({ navigate }: LoginPageProps) {
         </section>
       </div>
 
-      <LandingStickerSections onStartCampaign={() => openAuthentication("/organize")} onExplore={() => openAuthentication("/explore")} />
+      <LandingStickerSections onHowItWorks={() => navigate("/how-it-works")} onStartCampaign={() => openAuthentication("/organize")} onExplore={() => openAuthentication("/explore")} />
 
       {dialogOpen ? (
         <div className="landing-auth-layer" role="presentation" onMouseDown={(event) => {

@@ -1,11 +1,13 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { schema, type Database } from "@take/database";
-import type { CampaignAfter, EvaluationPlan, RecipientEvaluation, SignalCounts, SignalDomain, SignalHistory, SignalPerson, SignalRecommendation } from "@take/shared";
+import type { EvaluationTemplate, EvaluationTemplateParams, EvaluationTemplateType, CampaignAfter, EvaluationPlan, RecipientEvaluation, SignalCounts, SignalDomain, SignalHistory, SignalPerson, SignalRecommendation } from "@take/shared";
 import { ServiceError, notFound } from "./errors.js";
+import { isMissingTable } from "./campaign.js";
 
 type PlanRow = typeof schema.campaignEvaluationPlans.$inferSelect;
 type EvaluationRow = typeof schema.recipientEvaluations.$inferSelect;
-type PlanInput = { domain: SignalDomain; question: string; criteria: string; evaluateAfter: Date; evidenceExpected: boolean };
+type PlanInput = { domain: SignalDomain; question: string; criteria: string; evaluateAfter: Date; evidenceExpected: boolean;
+  template?: { type: EvaluationTemplateType; params: EvaluationTemplateParams } };
 type OutcomeInput = { recipientKey: string; status: "PENDING" | "POSITIVE" | "NEGATIVE" | "INCONCLUSIVE"; evidenceUrls: string[]; note: string; isPublic: boolean };
 
 export class SignalService {
@@ -19,7 +21,24 @@ export class SignalService {
 
   async plan(id: string): Promise<EvaluationPlan | null> {
     const [plan] = await this.db.select().from(schema.campaignEvaluationPlans).where(eq(schema.campaignEvaluationPlans.campaignId, id)).limit(1);
-    return plan ? planView(plan) : null;
+    return plan ? { ...planView(plan), template: await this.template(plan.id) } : null;
+  }
+
+  /** The plan's opportunity template; null without one (or before the migration is applied). */
+  async template(planId: string): Promise<EvaluationTemplate | null> {
+    try {
+      const [row] = await this.db.select().from(schema.evaluationPlanTemplates).where(eq(schema.evaluationPlanTemplates.planId, planId)).limit(1);
+      return row ? { type: row.template as EvaluationTemplateType, params: row.params as EvaluationTemplateParams,
+        autoCheckedAt: row.autoCheckedAt?.toISOString() ?? null, autoCheckReport: row.autoCheckReport ?? null } : null;
+    } catch (error) {
+      if (isMissingTable(error)) return null;
+      throw error;
+    }
+  }
+
+  private async templatesAvailable() {
+    try { await this.db.select({ id: schema.evaluationPlanTemplates.planId }).from(schema.evaluationPlanTemplates).limit(1); return true; }
+    catch (error) { if (isMissingTable(error)) return false; throw error; }
   }
 
   private async opportunity(campaignId: string) {
@@ -29,7 +48,11 @@ export class SignalService {
       seats: resources.reduce((total, resource) => total + resource.quantity, 0) };
   }
 
-  async lockPlan(campaignId: string, actorId: string, input: PlanInput) {
+  async lockPlan(campaignId: string, actorId: string, { template, ...input }: PlanInput) {
+    const withTemplate = Boolean(template) && await this.templatesAvailable();
+    if (template && template.type !== "CUSTOM" && !withTemplate) {
+      throw new ServiceError("EVALUATION_TEMPLATES_UNAVAILABLE", "Opportunity templates are not switched on yet on this TAKE server. Use Custom.", 503);
+    }
     return this.db.transaction(async (tx) => {
       const [campaign] = await tx.select().from(schema.campaigns).where(eq(schema.campaigns.id, campaignId)).for("update");
       if (!campaign) notFound("Campaign not found");
@@ -45,7 +68,11 @@ export class SignalService {
       const [plan] = await tx.insert(schema.campaignEvaluationPlans).values({
         ...input, campaignId, createdByIdentityId: actorId, lockedAt: new Date()
       }).returning();
-      return planView(plan!);
+      if (template && withTemplate) {
+        await tx.insert(schema.evaluationPlanTemplates).values({ planId: plan!.id, template: template.type, params: template.params as Record<string, unknown> });
+        return { ...planView(plan!), template: { type: template.type, params: template.params, autoCheckedAt: null, autoCheckReport: null } };
+      }
+      return { ...planView(plan!), template: null };
     });
   }
 

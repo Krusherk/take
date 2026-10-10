@@ -2,9 +2,25 @@ export const signalDomains = ["BUILDER", "CREATOR", "COMMUNITY", "GRANT", "ACCES
 export type SignalDomain = typeof signalDomains[number];
 export type OutcomeStatus = "PENDING" | "POSITIVE" | "NEGATIVE" | "INCONCLUSIVE";
 export interface SignalPerson { key: string; name: string; avatarUrl: string | null }
+export const evaluationTemplates = ["BUILDER_GRANT", "CREATOR_PROGRAM", "NFT_HOLD", "BETA_ACCESS", "EVENT_TICKET", "CUSTOM"] as const;
+export type EvaluationTemplateType = typeof evaluationTemplates[number];
+/** Template parameters, locked with the plan. NFT_HOLD is checked automatically (balanceOf). */
+export interface EvaluationTemplateParams {
+  pieces?: number;
+  nftContract?: string;
+  chainId?: number;
+  holdDays?: number;
+}
+export interface EvaluationTemplate {
+  type: EvaluationTemplateType;
+  params: EvaluationTemplateParams;
+  autoCheckedAt: string | null;
+  autoCheckReport: unknown;
+}
 export interface EvaluationPlan {
   id: string; campaignId: string; domain: SignalDomain; question: string; criteria: string;
   evaluateAfter: string; evidenceExpected: boolean; createdAt: string; lockedAt: string | null;
+  template?: EvaluationTemplate | null;
 }
 export interface RecipientEvaluation {
   status: OutcomeStatus; evidenceUrls: string[]; note: string | null; isPublic: boolean;

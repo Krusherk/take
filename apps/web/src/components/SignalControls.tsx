@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { signalDomains, type CampaignAfter, type EvaluationPlan, type SignalDomain } from "../../../../packages/shared/src/signal";
+import { signalDomains, type CampaignAfter, type EvaluationPlan, type EvaluationTemplateParams, type EvaluationTemplateType, type SignalDomain } from "../../../../packages/shared/src/signal";
+import { EVALUATION_TEMPLATES, chainName, templatePreset } from "../lib/evaluationTemplates";
 import type { TakeApiClient } from "../lib/takeApi";
 import { PrimaryAction, SecondaryAction } from "./Actions";
 import { SignalPersonLabel, signalDate } from "./Signal";
@@ -19,6 +20,33 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
   const [date, setDate] = useState("");
   const [evidenceExpected, setEvidenceExpected] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
+  const [template, setTemplate] = useState<EvaluationTemplateType>("CUSTOM");
+  const [pieces, setPieces] = useState("3");
+  const [holdDays, setHoldDays] = useState("30");
+  const [nftContract, setNftContract] = useState("");
+  const [chainId, setChainId] = useState<number | null>(null);
+  const [chains, setChains] = useState<number[]>([]);
+  useEffect(() => {
+    if (template !== "NFT_HOLD" || chains.length) return;
+    const controller = new AbortController();
+    void request<{ chainIds: number[] }>("/evaluation-chains", { signal: controller.signal })
+      .then((data) => { setChains(data.chainIds); setChainId((current) => current ?? data.chainIds[0] ?? null); })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [template, chains.length, request]);
+  function pickTemplate(next: EvaluationTemplateType) {
+    setTemplate(next);
+    const preset = templatePreset(next, { pieces: Number(pieces) || 3, holdDays: Number(holdDays) || 30 });
+    setDomain(preset.domain);
+    setQuestion(preset.question);
+    setCriteria(preset.criteria);
+    setEvidenceExpected(preset.evidenceExpected);
+  }
+  function templateParams(): EvaluationTemplateParams {
+    if (template === "CREATOR_PROGRAM") return { pieces: Number(pieces) || 1 };
+    if (template === "NFT_HOLD") return { nftContract: nftContract.trim(), chainId: chainId ?? undefined, holdDays: Number(holdDays) || undefined };
+    return {};
+  }
   useEffect(() => {
     const controller = new AbortController();
     void request<CampaignAfter>(`/campaigns/${campaignId}/after`, { signal: controller.signal })
@@ -32,7 +60,8 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
     setBusy(true); setError(null);
     try {
       const result = await request<EvaluationPlan>(`/campaigns/${campaignId}/evaluation-plan`, {
-        method: "POST", body: JSON.stringify({ domain, question, criteria, evaluateAfter: new Date(date).toISOString(), evidenceExpected })
+        method: "POST", body: JSON.stringify({ domain, question, criteria, evaluateAfter: new Date(date).toISOString(), evidenceExpected,
+          ...(template !== "CUSTOM" ? { template: { type: template, params: templateParams() } } : {}) })
       });
       setPlan(result);
     } catch (caught) { setError(message(caught)); } finally { setBusy(false); }
@@ -40,16 +69,30 @@ export function EvaluationPlanEditor({ campaignId, status, request }: { campaign
   return <details className="signal-control"><summary>Check after the TAKE · {plan ? `locked, from ${signalDate(plan.evaluateAfter)}` : status !== "DRAFT" ? "none scheduled" : "optional"}</summary>
     <p>The question checked after the spot is given, and when. It is locked before publication and never changes who gets a TAKE or a spot.</p>
     {error ? <p className="form-error" role="alert">{error}</p> : null}
-    {plan ? <div className="signal-plan"><span className="eyebrow">LOCKED {signalDate(plan.lockedAt ?? plan.createdAt)}</span><h3>{plan.question}</h3><p>{plan.criteria}</p><p>{plan.domain.toLowerCase()} · Evaluate from {signalDate(plan.evaluateAfter)}</p><small>{plan.evidenceExpected ? "Evidence required." : "Evidence optional."} Criteria cannot be changed.</small></div>
+    {plan ? <div className="signal-plan"><span className="eyebrow">LOCKED {signalDate(plan.lockedAt ?? plan.createdAt)}</span><h3>{plan.question}</h3><p>{plan.criteria}</p><p>{plan.template ? `${EVALUATION_TEMPLATES[plan.template.type].label} · ` : ""}{plan.domain.toLowerCase()} · Evaluate from {signalDate(plan.evaluateAfter)}</p>
+      {plan.template?.type === "NFT_HOLD" ? <p className="signal-plan__auto">Automatic check: TAKE reads balanceOf for each recipient’s wallet on {chainName(plan.template.params.chainId)} (contract {plan.template.params.nftContract}) on the check date and records Yes/No with the read as evidence. The team can override with a note.{plan.template.autoCheckedAt ? ` Checked ${signalDate(plan.template.autoCheckedAt)}.` : ""}</p> : null}<small>{plan.evidenceExpected ? "Evidence required." : "Evidence optional."} Criteria cannot be changed.</small></div>
       : status !== "DRAFT" ? <p>No check was scheduled before this campaign was published. A check can't be added afterwards, so the question can't change once people have given.</p>
         : loaded ? <form className="signal-form" onSubmit={(event) => void save(event)}>
+          <fieldset className="signal-templates"><legend>OPPORTUNITY TYPE</legend>
+            {(Object.keys(EVALUATION_TEMPLATES) as EvaluationTemplateType[]).map((type) => <label key={type} className={`signal-template${template === type ? " is-active" : ""}`}>
+              <input type="radio" name="evaluation-template" value={type} checked={template === type} onChange={() => pickTemplate(type)} />
+              <strong>{EVALUATION_TEMPLATES[type].label}</strong><small>{EVALUATION_TEMPLATES[type].hint}</small>
+            </label>)}
+          </fieldset>
+          {template === "CREATOR_PROGRAM" ? <label className="field"><span>PIECES TO PUBLISH</span><input inputMode="numeric" value={pieces} onChange={(event) => { setPieces(event.target.value.replace(/\D/g, "")); setQuestion(templatePreset("CREATOR_PROGRAM", { pieces: Number(event.target.value) || 1 }).question); }} /></label> : null}
+          {template === "NFT_HOLD" ? <>
+            <label className="field"><span>NFT CONTRACT ADDRESS</span><input required pattern="0x[0-9a-fA-F]{40}" value={nftContract} onChange={(event) => setNftContract(event.target.value.trim())} placeholder="0x…" /></label>
+            <label className="field"><span>CHAIN</span><select required value={chainId ?? ""} onChange={(event) => setChainId(Number(event.target.value))}>{chains.length ? chains.map((id) => <option key={id} value={id}>{chainName(id)}</option>) : <option value="">No chain configured yet</option>}</select></label>
+            <label className="field"><span>DAYS AFTER MINT</span><input inputMode="numeric" value={holdDays} onChange={(event) => { setHoldDays(event.target.value.replace(/\D/g, "")); setQuestion(templatePreset("NFT_HOLD", { holdDays: Number(event.target.value) || 1 }).question); }} /></label>
+            <p className="signal-note">Set “Evaluate from” to the mint date plus these days. On that date TAKE reads <code>balanceOf(recipient wallet)</code> over RPC and records Yes or No automatically, with the read as evidence.</p>
+          </> : null}
           <label className="field"><span>CATEGORY</span><select value={domain} onChange={(event) => setDomain(event.target.value as SignalDomain)}>{signalDomains.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="field"><span>WHAT WILL YOU EVALUATE?</span><input required minLength={5} maxLength={500} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What should happen after this opportunity?" /></label>
           <label className="field"><span>ORIGINAL CRITERIA</span><textarea required minLength={10} maxLength={5000} value={criteria} onChange={(event) => setCriteria(event.target.value)} placeholder="Describe what positive, negative, and inconclusive would mean for this opportunity." /></label>
           <label className="field"><span>EVALUATE FROM (YOUR LOCAL TIME)</span><input required type="datetime-local" value={date} onChange={(event) => setDate(event.target.value)} /></label>
           <label className="signal-checkbox"><input type="checkbox" checked={evidenceExpected} onChange={(event) => setEvidenceExpected(event.target.checked)} />Require evidence for recorded outcomes</label>
           <label className="signal-checkbox"><input type="checkbox" required checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I understand these criteria will be locked and cannot be rewritten.</label>
-          <PrimaryAction type="submit" disabled={busy || !confirmed}>{busy ? "SAVING…" : "SAVE & LOCK CRITERIA"}</PrimaryAction>
+          <PrimaryAction type="submit" disabled={busy || !confirmed || (template === "NFT_HOLD" && (!chainId || !/^0x[0-9a-fA-F]{40}$/.test(nftContract)))}>{busy ? "SAVING…" : "SAVE & LOCK CRITERIA"}</PrimaryAction>
         </form> : !error ? <p role="status">Loading evaluation plan…</p> : null}
   </details>;
 }

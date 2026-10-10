@@ -123,3 +123,16 @@
   .signal-faceoff { grid-template-columns: 1fr; }
   .signal-faceoff__pass { width: 8px; height: 36px; margin: 0; clip-path: polygon(0 0, 100% 18%, 50% 100%, 0 18%); }
 }
+
+/* Opportunity-type templates for the check after the TAKE */
+.signal-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 0; padding: 0; border: 0; }
+.signal-templates legend { margin-bottom: 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; }
+.signal-template { position: relative; display: grid; gap: 2px; padding: 10px 12px; border: 2px solid #11110f; border-radius: 14px; background: #fffef8; cursor: pointer; transform: rotate(-0.4deg); }
+.signal-template:nth-child(even) { transform: rotate(0.5deg); }
+.signal-template.is-active { background: #c6ff31; box-shadow: 3px 3px 0 #11110f; }
+.signal-template input[type=radio] { position: absolute; width: 1px !important; height: 1px; opacity: 0; }
+.signal-template:focus-within { outline: 3px solid #4f8cff; outline-offset: 2px; }
+.signal-template strong { font-size: 15px; }
+.signal-template small { font-size: 12px; line-height: 1.3; opacity: 0.75; }
+.signal-note { margin: 0; font-size: 13px; opacity: 0.8; }
+.signal-plan__auto { padding: 8px 10px; border-radius: 10px; background: #eef9d0; font-size: 13px; word-break: break-word; }

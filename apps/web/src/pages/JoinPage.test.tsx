@@ -79,6 +79,18 @@ describe("JoinPage", () => {
     await waitFor(() => expect(navigate).toHaveBeenCalledWith("/campaign/c1"), { timeout: 3000 });
   });
 
+  it("tells someone outside the member list that the campaign is members-only", async () => {
+    auth.authenticated = true;
+    me.value = { id: "me" };
+    request.mockImplementation(async () => joinView({
+      viewer: { joinedAs: null, removed: false, interested: false },
+      membersOnly: { community: "Monad Builders", viewerIsMember: false },
+    }));
+    render(<JoinPage code="abc234xyz9" navigate={vi.fn()} />);
+    expect(await screen.findByText("This campaign is for Monad Builders members only.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Join as giver" })).not.toBeInTheDocument();
+  });
+
   it("closed links offer to notify about the next campaign", async () => {
     auth.authenticated = true;
     me.value = { id: "me" };
