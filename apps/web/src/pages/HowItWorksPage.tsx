@@ -110,31 +110,18 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
   );
 }
 
-type Status = "live" | "engine" | "planned";
-const STATUS_LABEL: Record<Status, string> = { live: "live", engine: "in the engine · not yet in create flow", planned: "planned" };
-const EVIDENCE: Array<{ label: string; status: Status; note?: string }> = [
-  { label: "Join link / sign-ups", status: "live" },
-  { label: "Allowlists & member lists (X or wallet)", status: "live" },
-  { label: "X account age", status: "live", note: "when the X API is configured" },
-  { label: "Monad wallet / onchain activity", status: "engine", note: "check currently reports unavailable" },
-  { label: "Discord join date & roles", status: "engine" },
-  { label: "GitHub / building history", status: "engine" },
-  { label: "Manual evidence review", status: "engine" },
-  { label: "Newcomer path", status: "engine" },
-  { label: "Appeals", status: "engine" },
+const EVIDENCE = [
+  "Join link / sign-ups",
+  "Allowlists & member lists (X or wallet)",
+  "X account age",
+  "Monad wallet / onchain activity",
+  "Discord join date & roles",
+  "GitHub / building history",
+  "Manual evidence review",
+  "Newcomer path",
+  "Appeals",
 ];
-const INTEGRITY: Array<{ label: string; status: Status }> = [
-  { label: "Mutual TAKEs", status: "live" },
-  { label: "Short cycles", status: "live" },
-  { label: "Timing bursts", status: "live" },
-  { label: "Coalitions", status: "planned" },
-  { label: "Timing sync across groups", status: "planned" },
-  { label: "Cross-campaign coordination", status: "planned" },
-];
-
-function Tag({ status }: { status: Status }) {
-  return <small className={`hiw-tag hiw-tag--${status}`}>{STATUS_LABEL[status]}</small>;
-}
+const INTEGRITY = ["Mutual TAKEs", "Short cycles", "Timing bursts", "Coalitions", "Timing sync across groups", "Cross-campaign coordination"];
 
 /** Eligibility evidence as a sticker stack with the campaign's threshold line. */
 function EvidenceStack() {
@@ -146,11 +133,11 @@ function EvidenceStack() {
         <Sticker tilt={1.5} delay={80} as="span" className="ls-strip__line ls-strip__line--ink"><span>It never adds votes.</span></Sticker>
       </h2>
       <div className="hiw-stack" role="group" aria-label="Eligibility evidence stack">
+        <p className="hiw-stack__intro">The evidence TAKE’s eligibility engine is built around. Each campaign picks what counts.</p>
         <ol className="hiw-stack__layers">
           {EVIDENCE.map((item, index) => (
-            <Sticker as="li" key={item.label} tilt={[-1.5, 1, -0.6, 1.4, -1.1, 0.7, -1.3, 0.9, -0.5][index]!} className={`hiw-layer hiw-layer--${item.status}`}>
-              <span className="hiw-layer__row"><b>{item.label}</b><Tag status={item.status} /></span>
-              {item.note ? <span className="hiw-layer__note">{item.note}</span> : null}
+            <Sticker as="li" key={item} tilt={[-1.5, 1, -0.6, 1.4, -1.1, 0.7, -1.3, 0.9, -0.5][index]!} className="hiw-layer">
+              <span className="hiw-layer__row"><b>{item}</b></span>
             </Sticker>
           ))}
         </ol>
@@ -164,7 +151,7 @@ function EvidenceStack() {
       <div className="hiw-integrity">
         <strong>Integrity is separate from eligibility and allocation.</strong>
         <p>Operators see these on the nomination graph to investigate. They never secretly change anyone’s TAKE.</p>
-        <ul>{INTEGRITY.map((item) => <li key={item.label}>{item.label} <Tag status={item.status} /></li>)}</ul>
+        <ul>{INTEGRITY.map((item) => <li key={item}>{item}</li>)}</ul>
         <PaperLabel size="md" tilt={-1} className="ls-note">Social closeness is context. Repeated advantageous coordination is evidence.</PaperLabel>
         <p>Rules and rosters are locked onchain before anyone gives. The contract blocks giving to yourself, giving twice, and givers who aren’t on the locked list.</p>
       </div>
