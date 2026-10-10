@@ -14,3 +14,12 @@ describe("evaluation templates", () => {
     expect(chainName(10143)).toBe("Monad testnet");
   });
 });
+
+describe("evaluationDate", () => {
+  it("adds days to the base and never lands before the campaign end", async () => {
+    const { evaluationDate } = await import("./evaluationTemplates");
+    const end = new Date("2026-10-20T10:00:00Z");
+    expect(evaluationDate(end, 30, end).toISOString()).toBe("2026-11-19T10:00:00.000Z");
+    expect(evaluationDate(new Date("2026-10-01T10:00:00Z"), 5, end).toISOString()).toBe(end.toISOString());
+  });
+});

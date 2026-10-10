@@ -8,6 +8,10 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     const dbStartedAt = Date.now();
     await app.db.execute(sql`select 1`);
     const databaseLatencyMs = Date.now() - dbStartedAt;
+    // Which optional migrations are applied (read-only catalog lookup).
+    const [features] = await app.db.execute<{ member_lists: boolean; evaluation_templates: boolean }>(sql`select
+      to_regclass('public.campaign_member_lists') is not null as member_lists,
+      to_regclass('public.evaluation_plan_templates') is not null as evaluation_templates`) as unknown as Array<{ member_lists: boolean; evaluation_templates: boolean }>;
 
     const chainConfig = loadChainConfig({
       MONAD_NETWORK: app.env.MONAD_NETWORK,
@@ -42,6 +46,7 @@ export const healthRoutes: FastifyPluginAsync = async (app) => {
     return {
       ok: true,
       api: { ok: true },
+      features: { memberLists: Boolean(features?.member_lists), evaluationTemplates: Boolean(features?.evaluation_templates) },
       database: { ok: true, latencyMs: databaseLatencyMs },
       monad: rpc,
       indexer: {
