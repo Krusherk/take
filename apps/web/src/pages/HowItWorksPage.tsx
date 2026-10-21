@@ -66,14 +66,14 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
           <Beat n={4} tilt={1.3} kicker="eligibility ≠ power" title="Reach doesn’t add votes.">
             <p>Eligibility asks “does this person meet the campaign’s rules?” (join link, member list, X account age, allowlists, Discord roles when configured). Once two people are eligible, both get one TAKE. 100k followers = 1 TAKE. 12 followers = 1 TAKE.</p>
           </Beat>
-          <Beat n={5} tilt={-1} kicker="locked first" title="Rules are locked onchain before anyone gives.">
-            <p>When sign-ups close, TAKE locks the giver and recipient lists and writes the rules hash to the TakeCampaignManager contract on Monad (<code>createCampaign</code>), then opens nominations (<code>activateCampaign</code>). Anyone can rebuild the hash from the public artifact with <code>pnpm verify:rules</code>.</p>
+          <Beat n={5} tilt={-1} kicker="locked first" title="Rules get locked.">
+            <p>Before anyone gives, the giver list, the recipient list and the rules are sealed on Monad. Nobody can change them after.</p>
           </Beat>
-          <Beat n={6} tilt={0.9} kicker="giving is a transaction" title="giveTake → TakeGiven">
-            <p>The giver’s wallet signs <code>giveTake</code> on Monad. The contract rejects a second TAKE, a TAKE to yourself, and anyone outside the locked lists. TAKE shows <b>TAKE GIVEN</b> only after the transaction confirms, the <code>TakeGiven</code> event is read, and it becomes a valid nomination edge.</p>
+          <Beat n={6} tilt={0.9} kicker="giving" title="You give your TAKE.">
+            <p>Your wallet signs one transaction. Giving twice, giving to yourself, or giving when you’re not on the list is rejected by the contract itself, not by our server. <b>TAKE GIVEN</b> shows only after it confirms onchain.</p>
           </Beat>
-          <Beat n={7} tilt={-1.1} kicker="the result" title="Close → allocate → finalize.">
-            <p>After the end time a scheduled job closes the campaign, runs the locked allocation (one unit of support per valid giver), and commits the result hash on Monad (<code>finalizeAllocation</code>). The organizer can’t quietly change it afterwards.</p>
+          <Beat n={7} tilt={-1.1} kicker="the result" title="The result is final.">
+            <p>When the campaign ends, TAKE closes it, counts one unit of support per valid giver, and seals the result on Monad automatically. The organizer can’t edit it afterwards.</p>
           </Beat>
           <Beat n={8} tilt={1} kicker="after the TAKE" title="Did the recommendation hold up?">
             <p>Before publishing, the team can lock one check for the opportunity type. It never changes who got a spot; it shows whether the people the community backed followed through.</p>
@@ -96,6 +96,8 @@ export function HowItWorksPage({ navigate, signedIn }: { navigate: Navigate; sig
 
         <EvidenceStack />
         <SandboxAndSignal />
+
+        <UnderTheHood />
 
         <ProofSection id="hiw-proof" />
 
@@ -176,6 +178,39 @@ function SandboxAndSignal() {
         <p>Every TAKE is a public record of who backed whom. When someone you backed gets the spot and passes the team’s follow-up check, you earn points. The 10 points are split across everyone who backed them, so an early pick is worth more. A failed check costs 2 points.</p>
         <p>Signal belongs to your TAKE identity and can’t be transferred. It’s information, not votes: everyone still gets one TAKE. Other apps can read it at <code>/signal/&lt;handle-or-wallet&gt;</code>.</p>
         <p>No campaign has a reviewed check yet, so every score is 0 today.</p>
+      </div>
+    </section>
+  );
+}
+
+const MANAGER_ADDRESS = "0xc3a0178b31d8844455c49988736d51a2336056e5";
+const CONTRACT_CALLS = [
+  ["createCampaign", "locks the rules and rosters"],
+  ["activateCampaign", "opens giving"],
+  ["giveTake", "gives one TAKE (emits TakeGiven)"],
+  ["finalizeAllocation", "seals the result hash"],
+] as const;
+
+/** The contract behind the plain-language beats, for anyone who wants to check. */
+function UnderTheHood() {
+  return (
+    <section className="hiw-elig hiw-hood" aria-labelledby="hood-heading">
+      <PaperLabel size="sm" tilt={-2} className="ls-kicker">verify it yourself</PaperLabel>
+      <h2 id="hood-heading" className="ls-strip">
+        <Sticker tilt={-2} as="span" className="ls-strip__line ls-strip__line--paper"><span>Under the hood</span></Sticker>
+      </h2>
+      <div className="hiw-integrity hiw-hood__card">
+        <p>Every step above runs through one contract on Monad testnet.</p>
+        <a className="hiw-hood__contract" href={`https://testnet.monadexplorer.com/address/${MANAGER_ADDRESS}`} target="_blank" rel="noreferrer">
+          <b>TakeCampaignManager</b>
+          <code>{MANAGER_ADDRESS}</code>
+        </a>
+        <dl className="hiw-hood__calls">
+          {CONTRACT_CALLS.map(([fn, what]) => (
+            <div key={fn}><dt><code>{fn}</code></dt><dd>{what}</dd></div>
+          ))}
+        </dl>
+        <p>Rebuild the rules hash yourself: <code>pnpm verify:rules</code></p>
       </div>
     </section>
   );
