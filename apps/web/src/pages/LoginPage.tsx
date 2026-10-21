@@ -126,6 +126,9 @@ export function LoginPage({ navigate }: LoginPageProps) {
               <Sticker tilt={-2} delay={80} as="span" className="landing-sky__line landing-sky__line--one"><span>You have one TAKE.</span></Sticker>
               <Sticker tilt={1.5} delay={160} as="span" className="landing-sky__line landing-sky__line--two"><span>Give it to someone else.</span></Sticker>
             </h1>
+            <Sticker tilt={-0.6} delay={220} className="landing-sky__subline-wrap">
+              <p className="landing-sky__subline">Communities use TAKE to give out whitelist spots, grants and beta seats. Every member gets one TAKE to give someone else, and the spots go to the people others back.</p>
+            </Sticker>
             <div className="landing-sky__actions">
               <Sticker tilt={-1} delay={260} className="sticker-cta">
                 <button className="sticker-pill landing-sky__primary" type="button" onClick={() => openAuthentication("/organize")}>

@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Megaphone, Repeat2, UserPlus, Wallet } from "lucide-react";
+import { ArrowRight, Bot, Clock, EyeOff, Megaphone, MessageCircle, Repeat2, UserPlus, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import { ProofSection } from "./ProofSection";
 import { CampaignSticker, MascotSticker, PaperLabel, PassArrow, Sticker } from "../sticker/Sticker";
@@ -29,57 +29,64 @@ const GIVEABLES = ["grants", "hackathon tickets", "builder spots", "allowlist sp
 /**
  * Everything below the hero on the signed-out page, told as stickers on the
  * sky: the problem, how it works, what you can give, why it is hard to game,
- * and the same sign-in actions as the hero.
+ * Signal, and the same sign-in actions as the hero.
  */
 export function LandingStickerSections({ onHowItWorks, onStartCampaign, onExplore }: LandingStickerSectionsProps) {
   return (
     <div className="ls">
       <section className="ls-section ls-problem" aria-labelledby="problem-heading">
         <PaperLabel size="sm" tilt={-3} className="ls-kicker">the problem</PaperLabel>
-        <Strip id="problem-heading" lines={["Likes are endless.", "A TAKE is one."]} />
+        <Strip id="problem-heading" lines={["Spots go to farmers", "and followers."]} />
         <div className="ls-problem__board">
-          <ul className="ls-problem__noise" aria-label="What social apps count">
-            <Chip tilt={-6} icon={<Heart aria-hidden="true" />}>2.4k likes</Chip>
-            <Chip tilt={4} delay={60} icon={<UserPlus aria-hidden="true" />}>+ follow</Chip>
-            <Chip tilt={-3} delay={120} icon={<Repeat2 aria-hidden="true" />}>repost</Chip>
-            <Chip tilt={7} delay={180} icon={<Heart aria-hidden="true" />}>like</Chip>
+          <ul className="ls-problem__noise" aria-label="How scarce spots get handed out today">
+            <Chip tilt={-6} icon={<Repeat2 aria-hidden="true" />}>follow + RT + tag 3</Chip>
+            <Chip tilt={4} delay={60} icon={<Clock aria-hidden="true" />}>first 500 wallets</Chip>
+            <Chip tilt={-3} delay={120} icon={<MessageCircle aria-hidden="true" />}>DM the founder</Chip>
+            <Chip tilt={5} delay={180} icon={<EyeOff aria-hidden="true" />}>judged in private</Chip>
+            <Chip tilt={-4} delay={240} icon={<Bot aria-hidden="true" />}>bots farm the form</Chip>
           </ul>
           <PassArrow className="ls-problem__arrow" />
           <div className="ls-problem__one">
             <CampaignSticker campaign={{ title: "One TAKE" }} face={{ count: "1", unit: "TAKE", badge: "GIVE" }} tilt={-6} />
           </div>
         </div>
-        <PaperLabel size="md" tilt={1} className="ls-note">Anyone can tap like. In a TAKE campaign, each person on the giver list gets one TAKE, and it has to go to someone else.</PaperLabel>
+        <PaperLabel size="md" tilt={1} className="ls-note">Quests reward whoever grinds or games the form. TAKE asks the community who actually earned it.</PaperLabel>
       </section>
 
       <section id="how-it-works" className="ls-section ls-how" aria-labelledby="how-heading">
         <PaperLabel size="sm" tilt={2} className="ls-kicker">how it works</PaperLabel>
         <Strip id="how-heading" lines={["One TAKE.", "Pass it on."]} />
-        <ol className="ls-steps">
+        <ol className="ls-steps ls-steps--four">
           <Sticker as="li" tilt={-2} className="ls-step">
             <span className="ls-step__num" aria-hidden="true">1</span>
-            <div className="ls-step__art"><CampaignSticker campaign={{ title: "Your TAKE" }} face={{ count: "1", unit: "TAKE", badge: null }} tilt={-6} /></div>
-            <strong>You get one TAKE.</strong>
-            <small>One per campaign, if you’re on its giver list.</small>
+            <div className="ls-step__art"><CampaignSticker campaign={{ title: "Creator program", spots: 5 }} tilt={-6} /></div>
+            <strong>A community sets the prize.</strong>
+            <small>The spots, who can give, who can receive.</small>
           </Sticker>
           <Sticker as="li" tilt={1.5} delay={80} className="ls-step">
             <span className="ls-step__num" aria-hidden="true">2</span>
+            <div className="ls-step__art"><CampaignSticker campaign={{ title: "Your TAKE" }} face={{ count: "1", unit: "TAKE", badge: null }} tilt={4} /></div>
+            <strong>Every member gets one TAKE.</strong>
+            <small>Reach and wallet size don’t add more.</small>
+          </Sticker>
+          <Sticker as="li" tilt={-1} delay={160} className="ls-step">
+            <span className="ls-step__num" aria-hidden="true">3</span>
             <div className="ls-step__art ls-step__art--pass" aria-hidden="true">
               <MascotSticker kind="lime" tilt={-6} className="ls-step__mascot" />
               <PassArrow className="ls-step__arrow" />
               <MascotSticker kind="star" tilt={8} className="ls-step__mascot" />
             </div>
-            <strong>Give it to someone.</strong>
+            <strong>Give it to someone else.</strong>
             <small>Never yourself.</small>
           </Sticker>
-          <Sticker as="li" tilt={-1} delay={160} className="ls-step">
-            <span className="ls-step__num" aria-hidden="true">3</span>
+          <Sticker as="li" tilt={1.2} delay={240} className="ls-step">
+            <span className="ls-step__num" aria-hidden="true">4</span>
             <div className="ls-step__art ls-step__art--chosen" aria-hidden="true">
               <MascotSticker kind="star" tilt={-4} className="ls-step__mascot ls-step__mascot--big" />
               <Sticker tilt={-10} as="span" className="status-sticker status-sticker--live ls-step__badge"><span>CHOSEN</span></Sticker>
             </div>
-            <strong>Results after close.</strong>
-            <small>The organizer commits the result onchain.</small>
+            <strong>Most TAKEs win the spots.</strong>
+            <small>Sealed on Monad automatically when it ends.</small>
           </Sticker>
         </ol>
         {onHowItWorks ? (
@@ -106,6 +113,23 @@ export function LandingStickerSections({ onHowItWorks, onStartCampaign, onExplor
           <FairRow tilt={-1} delay={160} icon={<Wallet aria-hidden="true" />} who="a full wallet" sign="=" gets="1 TAKE" />
         </ul>
         <PaperLabel size="md" tilt={-1} className="ls-note">Rules are locked onchain before anyone gives. You can’t give your TAKE to yourself.</PaperLabel>
+      </section>
+
+      <section id="signal" className="ls-section ls-signal" aria-labelledby="signal-heading">
+        <PaperLabel size="sm" tilt={-2} className="ls-kicker">after the take</PaperLabel>
+        <Strip id="signal-heading" lines={["Back people who", "follow through."]} />
+        <div className="ls-signal__art" aria-hidden="true">
+          <MascotSticker kind="lime" tilt={-6} className="ls-step__mascot" />
+          <PassArrow className="ls-step__arrow" />
+          <MascotSticker kind="star" tilt={6} className="ls-step__mascot" />
+          <Sticker tilt={-8} as="span" className="status-sticker status-sticker--live ls-signal__badge"><span>+ SIGNAL</span></Sticker>
+        </div>
+        <PaperLabel size="md" tilt={1} className="ls-note">When someone you backed gets the spot and passes the team’s follow-up check, you earn Signal: reputation you can’t buy or transfer.</PaperLabel>
+        {onHowItWorks ? (
+          <Sticker tilt={-1} className="landing-sky__secondary-wrap">
+            <a className="landing-sky__secondary" href="/how-it-works" onClick={(event) => { event.preventDefault(); onHowItWorks(); }}>How Signal is scored <ArrowRight aria-hidden="true" size={16} /></a>
+          </Sticker>
+        ) : null}
       </section>
 
       <ProofSection />

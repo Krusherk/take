@@ -24,6 +24,16 @@ describe("LoginPage (signed out)", () => {
     const brand = screen.getByRole("link", { name: "TAKE home" });
     expect(brand.querySelector("img")?.getAttribute("src")).toBe("/assets/sticker/logo.webp");
     expect(brand).not.toHaveTextContent("TAKE");
+    expect(screen.getByText(/Communities use TAKE to give out whitelist spots, grants and beta seats/)).toBeInTheDocument();
+  });
+
+  it("names the problem and links Signal from the nav", () => {
+    render(<LoginPage navigate={vi.fn()} />);
+    const today = screen.getByRole("list", { name: "How scarce spots get handed out today" });
+    for (const chip of ["follow + RT + tag 3", "first 500 wallets", "DM the founder", "judged in private", "bots farm the form"]) expect(today).toHaveTextContent(chip);
+    const nav = screen.getByRole("navigation", { name: "Public navigation" });
+    expect(within(nav).getByRole("link", { name: "Signal" })).toHaveAttribute("href", "#signal");
+    expect(within(nav).queryByRole("link", { name: "About" })).toBeNull();
   });
 
   it("keeps the same sign-in options behind the Sign in button", () => {
@@ -45,10 +55,10 @@ describe("LoginPage (signed out)", () => {
   it("tells the rest of the story as sticker sections, not the old marketing panels", () => {
     const { container } = render(<LoginPage navigate={vi.fn()} />);
 
-    for (const name of ["Likes are endless.A TAKE is one.", "One TAKE.Pass it on.", "Any scarce spot.", "Reach doesn’tadd power.", "Who would yougive your TAKE to?"]) {
+    for (const name of ["Spots go to farmersand followers.", "One TAKE.Pass it on.", "Any scarce spot.", "Reach doesn’tadd power.", "Back people whofollow through.", "Who would yougive your TAKE to?"]) {
       expect(screen.getByRole("heading", { level: 2, name })).toBeInTheDocument();
     }
-    for (const id of ["how-it-works", "use-cases", "why-take", "about"]) expect(container.querySelector(`#${id}`)).not.toBeNull();
+    for (const id of ["how-it-works", "use-cases", "why-take", "signal", "about"]) expect(container.querySelector(`#${id}`)).not.toBeNull();
     expect(screen.getAllByText("1 TAKE")).toHaveLength(3);
     expect(container.querySelector(".landing-principles, .landing-trust-band, .landing-vision-band, .landing-footer--final")).toBeNull();
     expect(container.querySelector('img[src*="take-mascot-"]')).toBeNull();
@@ -63,7 +73,7 @@ describe("LoginPage (signed out)", () => {
     expect(screen.queryByText(/kubo|sarah/i)).toBeNull();
     expect(screen.queryByText(/terms|privacy policy/i)).toBeNull();
     expect(screen.queryByText(/public and checkable|sybil/i)).toBeNull();
-    expect(screen.getByText("Results after close.")).toBeInTheDocument();
+    expect(screen.getByText("Most TAKEs win the spots.")).toBeInTheDocument();
   });
 
   it("uses the same sign-in for the final call to action", () => {

@@ -10,7 +10,7 @@ const links = [
   { href: "/how-it-works", label: "How it works" },
   { href: "#use-cases", label: "Use cases" },
   { href: "#why-take", label: "Why TAKE" },
-  { href: "#about", label: "About" },
+  { href: "#signal", label: "Signal" },
 ];
 
 export function LandingHeader({ onSignIn, onNavigate }: LandingHeaderProps) {
