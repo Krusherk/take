@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseHiddenCampaignIds } from "../services/hiddenCampaigns.js";
 
 const optionalNonEmptyString = z.preprocess(
   (value) => (value === "" ? undefined : value),
@@ -68,6 +69,8 @@ export const apiEnvSchema = z.object({
   DISCORD_INSTALL_STATE_SECRET: optionalNonEmptyString,
   TAKE_OPERATOR_PRIVY_USER_IDS: commaSeparatedList,
   ENABLE_DEV_FIXTURES: booleanFlag,
+  /** Campaign ids kept off public lists (data untouched). Defaults to TAKE Demo; "none" hides nothing. */
+  HIDDEN_CAMPAIGN_IDS: z.preprocess(parseHiddenCampaignIds, z.array(z.string())),
   MONAD_NETWORK: z.enum(["testnet", "mainnet"]).default("testnet"),
   MONAD_TESTNET_RPC_URL: optionalUrl,
   MONAD_MAINNET_RPC_URL: optionalUrl,

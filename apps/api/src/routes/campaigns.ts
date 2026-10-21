@@ -5,6 +5,7 @@ import { NominationService } from "../services/nomination.js";
 import { AllocationService } from "../services/allocation.js";
 import { createMonadPublicClient, loadChainConfig } from "@take/chain";
 import { assertTakeOperator, isTakeOperator } from "../services/authorization.js";
+import { withoutHiddenCampaigns } from "../services/hiddenCampaigns.js";
 
 export const campaignRoutes: FastifyPluginAsync = async (app) => {
   const campaigns = new CampaignService(app.db);
@@ -26,10 +27,12 @@ export const campaignRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/campaigns", async (request, reply) => {
     sharePublicRead(request, reply);
-    return campaigns.listCampaigns(
+    const list = await campaigns.listCampaigns(
       request.takeIdentity?.takeIdentityId,
       app.env.NODE_ENV === "development" && app.env.ENABLE_DEV_FIXTURES
     );
+    // Operators still see hidden campaigns so they can manage them; everyone else doesn't.
+    return isTakeOperator(app.env, request.takeIdentity) ? list : withoutHiddenCampaigns(list, app.env.HIDDEN_CAMPAIGN_IDS);
   });
 
   app.get<{ Params: { id: string } }>("/campaigns/:id", async (request, reply) => {
