@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { and, desc, eq, isNotNull, notInArray, or } from "drizzle-orm";
 import { schema } from "@take/database";
 import { SignalService } from "../services/signal.js";
+import { withoutHiddenCampaigns } from "../services/hiddenCampaigns.js";
 
 export type ProofCampaign = {
   id: string;
@@ -31,9 +32,10 @@ export const proofRoutes: FastifyPluginAsync = async (app) => {
       .where(and(eq(schema.campaigns.status, "FINALIZED"), isNotNull(schema.campaigns.finalResultHash),
         // Sandbox campaigns (open eligibility, no locked mechanism) are for trying TAKE and don't count.
         or(isNotNull(schema.campaigns.mechanismConfigId), notInArray(schema.campaigns.nominatorEligibilityMode, ["OPEN_REGISTERED", "EXTERNAL_ALLOWED"]))))
-      .orderBy(desc(schema.campaigns.endTime)).limit(6);
+      .orderBy(desc(schema.campaigns.endTime)).limit(6 + app.env.HIDDEN_CAMPAIGN_IDS.length);
     const campaigns: ProofCampaign[] = [];
-    for (const { campaign, organizationName } of finished) {
+    const shown = withoutHiddenCampaigns(finished.map((row) => ({ ...row, id: row.campaign.id })), app.env.HIDDEN_CAMPAIGN_IDS).slice(0, 6);
+    for (const { campaign, organizationName } of shown) {
       const after = await signal.after(campaign.id);
       const [snapshot] = await app.db.select({ eligible: schema.eligibilitySnapshots.eligibleCount }).from(schema.eligibilitySnapshots)
         .where(and(eq(schema.eligibilitySnapshots.campaignId, campaign.id), eq(schema.eligibilitySnapshots.subject, "NOMINATOR"), isNotNull(schema.eligibilitySnapshots.lockedAt)))
